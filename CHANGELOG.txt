@@ -1,0 +1,317 @@
+[b]1.85[/b]
+*Added Currencies in the tooltip
+*Added Professions in the tooltip
+*Changed the coloring and player status method
+*Simplified and renamed some functions
+*Added modifier(s) e.g. lures, on fishing level display
+*Rearranged the tooltip options a bit
+*Locales cleanup
+
+[b]1.82[/b]
+*updated LibTourist for Timeless Isle
+*minor fixes
+
+[b]1.81[/b]
+*toc update for patch 5.4
+
+[b]1.80[/b]
+*toc update for patch 5.3
+*Added option to also display Battle Pet level, Fishing level or Area Level, on the Location Panel. Also optionally show a corresponding icon.
+*Minor improvements and corrections.
+
+[b]1.79[/b]
+*Removed LibElvUIPlugin library. It's part of ElvUI now. (Recommended update)
+
+[b]1.78[/b]
+*Updated LibElvUIPlugin library. (Highly recommended update)
+
+[b]1.77[/b]
+*Fixed level range on location panel not showing in some cases. Also fixed the tooltip when level range isn't available (major cities).
+*Simplified the coords creation.
+*Added option to hide tooltip  while in combat (enabled by default).
+*Disabled Monochrome font flag (Still causing wow crashes).
+*Updated LibTourist-3.0 library.
+*Updated LibElvUIPlugin-1.0 library.
+
+[b]1.76[/b]
+*Ready for patch 5.2
+*Included Sortokk's LibElvUIPlugin
+*Added optional area level range in the location panel (user request)
+*Toggling transparency works without a reloadui.
+*Fixed panel appearance after pet combat, while mouseover is disabled.
+*Followed Elv's fix for Monochrome font flag.
+*Removed a locale string (thanks Darth).
+
+[b]1.75[/b]
+*All new additions now have a sign in the options.
+*Added mouseovered panels option (user request).
+*Updated frFR locale (Credits: Ckeurk)
+*Updated zhCN and zhTW locales (Credits: zhouf616, xjjxfpyyyf)
+
+[b]1.74[/b]
+*Added option that truncates the location text if it's larger than the location panel (user request).
+*Fixed the tooltip for recommended dungeons when player is below level 15.
+*Updated LibTourist to WoW-5.1-beta1.
+
+[b]1.73[/b]
+*User request: Added a Show/Hide Backdrop option, so the panels could be with no background and can be placed on ElvUI's top or bottom panels.
+*Updated LibTourist to r157.
+*Added the level of the Battle Pets in the area.
+*Fixed datatext incompatibility with ElvUI_DTbars addon and S&L Edit.
+*Fixed not saving the last datatexts toggled state.
+
+[b]1.72[/b]
+*Ready for 5.1 patch.
+*Fixed the Location text not getting red color while in an instance.
+*Simplified some functions and removed some uneeded old stuff.
+*Fixed the feature to change the plugin datatext fonts via the plugin options, that stopped working in v1.70.
+*Removed the disable datatexts option. Datatatexts can always be hidden by Ctrl+Clicking the Location Panel anyway. Disabled datatexts were causing issues that me and Darth tried to solve but tbh I'm a bit tired with it. In addition, a new addon called "Location Lite" is available, that will not have datatexts and tooltip info but will keep all the customization options plus a new "bonus" layout. Get it here: http://www.tukui.org/addons/index.php?act=view&id=133.
+*Updated LibTourist to r155.
+*Updated zhCN and zhTW locales (Credits: zhouf616).
+*Updated Russian locale (Credits: Darth Predator).
+
+[b]1.71[/b]
+*Added coloring options for the Location text: Auto, Class and Custom.
+*Added coloring options for the Coords text: Use Custom Location Color, Class and Custom.
+*Right clicking the location panel shows ElvUI options rather than Atlas plugin. Usefull when consolidated buffs are disabled.
+*Added Home location (hearthstone) in tooltip.
+*Minor changes in options.
+*Updated zhTW locale. Credits: xjjxfpyyyf
+
+[b]1.70[/b]
+*Added Location panel width options (users request). The panel can now either auto resize or the user can set a fixed width. If the location name is bigger than the user's width, it will auto resize to fit the name.
+*Added option to show/hide coords for the Recommended and Area Dungeons entrances. Some coords may not show till LibTourist gets updated with the new instances.
+*When entering an instance, the location text turns redish, than the usuall yellow.
+*Changed the way options are saved. They now use ElvUI saved variables file.
+*Tooltip and Layout options have now their own sub-category.
+*Altered the plugin to run as ElvUI module. Uses less memory now ;)
+*Updated LibTourist to Wow-5.0-beta2.
+
+[b]1.65[/b]
+*Fixed the status coloring in tooltip.
+*Fixed a bug with other map mods like Carbonite.
+*Updated German locale. Credits: Hoembi
+
+[b]1.64[/b]
+*Auto fading while in pet battle addition (from v1.62), caused the "Combat Hide" option not to function. This has been fixed.
+*Updated LibTourist to r152.
+
+[b]1.63[/b]
+*Simplified the font function.
+*Removed some old locale strings.
+*Added a reloadui message when enabling the Transparent layout. The toggle isn't applying the correct transparency level without reloadui.
+*When disabling the datatexts, a reloadui message shows, as it should do :P
+*Fixed a bug, when datatexts were disabled, the user could still play with their width option, resulting the datatexts to show back. (Grabbed by Darth Predator - The master BugGrabber :D)
+*When the datatexts are disabled, their width option is also disabled.
+*Updated Russian locale (Credits: Darth Predator)
+
+[b]1.62[/b]
+*The panels now auto fade while in pet battle, to prevent overlapping the pet frames, even if "Combat Hide" option is enabled.
+*Updated French locale. Credits: Alex, thank you :)
+*Changed the "#-man" with global Player string. Now shows e.g. 10-Player.
+*Some strings now use Blizzard's globals (less translation required).
+
+[b]1.61[/b]
+*Updated Simplified Chinese (zhCN) and Traditional Chinese (zhTW) translations. Credits: Zhouf616 - Big Thanks :)
+
+[b]1.60[/b]
+*New feature: The tooltip now shows the zone of the Recommended dungeons.
+*New feature: The tooltip now shows the Continent of the Recommended zones.
+*New feature: The tooltip now shows the number of players required for each Dungeon/Raid in the area.
+*New feature: The title "Dungeons" in the tooltip, has changed to "[Area] Dungeons", e.g. "Stormwind City Dungeons".
+*New feature: Fishing now also shows player's name and fishing level plus the area's name and level.
+*Show PvP/Raid option no longer filters Recommended Zones, cause it was filtering zones like Hellfire Peninsula, Silithus or Zangarmarsh that just have some PvP areas. There is only a PvP flag, that shows that there is a PvP area in the recommended zone.
+*With ElvUI v4.33+, the panels can be moved again by using ElvUI Toggle Anchors button. The movers issue that caused the location panel not to resize evenly has been fixed by Elv. Have in mind that it will resize as intended, only when it's placed horizontal on the center of the screen.
+*Changed the panels distance when Shadows layout is used, from 3 to 2 pixels.
+*Changed the default Datatexts to 'Time' and 'Spec Switch' to avoid an issue when the 'System' one is enabled twice, e.g. in LocationPanel and in another datatext.
+*Removed Phenox plugin compatibility. No one is using it anymore.
+*Added Italian localisation file (needs translation)
+*Updated French locale (Credits: Onii & Ckeurk).
+*Updated LibTourist to r151.
+*The tooltip info feed has been rewritten. The plugin now uses less memory.
+
+[b]1.59[/b]
+*Fixed curse forge ticket #3 issue.
+*Better Transparency level on the panels. It follows the level of any ElvUI transparent frame.
+*Added player's area Fishing level in the tooltip. Can be Enabled/disabled via options.
+*Improved the v1.58 fix. The x, y movers resolution values are showing correct when autoscale is on. If it's off, then the values are multiplied by 1.5, so that the panels can be moved further.
+
+[b]1.58[/b]
+*Fixed the issue, when a user had ElvUI Autoscale option disabled and changed the Bliz UI Scale option, caused the panels not to be able to follow the user resolution. (Thanks Blaze)
+
+[b]1.57[/b]
+*Updated LibTourist to fix "LibTourist-3.0-90145.lua:2113: table index is nil" error
+
+[b]1.56[/b]
+*Fixed a lua error while applying transparency
+
+[b]1.55[/b]
+*Fixed the issue, when the panels were not visible, of screen or at the bottomleft corner.
+*New feature: datatext panels width is sizeable via options. Coords and Location panels are auto sizeable. Changing the height affects all panels.
+*Minor tweaks and cleanup. 
+
+[b]1.51[/b]
+*Updated LibTourist for 5.0.4. Tooltip info and options are back!
+*Elv's new movers code, was causing the panel not to resize evenly left and right. I added an x, y mover at the options (thanks Darth)
+*Added Detailed Coords option. Enabling it will show even more accurate coords with 2 digits.
+*Cleaned up the not needed code
+
+[b]1.5c[/b]
+*Patch 5.0.4 compatible
+*Fixed a glyph taint
+*Fixed locale lua errors
+*minor tweaks
+
+[b]1.25[/b]
+*Updated LibBabble-Zone and LibTourist libraries
+
+[b]1.24[/b]
+*Added support for Shadow & Light Edit:
+  -Changed default positioning when Shadow & Light Edit is loaded
+  -Fixed Xp/rep bars positioning under Location Panels, when Shadow & Light Edit is loaded
+*Removed the Reset Position option, since Elv's Mover Popup window can be moved now
+
+[b]1.23[/b]
+*Updated Russian locale (Credits: Darth Predator)
+*Updated French locale (Credits: Onii)
+*Updated LibTourist
+*Made some functions local
+*toc update
+
+[b]1.21[/b]
+*Added Monochrome outline in font options.
+
+[b]1.20[/b]
+*Fixed LibTourist location coloring, when on some sanctuary areas like Argent Tournament Grounds, the color was yellow, should be light blue.
+*Added Combat on Status.
+*Updated zhTW translation.
+*Updated locales with new strings from the addon options.
+*Changed all panels height to 20. They look better :P (Can always be changed in the core.lua file)
+
+[b]1.19[/b]
+*Added French locale (Credits: Onii)
+*Minor adjustment for map issue.
+
+[b]1.18[/b]
+*Fixed issue with maps getting stucked on player's position(fingers crossed) :)
+
+[b]1.17[/b]
+*Added new locale strings and removed some that are already in ElvUI.
+*Updated LibTourist.
+
+[b]1.16[/b]
+*Fixed coords sometimes not to show (for good this time).
+*In case xp/rep bars are shown on top, they no longer overlap with LocationPlus panels. They just park themselves under Location panels. Works better with XP/Rep mod: http://www.tukui.org/forums/topic.php?id=21133
+
+[b]1.15[/b]
+*Added support for ElvUI 3.7+
+
+[b]- Fixes:[/b]
+*Fixed coords sometimes not to show.
+*Fixed a bug at the Font options, where the user was able to choose/resize/flag a font but the changes were not visible in the options, although the font was applied correctly on the panels.
+
+[b]- Changes:[/b]
+*Changed the way locations were getting colored. Using LibTourist, instead of Elv's location coloring function
+
+[b]- New Tooltip Info:[/b]
+*Added Recommended Zones
+*Added Recommended Dungeons
+*Added Zone Instances and Raids
+
+[b]- Added options for Tooltip Info:[/b]
+*show/hide raids or dungeons
+*show/hide PvP zones, Arenas and BGs on recommended dungeons and zones
+*show/hide Recommended Zones
+*show/hide Recommended Dungeons
+*show/hide Zone Dungeons and Raids
+*show/hide Zone Status
+*show/hide Current Zone Level
+
+
+
+[b]1.14[/b]
+*fixed a bug when the tooltips were still showing, when the panels were hidden while in combat.
+*Added Zone Status info on tooltip
+*Added Current Zone Level info on tooltip
+*New feature: If Elv's Rep/XP bars are set "Top Screen", Location panels are repositioned under the Rep/XP bars,
+so that they don't overlap. If Elv's Rep/XP bars are toggled back to "Below Minimap", the panels are repositioned on top of the screen.
+
+
+
+[b]1.13[/b]
+*Added zhCN and zhTW localization. Credits: zhouf616
+
+
+
+[b]1.12[/b]
+*Added ptBR localization. Credits: Don
+
+
+
+[b]1.11[/b]
+*Re-arranged the options.
+*Right Clicking the Location Panel, toggles Atlas addon (if loaded).
+*Toggling transparent layout, no longer needs to reloadui.
+*Added a "reset to default position" option, in case the mover is behind Elv's Toggle Anchors window.
+*Updated LibTourist-3.0.
+
+
+
+[b]1.09[/b]
+*Fixed the issue when the main panel appearing again after entering an instance, raid, bg.
+*Added font options for all panels. In case Phenox addon is loaded, it will take care of the datatext fonts.
+*Less reloads while changing layout options. Shadows and Larger Location Panel don't require a reloadui.
+*Added back the Enable/Disable DataTexts option. Still appear in Elv's DataText  options though.
+*Updated LibBabble-Zone-3.0. Older version was causing errors.
+*Minor code improovements.
+
+
+
+[b]1.08[/b]
+*Cleanup
+
+
+
+[b]1.07[/b]
+*Fixed the issue: Tooltip doesn't show the correct info on login and ShiftClick does a lua error
+Works ok after reload ui.
+*Not using Elv's LO:Initialize() function, so it doesn't mess up with other edits (cheers Darth).
+*Removed the Enable/Disable DataText option. Not working as intended (still shows in Elv's Datatext options).
+*New workaround to Hide in combat.
+*New options db, so it doesn't save profiles in Elv's db.
+
+
+
+[b]1.06[/b]
+*Added Russian locale (Credits: Darth Predator)
+
+
+
+[b]1.05[/b]
+*Fixed the libs loading error
+
+
+
+[b]1.04[/b]
+*Added the missing lib.
+
+
+
+[b]1.03[/b]
+*Try to fix the issue: Tooltip doesn't show the correct info on login and ShiftClick does a lua error
+Works ok after reload ui.
+
+
+
+[b]1.02[/b]
+*Add localizations
+
+
+
+[b]1.01[/b]
+*Code cleanup
+
+
+
+[b]1.00[/b]
+*Initial release
