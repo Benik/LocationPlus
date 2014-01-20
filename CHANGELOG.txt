@@ -1,3 +1,6 @@
+[b]1.86[/b]
+*Fixed CPU load issues (thanks Einistein for noticing this)
+
 [b]1.85[/b]
 *Added Currencies in the tooltip
 *Added Professions in the tooltip

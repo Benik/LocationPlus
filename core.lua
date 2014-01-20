@@ -15,7 +15,7 @@ a plugin for ElvUI, that adds player location and coords + 2 Datatexts
 ]]--
 
 local E, L, V, P, G, _ = unpack(ElvUI);
-local LPB = E:NewModule('LocationPlus');
+local LPB = E:NewModule('LocationPlus', 'AceTimer-3.0');
 local DT = E:GetModule('DataTexts');
 local LSM = LibStub("LibSharedMedia-3.0");
 local EP = LibStub("LibElvUIPlugin-1.0")
@@ -420,8 +420,9 @@ function LPB:UpdateTooltip()
 			end
 		end
 	end
-	
+
 	-- Professions
+	local capRank = 600
 	local prof1, prof2, archy, fishing, cooking, firstAid = GetProfessions()
 	if E.db.locplus.prof and (prof1 or prof2 or archy or fishing or cooking or firstAid) then	
 		GameTooltip:AddLine(" ")
@@ -431,14 +432,14 @@ function LPB:UpdateTooltip()
 		for _, id in pairs(proftable) do
 			local name, icon, rank, maxRank, _, _, _, rankModifier = GetProfessionInfo(id)
 			icon = ("|T%s:12:12:1:0|t"):format(icon)
-			if rank < 600 or (not E.db.locplus.profcap) then
+			if rank < capRank or (not E.db.locplus.profcap) then
 				if (rankModifier and rankModifier > 0) then
 					GameTooltip:AddDoubleLine(format("%s %s :", icon, name), (format("%s |cFF6b8df4+ %s|r / %s", rank, rankModifier, maxRank)), 1, 1, 1, selectioncolor)				
 				else
 					GameTooltip:AddDoubleLine(format("%s %s :", icon, name), (format("%s / %s", rank, maxRank)), 1, 1, 1, selectioncolor)
 				end
 			end
-		end	
+		end
 	end
 	
 	-- Hints
@@ -557,74 +558,6 @@ function LPB:CreateLocPanel()
 	-- Location Text
 	loc_panel.Text = LocationPlusPanel:CreateFontString(nil, "LOW")
 	loc_panel.Text:Point("CENTER", 0, 0)
-	
-	loc_panel:SetScript("OnUpdate", function(self,event,...)
-		local subZoneText = GetMinimapZoneText() or ""
-		local zoneText = GetRealZoneText() or UNKNOWN;
-		local displayLine
-
-		-- zone and subzone
-		if E.db.locplus.both then
-			if (subZoneText ~= "") and (subZoneText ~= zoneText) then
-				displayLine = zoneText .. ": " .. subZoneText
-			else
-				displayLine = subZoneText
-			end
-		else
-			displayLine = subZoneText
-		end
-		
-		-- Show Other (Level, Battle Pet Level, Fishing)
-		if E.db.locplus.displayOther == 'RLEVEL' then
-			local displaylvl = GetLevelRange(zoneText) or ""
-			if displaylvl ~= "" then
-				displayLine = displayLine..displaylvl
-			end
-		elseif E.db.locplus.displayOther == 'PET' then
-			local displaypet = GetBattlePetLvl(zoneText) or ""
-			if displaypet ~= "" then
-				displayLine = displayLine..displaypet
-			end
-		elseif E.db.locplus.displayOther == 'PFISH' then
-			local displayfish = GetFishingLvl(minFish) or ""
-			if displayfish ~= "" then
-				displayLine = displayLine..displayfish
-			end
-		else
-			displayLine = displayLine
-		end
-		
-		self.Text:SetText(displayLine)
-		
-		-- Coloring
-		if displayLine ~= "" then
-			if E.db.locplus.customColor == 1 then
-				self.Text:SetTextColor(GetStatus(true))
-			elseif E.db.locplus.customColor == 2 then
-				self.Text:SetTextColor(classColor.r, classColor.g, classColor.b)
-			else
-				self.Text:SetTextColor(unpackColor(E.db.locplus.userColor))
-			end
-		end
-		
-		-- Sizing
-		local fixedwidth = (E.db.locplus.lpwidth + 18)
-		local autowidth = (self.Text:GetStringWidth() + 18)
-		
-		if E.db.locplus.lpauto then
-			self:SetWidth(autowidth)
-			self.Text:SetWidth(autowidth)
-		else
-			self:SetWidth(fixedwidth)
-			if E.db.locplus.trunc then
-				self.Text:SetWidth(fixedwidth - 18)
-				self.Text:SetWordWrap(false)
-			elseif autowidth > fixedwidth then
-				self:SetWidth(autowidth)
-				self.Text:SetWidth(autowidth)
-			end
-		end		
-	end)
 	
 	-- Hide in combat/Pet battle
 	loc_panel:SetScript("OnEvent",function(self, event)
@@ -781,38 +714,103 @@ function LPB:CreateCoordPanels()
 	coordsY.Text:Point("CENTER", 1, 0)
 
 	self:CoordsColor()
+end
 
-	local ela = 0
+function LPB:UpdateLocation()
+	local subZoneText = GetMinimapZoneText() or ""
+	local zoneText = GetRealZoneText() or UNKNOWN;
+	local displayLine
 
-	local cUpdate = function(self,t)
-		ela = ela - t
-		if ela > 0 then return end
-			local x, y = LPB:CreateCoords()
-			local xt,yt
-
-			if x == 0 and y == 0 then
-				coordsX.Text:SetText("-")
-				coordsY.Text:SetText("-")
-			else
-			if x < 10 then
-				xt = "0"..x
-			else
-				xt = x
-			end
-			
-			if y < 10 then
-				yt = "0"..y
-			else
-				yt = y
-			end
-			coordsX.Text:SetText(xt)
-			coordsY.Text:SetText(yt)
+	-- zone and subzone
+	if E.db.locplus.both then
+		if (subZoneText ~= "") and (subZoneText ~= zoneText) then
+			displayLine = zoneText .. ": " .. subZoneText
+		else
+			displayLine = subZoneText
+		end
+	else
+		displayLine = subZoneText
+	end
+	
+	-- Show Other (Level, Battle Pet Level, Fishing)
+	if E.db.locplus.displayOther == 'RLEVEL' then
+		local displaylvl = GetLevelRange(zoneText) or ""
+		if displaylvl ~= "" then
+			displayLine = displayLine..displaylvl
+		end
+	elseif E.db.locplus.displayOther == 'PET' then
+		local displaypet = GetBattlePetLvl(zoneText) or ""
+		if displaypet ~= "" then
+			displayLine = displayLine..displaypet
+		end
+	elseif E.db.locplus.displayOther == 'PFISH' then
+		local displayfish = GetFishingLvl(minFish) or ""
+		if displayfish ~= "" then
+			displayLine = displayLine..displayfish
+		end
+	else
+		displayLine = displayLine
+	end
+	
+	LocationPlusPanel.Text:SetText(displayLine)
+	
+	-- Coloring
+	if displayLine ~= "" then
+		if E.db.locplus.customColor == 1 then
+			LocationPlusPanel.Text:SetTextColor(GetStatus(true))
+		elseif E.db.locplus.customColor == 2 then
+			LocationPlusPanel.Text:SetTextColor(classColor.r, classColor.g, classColor.b)
+		else
+			LocationPlusPanel.Text:SetTextColor(unpackColor(E.db.locplus.userColor))
 		end
 	end
-	ela = .2
+	
+	-- Sizing
+	local fixedwidth = (E.db.locplus.lpwidth + 18)
+	local autowidth = (LocationPlusPanel.Text:GetStringWidth() + 18)
+	
+	if E.db.locplus.lpauto then
+		LocationPlusPanel:SetWidth(autowidth)
+		LocationPlusPanel.Text:SetWidth(autowidth)
+	else
+		LocationPlusPanel:SetWidth(fixedwidth)
+		if E.db.locplus.trunc then
+			LocationPlusPanel.Text:SetWidth(fixedwidth - 18)
+			LocationPlusPanel.Text:SetWordWrap(false)
+		elseif autowidth > fixedwidth then
+			LocationPlusPanel:SetWidth(autowidth)
+			LocationPlusPanel.Text:SetWidth(autowidth)
+		end
+	end		
+end
 
-	XCoordsPanel:SetScript("OnUpdate", cUpdate)
+function LPB:UpdateCoords()
+	local x, y = LPB:CreateCoords()
+	local xt,yt
 
+	if x == 0 and y == 0 then
+		XCoordsPanel.Text:SetText("-")
+		YCoordsPanel.Text:SetText("-")
+	else
+		if x < 10 then
+			xt = "0"..x
+		else
+			xt = x
+		end
+		
+		if y < 10 then
+			yt = "0"..y
+		else
+			yt = y
+		end
+		XCoordsPanel.Text:SetText(xt)
+		YCoordsPanel.Text:SetText(yt)
+	end
+end
+
+function LPB:UpdateTextCoords()
+	self:UpdateLocation()
+	self:UpdateCoords()
 end
 
 -- Coord panels width
@@ -896,6 +894,7 @@ function LPB:Initialize()
 	self:CreateDTPanels()
 	self:CreateCoordPanels()
 	self:LocPlusUpdate()
+	self:ScheduleRepeatingTimer('UpdateTextCoords', 0.5)
 	EP:RegisterPlugin(addon, LPB.AddOptions)
 	LocationPlusPanel:RegisterEvent("PLAYER_REGEN_DISABLED")
 	LocationPlusPanel:RegisterEvent("PLAYER_REGEN_ENABLED")
