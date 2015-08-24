@@ -51,7 +51,7 @@ P['locplus'] = {
 	['lpfontsize'] = 12,
 	['lpfontflags'] = "NONE",
 -- Init
-	['LoginMsg'] = false,
+	['LoginMsg'] = true,
 }
 
 local newsign = "|TInterface\\OptionsFrame\\UI-OptionsFrame-NewFeatureIcon:14:14|t"
