@@ -931,7 +931,10 @@ function LPB:Initialize()
 	LocationPlusPanel:RegisterEvent("PLAYER_REGEN_ENABLED")
 	LocationPlusPanel:RegisterEvent("PET_BATTLE_CLOSE")
 	LocationPlusPanel:RegisterEvent("PET_BATTLE_OPENING_START")
-	print(L["Location Plus "]..format("v|cff33ffff%s|r",LPB.version)..L[" is loaded. Thank you for using it."])
+
+	if E.db.locplus.LoginMsg then
+		print(L["Location Plus "]..format("v|cff33ffff%s|r",LPB.version)..L[" is loaded. Thank you for using it."])
+	end
 end
 
 E:RegisterModule(LPB:GetName())

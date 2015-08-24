@@ -50,6 +50,8 @@ P['locplus'] = {
 	['lpfont'] = E.db.general.font,
 	['lpfontsize'] = 12,
 	['lpfontflags'] = "NONE",
+-- Init
+	['LoginMsg'] = false,
 }
 
 local newsign = "|TInterface\\OptionsFrame\\UI-OptionsFrame-NewFeatureIcon:14:14|t"
@@ -101,6 +103,14 @@ function LPB:AddOptions()
 						min = 0.05, max = 1, step = 0.05,
 						get = function(info) return E.db.locplus[ info[#info] ] end,
 						set = function(info, value) E.db.locplus[ info[#info] ] = value; LPB:TimerUpdate(); E:StaticPopup_Show("PRIVATE_RL"); end,					
+					},
+					LoginMsg = {
+							order = 3,
+							name = L["Login Message"],
+							desc = L["Enable/Disable the Login Message"],
+							type = 'toggle',
+							get = function(info) return E.db.locplus[ info[#info] ] end,
+							set = function(info, value) E.db.locplus[ info[#info] ] = value; end,                                  
 					},
 				},
 			},
