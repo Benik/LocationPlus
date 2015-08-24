@@ -19,6 +19,7 @@ L[" by Benik (EU-Emerald Dream)"] = true
 L["Choose font for the Location and Coords panels."] = true
 L["Click : "] = true
 L["Coordinates"] = true
+L["Combat Hide"] = true
 L["CtrlClick : "] = true
 L["Datatext Panels"] = true
 L["DataTexts Width"] = true
