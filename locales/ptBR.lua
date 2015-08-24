@@ -18,6 +18,7 @@ L[" by Benik (EU-Emerald Dream)"] = " por Benik (EU-Emerald Dream)"
 L["Choose font for the Location and Coords panels."] = "Choose font for the Location and Coords panels." -- Requires localization
 L["Click : "] = "Clique"
 L["Coordinates"] = "Coordinates" -- Requires localization
+L["Combat Hide"] = "Combat Hide" -- Requires localization
 L["CtrlClick : "] = "Ctrl - Clique"
 L["Datatext Panels"] = "Painéis de Textos Informativos"
 L["DataTexts Width"] = "DataTexts Width" -- Requires localization

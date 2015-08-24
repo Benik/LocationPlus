@@ -18,6 +18,7 @@ L[" by Benik (EU-Emerald Dream)"] = " 版權屬於 Benik (歐服, Emerald Dream)
 L["Choose font for the Location and Coords panels."] = "區域框字體選擇."
 L["Click : "] = "點擊 : "
 L["Coordinates"] = "顔色匹配"
+L["Combat Hide"] = "Combat Hide" -- Requires localization
 L["CtrlClick : "] = "Ctrl+點擊 : "
 L["Datatext Panels"] = "資訊文字框架"
 L["DataTexts Width"] = "諮詢條寬度"

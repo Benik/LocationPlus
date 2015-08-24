@@ -20,6 +20,7 @@ L[" by Benik (EU-Emerald Dream)"] = " от Benik (EU-Emerald Dream)"
 L["Choose font for the Location and Coords panels."] = "Выберите шрифт для панелей зоны и координат."
 L["Click : "] = "ЛКМ"
 L["Coordinates"] = "Координаты"
+L["Combat Hide"] = "Combat Hide" -- Requires localization
 L["CtrlClick : "] = "Ctrl+ЛКМ"
 L["Datatext Panels"] = "Панели инфо-текстов"
 L["DataTexts Width"] = "Ширина инфо-текстов"

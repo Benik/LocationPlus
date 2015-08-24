@@ -19,6 +19,7 @@ L[" by Benik (EU-Emerald Dream)"] = " by Benik (EU-Emerald Dream)"
 L["Choose font for the Location and Coords panels."] = "区域框字体选择."
 L["Click : "] = "点击 : "
 L["Coordinates"] = "颜色匹配"
+L["Combat Hide"] = "Combat Hide" -- Requires localization
 L["CtrlClick : "] = "Ctrl+点击 : "
 L["Datatext Panels"] = "咨询文字框架"
 L["DataTexts Width"] = "咨询条宽度"
