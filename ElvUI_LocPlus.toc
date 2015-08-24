@@ -1,8 +1,8 @@
-﻿## Interface: 50400
+﻿## Interface: 60200
 ## Author: Benik
-## Version: 1.86
+## Version: 2.09
 ## Title: |cff1784d1ElvUI|r Location Plus
-## Notes: a plugin for ElvUI, that adds location, coords, 2 Datatexts and a tooltip full of info.
+## Notes: a plugin for ElvUI 8+, that adds location, coords, 2 Datatexts and a tooltip full of info.
 ## RequiredDeps: ElvUI
 ## OptionalDeps: LibTourist-3.0
 ## DefaultState: Enabled

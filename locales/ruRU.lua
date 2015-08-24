@@ -7,6 +7,7 @@ if not L then return; end
 L["Adds 2 digits in the coords"] = "Добавляет сотые доли координат"
 L["Adds 6 pixels at the Main Location Panel height."] = "Увеличить высоту панели зоны на 6 пикселей."
 L["Adjust All Panels Height."] = "Устанавливает высоту всех панелей."
+L["Adjust coords updates (in seconds) to avoid cpu load. Bigger number = less cpu load. Requires reloadUI."] = "Adjust coords updates (in seconds) to avoid cpu load. Bigger number = less cpu load. Requires reloadUI." -- Requires localization
 L["Adjust the DataTexts Width."] = "Устанавливает ширину инфо-текстов."
 L["Adjust the Location Panel Width."] = "Устанавливает ширину панели локации."
 L["All Panels Height"] = "Высота всех панелей"
@@ -70,6 +71,9 @@ L["Toggle Datatexts"] = "Показать/скрыть инфо-тексты"
 L["Toggle WorldMap"] = "Вызов карты"
 L["Truncates the text rather than auto enlarge the location panel when the text is bigger than the panel."] = "Truncates the text rather than auto enlarge the location panel when the text is bigger than the panel." -- Requires localization
 L["Truncate text"] = "Truncate text" -- Requires localization
+L["Update Timer"] = "Update Timer" -- Requires localization
 L["Use Custom Location Color"] = "Мспользовать свой"
 L["with Entrance Coords"] = "with Entrance Coords" -- Requires localization
 L["Zone and Subzone"] = "Зона и суб-зона"
+L["Hide Coords"] = true
+L["Show/Hide the coord frames"] = true

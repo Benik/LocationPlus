@@ -5,6 +5,7 @@ if not L then return; end
 L["Adds 2 digits in the coords"] = "Ajoute 2 chiffres dans les coordonnées"
 L["Adds 6 pixels at the Main Location Panel height."] = "Ajoute 6 pixels à la hauteur du panneau de localisation principal."
 L["Adjust All Panels Height."] = "Ajuste la hauteur des panneaux."
+L["Adjust coords updates (in seconds) to avoid cpu load. Bigger number = less cpu load. Requires reloadUI."] = "Adjust coords updates (in seconds) to avoid cpu load. Bigger number = less cpu load. Requires reloadUI." -- Requires localization
 L["Adjust the DataTexts Width."] = "Ajuste la largeur des Textes d'informations."
 L["Adjust the Location Panel Width."] = "Ajuste la largeur du cadre."
 L["All Panels Height"] = "Hauteur de tous les panneaux"
@@ -68,6 +69,9 @@ L["Toggle Datatexts"] = "Afficher les Textes d'informations"
 L["Toggle WorldMap"] = "Basculer sur la Carte du Monde"
 L["Truncates the text rather than auto enlarge the location panel when the text is bigger than the panel."] = "Truncates the text rather than auto enlarge the location panel when the text is bigger than the panel." -- Requires localization
 L["Truncate text"] = "Truncate text" -- Requires localization
+L["Update Timer"] = "Update Timer" -- Requires localization
 L["Use Custom Location Color"] = "Utilise la couleur des emplacement personnalisé"
 L["with Entrance Coords"] = "with Entrance Coords" -- Requires localization
 L["Zone and Subzone"] = "Zone et sous-zone"
+L["Hide Coords"] = true
+L["Show/Hide the coord frames"] = true

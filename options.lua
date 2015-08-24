@@ -6,9 +6,11 @@ P['locplus'] = {
 -- Options
 	['both'] = true,
 	['combat'] = false,
+	['timer'] = 0.5,
 	['dig'] = true,
 	['displayOther'] = "RLEVEL",
 	['showicon'] = true,
+	['hidecoords'] = false,
 -- Tooltip
 	['tt'] = true,
 	['ttcombathide'] = true,
@@ -91,6 +93,15 @@ function LPB:AddOptions()
 						get = function(info) return E.db.locplus[ info[#info] ] end,
 						set = function(info, value) E.db.locplus[ info[#info] ] = value; end,					
 					},
+					timer = {
+						order = 2,
+						name = L["Update Timer"],
+						desc = L["Adjust coords updates (in seconds) to avoid cpu load. Bigger number = less cpu load. Requires reloadUI."],
+						type = "range",
+						min = 0.05, max = 1, step = 0.05,
+						get = function(info) return E.db.locplus[ info[#info] ] end,
+						set = function(info, value) E.db.locplus[ info[#info] ] = value; LPB:TimerUpdate(); E:StaticPopup_Show("PRIVATE_RL"); end,					
+					},
 				},
 			},
 			general = {
@@ -108,8 +119,17 @@ function LPB:AddOptions()
 						get = function(info) return E.db.locplus[ info[#info] ] end,
 						set = function(info, value) E.db.locplus[ info[#info] ] = value; end,					
 					},
-					dig = {
+					hidecoords = {
 						order = 2,
+						name = L["Hide Coords"]..newsign,
+						desc = L["Show/Hide the coord frames"],
+						type = 'toggle',
+						width = "full",	
+						get = function(info) return E.db.locplus[ info[#info] ] end,
+						set = function(info, value) E.db.locplus[ info[#info] ] = value; LPB:HideCoords() end,					
+					},
+					dig = {
+						order = 3,
 						name = L["Detailed Coords"],
 						desc = L["Adds 2 digits in the coords"],
 						type = 'toggle',
@@ -118,7 +138,7 @@ function LPB:AddOptions()
 						set = function(info, value) E.db.locplus[ info[#info] ] = value; LPB:CoordsDigit() end,					
 					},
 					displayOther = {
-						order = 3,
+						order = 4,
 						name = OTHER,
 						type = 'select',
 						desc = L["Show additional info in the Location Panel."],
@@ -272,7 +292,7 @@ function LPB:AddOptions()
 							},	
 							curr = {
 								order = 11,
-								name = CURRENCY..newsign,
+								name = CURRENCY,
 								desc = L["Enable/Disable the currencies, on Tooltip."],
 								type = 'toggle',
 								width = "full",
@@ -280,14 +300,14 @@ function LPB:AddOptions()
 							},
 							prof = {
 								order = 12,
-								name = TRADE_SKILLS..newsign,
+								name = TRADE_SKILLS,
 								desc = L["Enable/Disable the professions, on Tooltip."],
 								type = 'toggle',
 								disabled = function() return not E.db.locplus.tt end,			
 							},
 							profcap = {
 								order = 13,
-								name = L["Hide capped"]..newsign,
+								name = L["Hide capped"],
 								desc = L["Hides a profession when the player reaches its highest level."],
 								type = 'toggle',
 								disabled = function() return not E.db.locplus.tt or not E.db.locplus.prof end,			
@@ -429,7 +449,6 @@ function LPB:AddOptions()
 									LPB:CoordsColor()
 								end,
 							},
-
 						},
 					},
 					coords = {
@@ -530,7 +549,6 @@ function LPB:AddOptions()
 								values = {
 									['NONE'] = L['None'],
 									['OUTLINE'] = 'OUTLINE',
-									--['MONOCHROME'] = (not E.isMacClient) and 'MONOCHROME' or nil,
 									['MONOCHROMEOUTLINE'] = 'MONOCROMEOUTLINE',
 									['THICKOUTLINE'] = 'THICKOUTLINE',
 								},

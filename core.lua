@@ -29,29 +29,41 @@ local right_dtp = CreateFrame('Frame', 'RightCoordDtPanel', E.UIParent)
 local COORDS_WIDTH = 30 -- Coord panels width
 local classColor = RAID_CLASS_COLORS[E.myclass] -- for text coloring
 
+local format = string.format
+
 -----------------
 -- Currency Table
 -----------------
--- Add below the currency you wish to track { id, total cap }. 
--- Find the currency ids and the total caps here: http://www.wowhead.com/currencies .
+-- Add below the currency id you wish to track. 
+-- Find the currency ids: http://www.wowhead.com/currencies .
 -- Click on the wanted currency and in the address you will see the id.
 -- e.g. for Bloody Coin, you will see http://www.wowhead.com/currency=789 . 789 is the id.
--- So, on this case, add { 789, 0 }, (don't forget the comma).
--- If there is no cap, type 0.
+-- So, on this case, add 789, (don't forget the comma).
 -- If there are 0 earned points, the currency will be filtered out.
 
-local Tokens = {}
 local currency = {
-	{ 395, 4000 },	-- Justice Points
-	{ 396, 3000 },	-- Valor Points
-	{ 777, 0},		-- Timeless Coins
-	{ 697, 20 },	-- Elder Charm of Good Fortune
-	{ 738, 0 },		-- Lesser Charm of Good Fortune
-	{ 390, 10200 },	-- Conquest Points
-	{ 392, 4000 },	-- Honor Points
-	--{ 515, 0 },	-- Darkmoon Prize Ticket
-	--{ 402, 0 },	-- Ironpaw Token
-	{ 776, 10 },	-- Warforged Seal
+	--395,	-- Justice Points
+	--396,	-- Valor Points
+	--777,	-- Timeless Coins
+	--697,	-- Elder Charm of Good Fortune
+	--738,	-- Lesser Charm of Good Fortune
+	390,	-- Conquest Points
+	392,	-- Honor Points
+	--515,	-- Darkmoon Prize Ticket
+	--402,	-- Ironpaw Token
+	--776,	-- Warforged Seal
+	
+	-- WoD
+	824,	-- Garrison Resources
+	823,	-- Apexis Crystal (for gear, like the valors)
+	994,	-- Seal of Tempered Fate (Raid loot roll)
+	980,	-- Dingy Iron Coins (rogue only, from pickpocketing)
+	944,	-- Artifact Fragment (PvP)
+	1101,	-- Oil
+	1129,	-- Seal of Inevitable Fate
+	821,	-- Draenor Clans Archaeology Fragment
+	828,	-- Ogre Archaeology Fragment
+	829,	-- Arakkoa Archaeology Fragment
 }
 ------------------------
 -- end of Currency Table
@@ -72,6 +84,8 @@ do
 	P.datatexts.panels.RightCoordDtPanel = 'Time'
 	P.datatexts.panels.LeftCoordDtPanel = 'Durability'
 end
+
+local SPACING = 1
 
 -- Status
 local function GetStatus(color)
@@ -105,7 +119,7 @@ local function GetStatus(color)
 			status = CONTESTED_TERRITORY
 		end
 
-	statusText = string.format("|cff%02x%02x%02x%s|r", r*255, g*255, b*255, status)
+	statusText = format("|cff%02x%02x%02x%s|r", r*255, g*255, b*255, status)
 	if color then
 		return r, g, b
 	else
@@ -127,7 +141,7 @@ local function GetDungeonCoords(zone)
 	elseif E.db.locplus.ttcoords then
 		x = tonumber(E:Round(x, 0))
 		y = tonumber(E:Round(y, 0))		
-		dcoords = string.format(" (%d, %d)", x, y)
+		dcoords = format(" |cffffffff(%d, %d)|r", x, y)
 	else 
 		dcoords = ""
 	end
@@ -167,47 +181,49 @@ local function GetRecomZones(zone)
 	local low, high = tourist:GetLevel(zone)
 	local r, g, b = tourist:GetLevelColor(zone)
 	local zContinent = tourist:GetContinent(zone)
-	
+
 	if PvPorRaidFilter(zone) == nil then return end
 	
 	GameTooltip:AddDoubleLine(
 	"|cffffffff"..zone
 	..PvPorRaidFilter(zone) or "",
-	string.format("|cff%02xff00%s|r", continent == zContinent and 0 or 255, zContinent)
+	format("|cff%02xff00%s|r", continent == zContinent and 0 or 255, zContinent)
 	..(" |cff%02x%02x%02x%s|r"):format(r *255, g *255, b *255,(low == high and low or ("%d-%d"):format(low, high))));
 
 end
 
 -- Dungeons in the zone
-local function GetZoneDungeons(zone)
+local function GetZoneDungeons(dungeon)
 
-	local low, high = tourist:GetLevel(zone)
-	local r, g, b = tourist:GetLevelColor(zone)
-	local groupSize = tourist:GetInstanceGroupSize(zone)
-	local altGroupSize = tourist:GetInstanceAltGroupSize(zone)
-	local groupSizeStyle = (groupSize > 0 and string.format("|cFFFFFF00|r (%d", groupSize) or "")
-	local altGroupSizeStyle = (altGroupSize > 0 and string.format("|cFFFFFF00|r/%d", altGroupSize) or "")
+	local low, high = tourist:GetLevel(dungeon)
+	local r, g, b = tourist:GetLevelColor(dungeon)
+	local groupSize = tourist:GetInstanceGroupSize(dungeon)
+	local altGroupSize = tourist:GetInstanceAltGroupSize(dungeon)
+	local groupSizeStyle = (groupSize > 0 and format("|cFFFFFF00|r (%d", groupSize) or "")
+	local altGroupSizeStyle = (altGroupSize > 0 and format("|cFFFFFF00|r/%d", altGroupSize) or "")
+	local name = dungeon
 
-	if PvPorRaidFilter(zone) == nil then return end
+	if PvPorRaidFilter(dungeon) == nil then return end
 	
 	GameTooltip:AddDoubleLine(
-	"|cffffffff"..zone
+	"|cffffffff"..name
 	..(groupSizeStyle or "")
 	..(altGroupSizeStyle or "").."-"..PLAYER..") "
-	..GetDungeonCoords(zone)
-	..PvPorRaidFilter(zone) or "",
+	..GetDungeonCoords(dungeon)
+	..PvPorRaidFilter(dungeon) or "",
 	("|cff%02x%02x%02x%s|r"):format(r *255, g *255, b *255,(low == high and low or ("%d-%d"):format(low, high))))
 
 end
 
 -- Recommended Dungeons
-local function GetRecomDungeons(zone)
+local function GetRecomDungeons(dungeon)
 		
-	local low, high = tourist:GetLevel(zone);	
-	local r, g, b = tourist:GetLevelColor(zone);
-	local instZone = tourist:GetInstanceZone(zone);
+	local low, high = tourist:GetLevel(dungeon);	
+	local r, g, b = tourist:GetLevelColor(dungeon);
+	local instZone = tourist:GetInstanceZone(dungeon);
+	local name = dungeon
 	
-	if PvPorRaidFilter(zone) == nil then return end
+	if PvPorRaidFilter(dungeon) == nil then return end
 	
 	if instZone == nil then
 		instZone = ""
@@ -216,10 +232,10 @@ local function GetRecomDungeons(zone)
 	end
 	
 	GameTooltip:AddDoubleLine(
-	"|cffffffff"..zone
+	"|cffffffff"..name
 	..instZone
-	..GetDungeonCoords(zone)
-	..PvPorRaidFilter(zone) or "",
+	..GetDungeonCoords(dungeon)
+	..PvPorRaidFilter(dungeon) or "",
 	("|cff%02x%02x%02x%s|r"):format(r *255, g *255, b *255,(low == high and low or ("%d-%d"):format(low, high))))
 
 end
@@ -231,15 +247,18 @@ local LEVEL_ICON = "|TInterface\\AddOns\\ElvUI_LocPlus\\media\\levelup.tga:14:14
 
 -- Get Fishing Level
 local function GetFishingLvl(minFish, ontt)
-	local zoneText = GetRealZoneText()
-	local minFish = tourist:GetFishingLevel(zoneText)
+	local mapID = GetCurrentMapAreaID()
+	local zoneText = tourist:GetMapNameByIDAlt(mapID) or UNKNOWN;
+	local uniqueZone = tourist:GetUniqueZoneNameForLookup(zoneText, continentID)
+	local minFish = tourist:GetFishingLevel(uniqueZone)
 	local _, _, _, fishing = GetProfessions()
 	local r, g, b = 1, 0, 0
 	local r1, g1, b1 = 1, 0, 0
-	local rank
+	local dfish
+	
 	if minFish then
 		if fishing ~= nil then
-			_, _, rank, _, _, _, _, rankModifier = GetProfessionInfo(fishing)
+			local _, _, rank = GetProfessionInfo(fishing)
 			if minFish < rank then
 				r, g, b = 0, 1, 0
 				r1, g1, b1 = 0, 1, 0
@@ -249,20 +268,14 @@ local function GetFishingLvl(minFish, ontt)
 			end
 		end
 		
+		dfish = format("|cff%02x%02x%02x%d|r", r*255, g*255, b*255, minFish)
 		if ontt then
-			return (string.format("|cff%02x%02x%02x%d|r", r*255, g*255, b*255, minFish))
+			return dfish
 		else
-			local dfish
-			if (rankModifier and rankModifier > 0) then
-				dfish = string.format("|cff%02x%02x%02x%d|r", r1*255, g1*255, b1*255, rank)..(string.format("|cFF6b8df4+%s|r", rankModifier)).."/"..(string.format("|cff%02x%02x%02x%d|r", r*255, g*255, b*255, minFish)) or ""
-			else
-				dfish = string.format("|cff%02x%02x%02x%d|r", r1*255, g1*255, b1*255, rank).."-"..(string.format("|cff%02x%02x%02x%d|r", r*255, g*255, b*255, minFish)) or ""
-			end
-
 			if E.db.locplus.showicon then
-				return " ("..dfish..") "..FISH_ICON
+				return format(" (%s) ", dfish)..FISH_ICON
 			else
-				return " ("..dfish..")"
+				return format(" (%s) ", dfish)
 			end
 		end
 	else
@@ -273,23 +286,24 @@ end
 -- PetBattle Range
 local function GetBattlePetLvl(zoneText, ontt)
 	local mapID = GetCurrentMapAreaID()
-	local zoneText = GetMapNameByID(mapID) or UNKNOWN;
-
-	local low,high = tourist:GetBattlePetLevel(zoneText)
+	local zoneText = tourist:GetMapNameByIDAlt(mapID) or UNKNOWN;
+	local uniqueZone = tourist:GetUniqueZoneNameForLookup(zoneText, continentID)
+	local low,high = tourist:GetBattlePetLevel(uniqueZone)
 	local plevel
 	if low ~= nil or high ~= nil then
 		if low ~= high then
-			plevel = string.format("%d-%d", low, high)
+			plevel = format("%d-%d", low, high)
 		else
-			plevel = string.format("%d", high)
+			plevel = format("%d", high)
 		end
+		
 		if ontt then
 			return plevel
 		else
 			if E.db.locplus.showicon then
-				plevel = " ("..plevel..") "..PET_ICON
+				plevel = format(" (%s) ", plevel)..PET_ICON
 			else
-				plevel = " ("..plevel..")"
+				plevel = format(" (%s) ", plevel)
 			end
 		end
 	end
@@ -299,24 +313,25 @@ end
 
 -- Zone level range
 local function GetLevelRange(zoneText, ontt)
-	local zoneText = GetRealZoneText()
+	local mapID = GetCurrentMapAreaID()
+	local zoneText = tourist:GetMapNameByIDAlt(mapID) or UNKNOWN;	
 	local low, high = tourist:GetLevel(zoneText)
 	local dlevel
 	if low > 0 and high > 0 then
 		local r, g, b = tourist:GetLevelColor(zoneText)
 		if low ~= high then
-			dlevel = string.format("|cff%02x%02x%02x%d-%d|r", r*255, g*255, b*255, low, high) or ""
+			dlevel = format("|cff%02x%02x%02x%d-%d|r", r*255, g*255, b*255, low, high) or ""
 		else
-			dlevel = string.format("|cff%02x%02x%02x%d|r", r*255, g*255, b*255, high) or ""
+			dlevel = format("|cff%02x%02x%02x%d|r", r*255, g*255, b*255, high) or ""
 		end
 		
 		if ontt then
 			return dlevel
 		else
 			if E.db.locplus.showicon then
-				dlevel = " ("..dlevel..") "..LEVEL_ICON
+				dlevel = format(" (%s) ", dlevel)..LEVEL_ICON
 			else
-				dlevel = " ("..dlevel..")"
+				dlevel = format(" (%s) ", dlevel)
 			end
 		end
 	end
@@ -324,10 +339,10 @@ local function GetLevelRange(zoneText, ontt)
 	return dlevel or ""
 end
 
-function LPB:UpdateTooltip()
+local function UpdateTooltip()
 	
 	local mapID = GetCurrentMapAreaID()
-	local zoneText = GetMapNameByID(mapID) or UNKNOWN;
+	local zoneText = tourist:GetMapNameByIDAlt(mapID) or UNKNOWN;
 	local curPos = (zoneText.." ") or "";
 	
 	GameTooltip:ClearLines()
@@ -343,7 +358,7 @@ function LPB:UpdateTooltip()
 	
 	-- Status
 	if E.db.locplus.ttst then
-		GameTooltip:AddDoubleLine(STATUS.." :", GetStatus(), 1, 1, 1)
+		GameTooltip:AddDoubleLine(STATUS.." :", GetStatus(false), 1, 1, 1)
 	end
 	
     -- Zone level range
@@ -383,10 +398,10 @@ function LPB:UpdateTooltip()
 	-- Instances in the zone
 	if E.db.locplus.ttinst and tourist:DoesZoneHaveInstances(zoneText) then 
 		GameTooltip:AddLine(" ")
-		GameTooltip:AddLine(format(curPos..DUNGEONS.." :"), selectioncolor)
+		GameTooltip:AddLine(curPos..DUNGEONS.." :", selectioncolor)
 			
-		for zone in tourist:IterateZoneInstances(zoneText) do
-			GetZoneDungeons(zone);
+		for dungeon in tourist:IterateZoneInstances(zoneText) do
+			GetZoneDungeons(dungeon);
 		end	
 	end
 	
@@ -396,8 +411,8 @@ function LPB:UpdateTooltip()
 		GameTooltip:AddLine(" ")
 		GameTooltip:AddLine(L["Recommended Dungeons :"], selectioncolor)
 			
-		for zone in tourist:IterateRecommendedInstances() do
-			GetRecomDungeons(zone);
+		for dungeon in tourist:IterateRecommendedInstances() do
+			GetRecomDungeons(dungeon);
 		end
 	end
 	
@@ -405,24 +420,23 @@ function LPB:UpdateTooltip()
 	local numEntries = GetCurrencyListSize() -- Check for entries to disable the tooltip title when no currency
 	if E.db.locplus.curr and numEntries > 3 then
 		GameTooltip:AddLine(" ")
-		GameTooltip:AddLine(CURRENCY.." :", selectioncolor)
+		GameTooltip:AddLine(TOKENS.." :", selectioncolor)
 
-		for i, v in ipairs(currency) do
-			local id, max = unpack(v)
-			local name, amount, icon = GetCurrencyInfo(id)
+		for i, id in ipairs(currency) do
+			local name, amount, icon, _, _, totalMax, isDiscovered = GetCurrencyInfo(id)
 			icon = ("|T%s:12:12:1:0|t"):format(icon)
-			if(name and amount > 0) then
-				if max == 0 then
+			if(name and amount > 0) then	
+				if totalMax == 0 then
 					GameTooltip:AddDoubleLine(icon..format(" %s : ", name), format("%s", amount ), 1, 1, 1, selectioncolor)
 				else
-					GameTooltip:AddDoubleLine(icon..format(" %s : ", name), format("%s / %s", amount, max ), 1, 1, 1, selectioncolor)
+					GameTooltip:AddDoubleLine(icon..format(" %s : ", name), format("%s / %s", amount, totalMax ), 1, 1, 1, selectioncolor)
 				end
 			end
 		end
 	end
 
 	-- Professions
-	local capRank = 600
+	local capRank = 700
 	local prof1, prof2, archy, fishing, cooking, firstAid = GetProfessions()
 	if E.db.locplus.prof and (prof1 or prof2 or archy or fishing or cooking or firstAid) then	
 		GameTooltip:AddLine(" ")
@@ -467,7 +481,7 @@ local function LocPanel_OnEnter(self,...)
 	if InCombatLockdown() and E.db.locplus.ttcombathide then
 		GameTooltip:Hide()
 	else
-		LPB:UpdateTooltip()
+		UpdateTooltip()
 	end
 	
 	if E.db.locplus.mouseover then
@@ -489,7 +503,7 @@ local function LocPanelOnFade()
 end
 
 -- Coords Creation
-function LPB:CreateCoords()
+local function CreateCoords()
 	local x, y = GetPlayerMapPosition("player")
 	local dig
 	
@@ -507,17 +521,17 @@ end
 
 -- clicking the location panel
 local function LocPanel_OnClick(self, btn)
-	zoneText = GetRealZoneText() or UNKNOWN;
+	local zoneText = GetRealZoneText() or UNKNOWN;
 	if btn == "LeftButton" then	
 		if IsShiftKeyDown() then
 			local edit_box = ChatEdit_ChooseBoxForSend()
-			local x, y = LPB:CreateCoords()
+			local x, y = CreateCoords()
 			local message
 			local coords = x..", "..y
 				if zoneText ~= GetSubZoneText() then
-					message = string.format("%s: %s (%s)", zoneText, GetSubZoneText(), coords)
+					message = format("%s: %s (%s)", zoneText, GetSubZoneText(), coords)
 				else
-					message = string.format("%s (%s)", zoneText, coords)
+					message = format("%s (%s)", zoneText, coords)
 				end
 			ChatEdit_ActivateChat(edit_box)
 			edit_box:Insert(message) 
@@ -544,12 +558,13 @@ local function unpackColor(color)
 end
 
 -- Location panel
-function LPB:CreateLocPanel()
+local function CreateLocPanel()
 	local loc_panel = CreateFrame('Frame', 'LocationPlusPanel', E.UIParent)
 	loc_panel:Width(E.db.locplus.lpwidth)
-	loc_panel:SetHeight(E.db.locplus.dtheight)
+	loc_panel:Height(E.db.locplus.dtheight)
 	loc_panel:Point('TOP', E.UIParent, 'TOP', 0, -E.mult -22)
 	loc_panel:SetFrameStrata('LOW')
+	loc_panel:SetFrameLevel(2)
 	loc_panel:EnableMouse(true)
 	loc_panel:SetScript('OnEnter', LocPanel_OnEnter) 
 	loc_panel:SetScript('OnLeave', LocPanel_OnLeave)
@@ -611,23 +626,23 @@ end
 
 -- datatext panels width
 function LPB:DTWidth()
-	LeftCoordDtPanel:SetWidth(E.db.locplus.dtwidth)
-	RightCoordDtPanel:SetWidth(E.db.locplus.dtwidth)
+	LeftCoordDtPanel:Width(E.db.locplus.dtwidth)
+	RightCoordDtPanel:Width(E.db.locplus.dtwidth)
 end
 
 -- all panels height
 function LPB:DTHeight()
 	if E.db.locplus.ht then
-		LocationPlusPanel:SetHeight((E.db.locplus.dtheight)+6)
+		LocationPlusPanel:Height((E.db.locplus.dtheight)+6)
 	else
-		LocationPlusPanel:SetHeight(E.db.locplus.dtheight)
+		LocationPlusPanel:Height(E.db.locplus.dtheight)
 	end
 
-	LeftCoordDtPanel:SetHeight(E.db.locplus.dtheight)
-	RightCoordDtPanel:SetHeight(E.db.locplus.dtheight)
+	LeftCoordDtPanel:Height(E.db.locplus.dtheight)
+	RightCoordDtPanel:Height(E.db.locplus.dtheight)
 
-	XCoordsPanel:SetHeight(E.db.locplus.dtheight)
-	YCoordsPanel:SetHeight(E.db.locplus.dtheight)
+	XCoordsPanel:Height(E.db.locplus.dtheight)
+	YCoordsPanel:Height(E.db.locplus.dtheight)
 end
 
 -- Fonts
@@ -662,20 +677,35 @@ function LPB:ShadowPanels()
 			frame.shadow:Hide()
 		end
 	end
-	
-	local SPACING
-	
+
 	if E.db.locplus.shadow then
 		SPACING = 2
 	else
 		SPACING = 1
 	end
-	
+
+	self:HideCoords()
+end
+
+-- Show/Hide coord frames
+function LPB:HideCoords()
 	XCoordsPanel:Point('RIGHT', LocationPlusPanel, 'LEFT', -SPACING, 0)
 	YCoordsPanel:Point('LEFT', LocationPlusPanel, 'RIGHT', SPACING, 0)
-
-	LeftCoordDtPanel:Point('RIGHT', XCoordsPanel, 'LEFT', -SPACING, 0)
-	RightCoordDtPanel:Point('LEFT', YCoordsPanel, 'RIGHT', SPACING, 0)
+	
+	LeftCoordDtPanel:ClearAllPoints()
+	RightCoordDtPanel:ClearAllPoints()
+	
+	if E.db.locplus.hidecoords then
+		XCoordsPanel:Hide()
+		YCoordsPanel:Hide()
+		LeftCoordDtPanel:Point('RIGHT', LocationPlusPanel, 'LEFT', -SPACING, 0)
+		RightCoordDtPanel:Point('LEFT', LocationPlusPanel, 'RIGHT', SPACING, 0)		
+	else
+		XCoordsPanel:Show()
+		YCoordsPanel:Show()
+		LeftCoordDtPanel:Point('RIGHT', XCoordsPanel, 'LEFT', -SPACING, 0)
+		RightCoordDtPanel:Point('LEFT', YCoordsPanel, 'RIGHT', SPACING, 0)			
+	end
 end
 
 -- Toggle transparency
@@ -695,12 +725,12 @@ function LPB:TransparentPanels()
 end
 
 -- Coord panels
-function LPB:CreateCoordPanels()
+local function CreateCoordPanels()
 
 	-- X Coord panel
 	local coordsX = CreateFrame('Frame', "XCoordsPanel", LocationPlusPanel)
 	coordsX:Width(COORDS_WIDTH)
-	coordsX:SetHeight(E.db.locplus.dtheight)
+	coordsX:Height(E.db.locplus.dtheight)
 	coordsX:SetFrameStrata('LOW')
 	coordsX.Text = XCoordsPanel:CreateFontString(nil, "LOW")
 	coordsX.Text:Point("CENTER", 1, 0)
@@ -708,12 +738,12 @@ function LPB:CreateCoordPanels()
 	-- Y Coord panel
 	local coordsY = CreateFrame('Frame', "YCoordsPanel", LocationPlusPanel)
 	coordsY:Width(COORDS_WIDTH)
-	coordsY:SetHeight(E.db.locplus.dtheight)
+	coordsY:Height(E.db.locplus.dtheight)
 	coordsY:SetFrameStrata('LOW')
 	coordsY.Text = YCoordsPanel:CreateFontString(nil, "LOW")
 	coordsY.Text:Point("CENTER", 1, 0)
 
-	self:CoordsColor()
+	LPB:CoordsColor()
 end
 
 function LPB:UpdateLocation()
@@ -770,22 +800,22 @@ function LPB:UpdateLocation()
 	local autowidth = (LocationPlusPanel.Text:GetStringWidth() + 18)
 	
 	if E.db.locplus.lpauto then
-		LocationPlusPanel:SetWidth(autowidth)
-		LocationPlusPanel.Text:SetWidth(autowidth)
+		LocationPlusPanel:Width(autowidth)
+		LocationPlusPanel.Text:Width(autowidth)
 	else
-		LocationPlusPanel:SetWidth(fixedwidth)
+		LocationPlusPanel:Width(fixedwidth)
 		if E.db.locplus.trunc then
-			LocationPlusPanel.Text:SetWidth(fixedwidth - 18)
+			LocationPlusPanel.Text:Width(fixedwidth - 18)
 			LocationPlusPanel.Text:SetWordWrap(false)
 		elseif autowidth > fixedwidth then
-			LocationPlusPanel:SetWidth(autowidth)
-			LocationPlusPanel.Text:SetWidth(autowidth)
+			LocationPlusPanel:Width(autowidth)
+			LocationPlusPanel.Text:Width(autowidth)
 		end
 	end		
 end
 
 function LPB:UpdateCoords()
-	local x, y = LPB:CreateCoords()
+	local x, y = CreateCoords()
 	local xt,yt
 
 	if x == 0 and y == 0 then
@@ -808,19 +838,14 @@ function LPB:UpdateCoords()
 	end
 end
 
-function LPB:UpdateTextCoords()
-	self:UpdateLocation()
-	self:UpdateCoords()
-end
-
 -- Coord panels width
 function LPB:CoordsDigit()
 	if E.db.locplus.dig then
-		XCoordsPanel:SetWidth(COORDS_WIDTH*1.5)
-		YCoordsPanel:SetWidth(COORDS_WIDTH*1.5)
+		XCoordsPanel:Width(COORDS_WIDTH*1.5)
+		YCoordsPanel:Width(COORDS_WIDTH*1.5)
 	else
-		XCoordsPanel:SetWidth(COORDS_WIDTH)
-		YCoordsPanel:SetWidth(COORDS_WIDTH)
+		XCoordsPanel:Width(COORDS_WIDTH)
+		YCoordsPanel:Width(COORDS_WIDTH)
 	end
 end
 
@@ -838,17 +863,17 @@ function LPB:CoordsColor()
 end
 
 -- Datatext panels
-function LPB:CreateDTPanels()
+local function CreateDTPanels()
 
 	-- Left coords Datatext panel
-	left_dtp:SetWidth(E.db.locplus.dtwidth)
-	left_dtp:SetHeight(E.db.locplus.dtheight)
+	left_dtp:Width(E.db.locplus.dtwidth)
+	left_dtp:Height(E.db.locplus.dtheight)
 	left_dtp:SetFrameStrata('LOW')
 	left_dtp:SetParent(LocationPlusPanel)
 
 	-- Right coords Datatext panel
-	right_dtp:SetWidth(E.db.locplus.dtwidth)
-	right_dtp:SetHeight(E.db.locplus.dtheight)
+	right_dtp:Width(E.db.locplus.dtwidth)
+	right_dtp:Height(E.db.locplus.dtheight)
 	right_dtp:SetFrameStrata('LOW')
 	right_dtp:SetParent(LocationPlusPanel)
 end
@@ -861,6 +886,7 @@ function LPB:LocPlusUpdate()
 	HideDT()
 	self:CoordsDigit()
 	self:MouseOver()
+	self:HideCoords()
 end
 
 -- Defaults in case something is wrong on first load
@@ -878,6 +904,10 @@ function LPB:LocPlusDefaults()
 	end	
 end
 
+function LPB:TimerUpdate()
+	self:ScheduleRepeatingTimer('UpdateCoords', E.db.locplus.timer)
+end
+
 -- needed to fix LocPlus datatext font
 local f = CreateFrame("Frame")
 f:RegisterEvent("PLAYER_ENTERING_WORLD")
@@ -890,11 +920,12 @@ end)
 
 function LPB:Initialize()
 	self:LocPlusDefaults()
-	self:CreateLocPanel()
-	self:CreateDTPanels()
-	self:CreateCoordPanels()
+	CreateLocPanel()
+	CreateDTPanels()
+	CreateCoordPanels()
 	self:LocPlusUpdate()
-	self:ScheduleRepeatingTimer('UpdateTextCoords', 0.5)
+	self:TimerUpdate()
+	self:ScheduleRepeatingTimer('UpdateLocation', 0.5)
 	EP:RegisterPlugin(addon, LPB.AddOptions)
 	LocationPlusPanel:RegisterEvent("PLAYER_REGEN_DISABLED")
 	LocationPlusPanel:RegisterEvent("PLAYER_REGEN_ENABLED")

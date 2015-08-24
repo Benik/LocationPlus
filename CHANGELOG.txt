@@ -1,3 +1,44 @@
+[b]2.09[/b]
+*LibTourist update r181
+- Updated TOC to 60200
+- Added Hellfire Citadel raid. Because this is a duplicate name with the Hellfire Citadel complex in Hellfire Peninsula, Outland, the raid is added to the mechanism that handles duplicate names, and is identified by LibTourist as "Hellfire Citadel (Draenor)".
+
+[b]2.08[/b]
+*toc update for WoD patch 6.2
+
+[b]2.07[/b]
+*toc update for WoD patch 6.1 
+
+[b]2.06[/b]
+*Fixed main panel layering level when placed above minimap.
+*LibTourist update to 6r1
+
+[b]2.05[/b]
+*LibTourist update to 6.01b
+
+[b]2.04[/b]
+*Yet another LibTourist update. Changelog: http://www.wowace.com/addons/libtourist-3-0/files/161-r170/
+*Made the adjustments needed (through LibTourist) to seperate info from areas with duplicate zone names (Nagrand and Shadowmoon Valley). The tooltip will now show the correct fishing level in Draenor's Nagrand and Shadowmoon Valley.
+
+[b]2.03[/b]
+*LibTourist update. Changelog: http://www.wowace.com/addons/libtourist-3-0/files/159-r168/
+
+[b]2.02[/b]
+*LibTourist update. Continents work fine now. Author's note: Currently, the data for the Outland zones Nagrand and Shadowmoon Valley is overwritten by the data for the Draenor zones with the same names.
+
+[b]2.01[/b]
+*Added option to show/hide the coord frames. (Looks sleek btw, cheers codeblake)
+
+[b]2.00[/b]
+*Updated for WoD. Note: LibTourist needed for the tooltip info is not yet updated for the new areas, so recommended areas, dungeons, level area, etc are not passing any info.
+*Made some functions local
+
+[b]1.88[/b]
+*Minor improvements
+
+[b]1.87[/b]
+*Added a slider in the options so the user can adjust the coords update time, to prevent cpu load. Bigger number -> less cpu load -> slower coords update.
+
 [b]1.86[/b]
 *Fixed CPU load issues (thanks Einistein for noticing this)
 

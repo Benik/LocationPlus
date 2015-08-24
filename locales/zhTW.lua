@@ -5,6 +5,7 @@ if not L then return end
 L["Adds 2 digits in the coords"] = "坐標增加2位數字"
 L["Adds 6 pixels at the Main Location Panel height."] = "主要位置框架增加6個像素高度."
 L["Adjust All Panels Height."] = "調整全部框體高度."
+L["Adjust coords updates (in seconds) to avoid cpu load. Bigger number = less cpu load. Requires reloadUI."] = "Adjust coords updates (in seconds) to avoid cpu load. Bigger number = less cpu load. Requires reloadUI." -- Requires localization
 L["Adjust the DataTexts Width."] = "調整諮詢條寬度."
 L["Adjust the Location Panel Width."] = "調整主要框架的寬度"
 L["All Panels Height"] = "全部框體高度"
@@ -68,6 +69,9 @@ L["Toggle Datatexts"] = "開關資訊文字"
 L["Toggle WorldMap"] = "開關世界地圖"
 L["Truncates the text rather than auto enlarge the location panel when the text is bigger than the panel."] = "自動縮短文本顯示,以適應面板寬度."
 L["Truncate text"] = "縮短文本"
+L["Update Timer"] = "Update Timer" -- Requires localization
 L["Use Custom Location Color"] = "自定義區域顔色"
 L["with Entrance Coords"] = "with Entrance Coords" -- Requires localization
 L["Zone and Subzone"] = "顯示區域"
+L["Hide Coords"] = true
+L["Show/Hide the coord frames"] = true

@@ -6,6 +6,7 @@ if not L then return; end
 L["Adds 2 digits in the coords"] = "Adds 2 digits in the coords"
 L["Adds 6 pixels at the Main Location Panel height."] = "Adds 6 pixels at the Main Location Panel height."
 L["Adjust All Panels Height."] = "Adjust All Panels Height."
+L["Adjust coords updates (in seconds) to avoid cpu load. Bigger number = less cpu load. Requires reloadUI."] = "Adjust coords updates (in seconds) to avoid cpu load. Bigger number = less cpu load. Requires reloadUI."
 L["Adjust the DataTexts Width."] = "Adjust the DataTexts Width."
 L["Adjust the Location Panel Width."] = "Adjust the Location Panel Width."
 L["All Panels Height"] = "All Panels Height"
@@ -69,7 +70,9 @@ L["Toggle Datatexts"] = "Toggle Datatexts"
 L["Toggle WorldMap"] = "Toggle WorldMap"
 L["Truncates the text rather than auto enlarge the location panel when the text is bigger than the panel."] = "Truncates the text rather than auto enlarge the location panel when the text is bigger than the panel."
 L["Truncate text"] = "Truncate text"
+L["Update Timer"] = "Update Timer"
 L["Use Custom Location Color"] = "Use Custom Location Color"
 L["with Entrance Coords"] = "with Entrance Coords"
 L["Zone and Subzone"] = "Zone and Subzone"
-
+L["Hide Coords"] = true
+L["Show/Hide the coord frames"] = true
