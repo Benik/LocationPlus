@@ -64,6 +64,7 @@ local currency = {
 	821,	-- Draenor Clans Archaeology Fragment
 	828,	-- Ogre Archaeology Fragment
 	829,	-- Arakkoa Archaeology Fragment
+	1166, 	-- Timewarped Badge (6.22)
 }
 ------------------------
 -- end of Currency Table
