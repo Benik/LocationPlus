@@ -1,3 +1,8 @@
+[b]2.10[/b]
+*Added Login Message option (Credit Merathilis)
+*Update deDE locales (Credit Merathilis)
+*Added Timewarped Badge (6.22) token
+
 [b]2.09[/b]
 *LibTourist update r181
 - Updated TOC to 60200
