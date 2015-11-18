@@ -65,6 +65,7 @@ local currency = {
 	828,	-- Ogre Archaeology Fragment
 	829,	-- Arakkoa Archaeology Fragment
 	1166, 	-- Timewarped Badge (6.22)
+	1191,	-- Valor Points (6.23)
 }
 ------------------------
 -- end of Currency Table
