@@ -29,7 +29,7 @@ local right_dtp = CreateFrame('Frame', 'RightCoordDtPanel', E.UIParent)
 local COORDS_WIDTH = 30 -- Coord panels width
 local classColor = RAID_CLASS_COLORS[E.myclass] -- for text coloring
 
-local format = string.format
+local format, tonumber = string.format, tonumber
 
 -----------------
 -- Currency Table
