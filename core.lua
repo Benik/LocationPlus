@@ -31,6 +31,22 @@ local classColor = RAID_CLASS_COLORS[E.myclass] -- for text coloring
 
 local format, tonumber = string.format, tonumber
 
+local ChatEdit_ChooseBoxForSend = ChatEdit_ChooseBoxForSend
+local GetBindLocation = GetBindLocation
+local GetCurrencyInfo = GetCurrencyInfo
+local GetCurrencyListSize = GetCurrencyListSize
+local GetCurrentMapAreaID = GetCurrentMapAreaID
+local GetMinimapZoneText = GetMinimapZoneText
+local GetPlayerMapPosition = GetPlayerMapPosition
+local GetProfessionInfo = GetProfessionInfo
+local GetProfessions = GetProfessions
+local GetRealZoneText = GetRealZoneText
+local GetSubZoneText = GetSubZoneText
+local GetZonePVPInfo = GetZonePVPInfo
+local IsInInstance = IsInInstance
+local UIFrameFadeIn = UIFrameFadeIn
+local UIFrameFadeOut = UIFrameFadeOut
+
 -----------------
 -- Currency Table
 -----------------
