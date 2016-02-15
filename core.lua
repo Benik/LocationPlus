@@ -14,7 +14,7 @@ a plugin for ElvUI, that adds player location and coords + 2 Datatexts
 
 ]]--
 
-local E, L, V, P, G, _ = unpack(ElvUI);
+local E, L, V, P, G = unpack(ElvUI);
 local LPB = E:NewModule('LocationPlus', 'AceTimer-3.0');
 local DT = E:GetModule('DataTexts');
 local LSM = LibStub("LibSharedMedia-3.0");
@@ -23,15 +23,10 @@ local addon, ns = ...
 
 local tourist = LibStub("LibTourist-3.0");
 
-local left_dtp = CreateFrame('Frame', 'LeftCoordDtPanel', E.UIParent)
-local right_dtp = CreateFrame('Frame', 'RightCoordDtPanel', E.UIParent)
+local format, tonumber, pairs, print = string.format, tonumber, pairs, print
 
-local COORDS_WIDTH = 30 -- Coord panels width
-local classColor = RAID_CLASS_COLORS[E.myclass] -- for text coloring
-
-local format, tonumber = string.format, tonumber
-
-local ChatEdit_ChooseBoxForSend = ChatEdit_ChooseBoxForSend
+local CreateFrame = CreateFrame
+local ChatEdit_ChooseBoxForSend, ChatEdit_ActivateChat = ChatEdit_ChooseBoxForSend, ChatEdit_ActivateChat
 local GetBindLocation = GetBindLocation
 local GetCurrencyInfo = GetCurrencyInfo
 local GetCurrencyListSize = GetCurrencyListSize
@@ -43,9 +38,22 @@ local GetProfessions = GetProfessions
 local GetRealZoneText = GetRealZoneText
 local GetSubZoneText = GetSubZoneText
 local GetZonePVPInfo = GetZonePVPInfo
-local IsInInstance = IsInInstance
-local UIFrameFadeIn = UIFrameFadeIn
-local UIFrameFadeOut = UIFrameFadeOut
+local IsInInstance, InCombatLockdown = IsInInstance, InCombatLockdown
+local UnitLevel = UnitLevel
+local UIFrameFadeIn, UIFrameFadeOut, ToggleFrame = UIFrameFadeIn, UIFrameFadeOut, ToggleFrame
+local IsControlKeyDown, IsShiftKeyDown = IsControlKeyDown, IsShiftKeyDown
+local GameTooltip, WorldMapFrame = _G['GameTooltip'], _G['WorldMapFrame']
+
+local PLAYER, UNKNOWN, TRADE_SKILLS, TOKENS, DUNGEONS, PROFESSIONS_FISHING, LEVEL_RANGE, STATUS, HOME, CONTINENT = PLAYER, UNKNOWN, TRADE_SKILLS, TOKENS, DUNGEONS, PROFESSIONS_FISHING, LEVEL_RANGE, STATUS, HOME, CONTINENT
+local SANCTUARY_TERRITORY, ARENA, FRIENDLY, HOSTILE, CONTESTED_TERRITORY, COMBAT, AGGRO_WARNING_IN_INSTANCE, PVP, RAID = SANCTUARY_TERRITORY, ARENA, FRIENDLY, HOSTILE, CONTESTED_TERRITORY, COMBAT, AGGRO_WARNING_IN_INSTANCE, PVP, RAID
+
+-- GLOBALS: LocationPlusPanel, LeftCoordDtPanel, RightCoordDtPanel, XCoordsPanel, YCoordsPanel, selectioncolor, continent, continentID
+
+local left_dtp = CreateFrame('Frame', 'LeftCoordDtPanel', E.UIParent)
+local right_dtp = CreateFrame('Frame', 'RightCoordDtPanel', E.UIParent)
+
+local COORDS_WIDTH = 30 -- Coord panels width
+local classColor = RAID_CLASS_COLORS[E.myclass] -- for text coloring
 
 -----------------
 -- Currency Table
@@ -389,7 +397,7 @@ local function UpdateTooltip()
 	
 	-- Fishing
 	if E.db.locplus.fish then
-		local checkfish = GetFishingLvl(minFish, true)
+		local checkfish = GetFishingLvl(true, true)
 		if checkfish ~= "" then
 			GameTooltip:AddDoubleLine(PROFESSIONS_FISHING.." : ", checkfish, 1, 1, 1, r, g, b)
 		end
@@ -440,7 +448,7 @@ local function UpdateTooltip()
 		GameTooltip:AddLine(" ")
 		GameTooltip:AddLine(TOKENS.." :", selectioncolor)
 
-		for i, id in ipairs(currency) do
+		for i, id in pairs(currency) do
 			local name, amount, icon, _, _, totalMax, isDiscovered = GetCurrencyInfo(id)
 			icon = ("|T%s:12:12:1:0|t"):format(icon)
 			if(name and amount > 0) then	
@@ -633,6 +641,28 @@ local function HideDT()
 	end
 end
 
+-- Coord panels
+local function CreateCoordPanels()
+
+	-- X Coord panel
+	local coordsX = CreateFrame('Frame', "XCoordsPanel", LocationPlusPanel)
+	coordsX:Width(COORDS_WIDTH)
+	coordsX:Height(E.db.locplus.dtheight)
+	coordsX:SetFrameStrata('LOW')
+	coordsX.Text = XCoordsPanel:CreateFontString(nil, "LOW")
+	coordsX.Text:Point("CENTER", 1, 0)
+
+	-- Y Coord panel
+	local coordsY = CreateFrame('Frame', "YCoordsPanel", LocationPlusPanel)
+	coordsY:Width(COORDS_WIDTH)
+	coordsY:Height(E.db.locplus.dtheight)
+	coordsY:SetFrameStrata('LOW')
+	coordsY.Text = YCoordsPanel:CreateFontString(nil, "LOW")
+	coordsY.Text:Point("CENTER", 1, 0)
+
+	LPB:CoordsColor()
+end
+
 -- mouse over option
 function LPB:MouseOver()
 	if E.db.locplus.mouseover then
@@ -742,28 +772,6 @@ function LPB:TransparentPanels()
 	end
 end
 
--- Coord panels
-local function CreateCoordPanels()
-
-	-- X Coord panel
-	local coordsX = CreateFrame('Frame', "XCoordsPanel", LocationPlusPanel)
-	coordsX:Width(COORDS_WIDTH)
-	coordsX:Height(E.db.locplus.dtheight)
-	coordsX:SetFrameStrata('LOW')
-	coordsX.Text = XCoordsPanel:CreateFontString(nil, "LOW")
-	coordsX.Text:Point("CENTER", 1, 0)
-
-	-- Y Coord panel
-	local coordsY = CreateFrame('Frame', "YCoordsPanel", LocationPlusPanel)
-	coordsY:Width(COORDS_WIDTH)
-	coordsY:Height(E.db.locplus.dtheight)
-	coordsY:SetFrameStrata('LOW')
-	coordsY.Text = YCoordsPanel:CreateFontString(nil, "LOW")
-	coordsY.Text:Point("CENTER", 1, 0)
-
-	LPB:CoordsColor()
-end
-
 function LPB:UpdateLocation()
 	local subZoneText = GetMinimapZoneText() or ""
 	local zoneText = GetRealZoneText() or UNKNOWN;
@@ -792,7 +800,7 @@ function LPB:UpdateLocation()
 			displayLine = displayLine..displaypet
 		end
 	elseif E.db.locplus.displayOther == 'PFISH' then
-		local displayfish = GetFishingLvl(minFish) or ""
+		local displayfish = GetFishingLvl(true) or ""
 		if displayfish ~= "" then
 			displayLine = displayLine..displayfish
 		end

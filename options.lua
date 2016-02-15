@@ -1,5 +1,11 @@
-local E, L, V, P, G, _ = unpack(ElvUI);
+local E, L, V, P, G = unpack(ElvUI);
 local LPB = E:GetModule('LocationPlus')
+
+local format = string.format
+local SHOW, OTHER, LEVEL_RANGE, PROFESSIONS_FISHING, EMBLEM_SYMBOL, SHOW, STATUS, CURRENCY, TRADE_SKILLS, FILTERS = SHOW, OTHER, LEVEL_RANGE, PROFESSIONS_FISHING, EMBLEM_SYMBOL, SHOW, STATUS, CURRENCY, TRADE_SKILLS, FILTERS
+local COLOR, CLASS_COLORS, CUSTOM, COLOR_PICKER = COLOR, CLASS_COLORS, CUSTOM, COLOR_PICKER
+
+-- GLOBALS: AceGUIWidgetLSMlists
 
 -- Defaults
 P['locplus'] = {
@@ -102,7 +108,7 @@ function LPB:AddOptions()
 						type = "range",
 						min = 0.05, max = 1, step = 0.05,
 						get = function(info) return E.db.locplus[ info[#info] ] end,
-						set = function(info, value) E.db.locplus[ info[#info] ] = value; LPB:TimerUpdate(); E:StaticPopup_Show("PRIVATE_RL"); end,					
+						set = function(info, value) E.db.locplus[ info[#info] ] = value; E:StaticPopup_Show("PRIVATE_RL"); end,					
 					},
 					LoginMsg = {
 							order = 3,
