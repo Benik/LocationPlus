@@ -1,3 +1,6 @@
+[b]2.14[/b]
+*toc update for Legion
+
 [b]2.13[/b]
 *Cached more Blizzard functions
 
