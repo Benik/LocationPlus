@@ -80,16 +80,23 @@ local currency = {
 	-- WoD
 	824,	-- Garrison Resources
 	823,	-- Apexis Crystal (for gear, like the valors)
-	994,	-- Seal of Tempered Fate (Raid loot roll)
-	980,	-- Dingy Iron Coins (rogue only, from pickpocketing)
-	944,	-- Artifact Fragment (PvP)
+	--994,	-- Seal of Tempered Fate (Raid loot roll)
+	--980,	-- Dingy Iron Coins (rogue only, from pickpocketing)
+	--944,	-- Artifact Fragment (PvP)
 	1101,	-- Oil
 	1129,	-- Seal of Inevitable Fate
-	821,	-- Draenor Clans Archaeology Fragment
-	828,	-- Ogre Archaeology Fragment
-	829,	-- Arakkoa Archaeology Fragment
+	--821,	-- Draenor Clans Archaeology Fragment
+	--828,	-- Ogre Archaeology Fragment
+	--829,	-- Arakkoa Archaeology Fragment
 	1166, 	-- Timewarped Badge (6.22)
 	1191,	-- Valor Points (6.23)
+	
+	-- Legion
+	1155,	-- Ancient Mana
+	1220,	-- Order Resources
+	1172,	-- Highborne Archaeology Fragment
+	1173,	-- Highmountain Tauren Archaeology Fragment
+	1174,	-- Demonic Archaeology Fragment
 }
 ------------------------
 -- end of Currency Table
