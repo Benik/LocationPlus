@@ -1,8 +1,7 @@
 ﻿--[[
 Name: LibTourist-3.0
-Revision: $Rev: 181 $
-Author(s): ckknight (ckknight@gmail.com), Arrowmaster, Odica (maintainer)
-Website: http://ckknight.wowinterface.com/
+Revision: $Rev: 184 $
+Author(s): Odica (maintainer), originally created by ckknight and Arrowmaster
 Documentation: http://www.wowace.com/addons/libtourist-3-0/
 SVN: svn://svn.wowace.com/wow/libtourist-3-0/mainline/trunk
 Description: A library to provide information about zones and instances.
@@ -10,7 +9,7 @@ License: MIT
 ]]
 
 local MAJOR_VERSION = "LibTourist-3.0"
-local MINOR_VERSION = 90000 + tonumber(("$Revision: 181 $"):match("(%d+)"))
+local MINOR_VERSION = 90000 + tonumber(("$Revision: 184 $"):match("(%d+)"))
 
 if not LibStub then error(MAJOR_VERSION .. " requires LibStub") end
 
@@ -54,6 +53,7 @@ local Northrend = "Northrend"
 local The_Maelstrom = "The Maelstrom"
 local Pandaria = "Pandaria"
 local Draenor = "Draenor"
+local BrokenIsles = "Broken Isles"
 
 local X_Y_ZEPPELIN = "%s - %s Zeppelin"
 local X_Y_BOAT = "%s - %s Boat"
@@ -92,6 +92,8 @@ local instances = {}
 local paths = {}
 local types = {}
 local groupSizes = {}
+local groupMinSizes = {}
+local groupMaxSizes = {}
 local groupAltSizes = {}
 local factions = {}
 local yardWidths = {}
@@ -248,6 +250,14 @@ function Tourist:GetUniqueZoneNameForLookup(zoneName, continentID)
 			zoneName = BZ["Hellfire Citadel"].." ("..BZ["Draenor"]..")"
 		end
 	end
+	if continentID == 8 then
+		if zoneName == BZ["Dalaran"] or zoneName == "Dalaran"  then
+			zoneName = BZ["Dalaran"].." ("..BZ["Broken Isles"]..")"
+		end
+		if zoneName == BZ["The Violet Hold"] or zoneName == "The Violet Hold"  then
+			zoneName = BZ["The Violet Hold"].." ("..BZ["Broken Isles"]..")"
+		end
+	end
 	return zoneName
 end
 
@@ -270,6 +280,14 @@ function Tourist:GetUniqueEnglishZoneNameForLookup(zoneName, continentID)
 			zoneName = "Hellfire Citadel (Draenor)"
 		end
 	end
+	if continentID == 8 then
+		if zoneName == BZ["Dalaran"] or zoneName == "Dalaran" then
+			zoneName = "Dalaran (Broken Isles)"
+		end	
+		if zoneName == BZ["The Violet Hold"] or zoneName == "The Violet Hold"  then
+			zoneName = "The Violet Hold (Broken Isles)"
+		end
+	end
 	return zoneName
 end
 
@@ -282,6 +300,18 @@ function Tourist:GetBattlePetLevel(zone)
 	return battlepet_lows[zone], battlepet_highs[zone]
 end
 
+-- WoW Legions: all zones scale to the player's level between 100 and 110
+function Tourist:GetLegionZoneLevel()
+	local playerLvl = playerLevel
+
+	if playerLvl <= 100 then 
+		return 100
+	elseif playerLvl >= 110 then
+		return 110
+	else
+		return playerLvl
+	end
+end
 
 function Tourist:GetLevelString(zone)
 	local lo, hi = Tourist:GetLevel(zone)
@@ -323,6 +353,10 @@ function Tourist:GetLevel(zone)
 		-- Find the most suitable bracket
 		if playerLvl >= MAX_PLAYER_LEVEL then
 			return MAX_PLAYER_LEVEL, MAX_PLAYER_LEVEL
+		elseif playerLvl >= 105 then
+			return 105, 109
+		elseif playerLvl >= 100 then
+			return 100, 104			
 		elseif playerLvl >= 95 then
 			return 95, 99
 		elseif playerLvl >= 90 then
@@ -766,7 +800,10 @@ function Tourist:GetBestZoneCoordinate(x, y, zone)
 end
 
 
-local function retNil() return nil end
+local function retNil() 
+	return nil 
+end
+	
 local function retOne(object, state)
 	if state == object then
 		return nil
@@ -797,7 +834,7 @@ local function mysort(a,b)
 	elseif not lows[b] then
 		return true
 	else
-		local aval, bval = groupSizes[a], groupSizes[b]
+		local aval, bval = groupSizes[a] or groupMaxSizes[a], groupSizes[b] or groupMaxSizes[b]
 		if aval and bval then
 			if aval ~= bval then
 				return aval < bval
@@ -1163,6 +1200,37 @@ function Tourist:IteratePandaria()
 	return pandariaIter, nil, nil
 end
 
+
+local function draenorIter(_, position)
+	local k = next(zonesInstances, position)
+	while k ~= nil and continents[k] ~= Draenor do
+		k = next(zonesInstances, k)
+	end
+	return k
+end
+function Tourist:IterateDraenor()
+	if initZonesInstances then
+		initZonesInstances()
+	end
+	return draenorIter, nil, nil
+end
+
+
+local function brokenislesIter(_, position)
+	local k = next(zonesInstances, position)
+	while k ~= nil and continents[k] ~= BrokenIsles do
+		k = next(zonesInstances, k)
+	end
+	return k
+end
+function Tourist:IterateBrokenIsles()
+	if initZonesInstances then
+		initZonesInstances()
+	end
+	return brokenislesIter, nil, nil
+end
+
+
 function Tourist:IterateRecommendedZones()
 	return retNormal, recZones, nil
 end
@@ -1285,8 +1353,48 @@ function Tourist:IsInPandaria(zone)
 	return continents[zone] == Pandaria
 end
 
+function Tourist:IsInDraenor(zone)
+	return continents[zone] == Draenor
+end
+
+function Tourist:IsInBrokenIsles(zone)
+	return continents[zone] == BrokenIsles
+end
+
 function Tourist:GetInstanceGroupSize(instance)
-	return groupSizes[instance] or 0
+	return groupSizes[instance] or groupMaxSizes[instance] or 0
+end
+
+function Tourist:GetInstanceGroupMinSize(instance)
+	return groupMinSizes[instance] or groupSizes[instance] or 0
+end
+
+function Tourist:GetInstanceGroupMaxSize(instance)
+	return groupMaxSizes[instance] or groupSizes[instance] or 0
+end
+
+function Tourist:GetInstanceGroupSizeString(instance, includeAltSize)
+	local retValue
+	if groupSizes[instance] then
+		-- Fixed size
+		retValue = tostring(groupSizes[instance])
+	elseif groupMinSizes[instance] and groupMaxSizes[instance] then
+		-- Variable size
+		if groupMinSizes[instance] == groupMaxSizes[instance] then
+			-- ...but equal
+			retValue = tostring(groupMinSizes[instance])
+		else
+			retValue = tostring(groupMinSizes[instance]).."-"..tostring(groupMaxSizes[instance])
+		end
+	else
+		-- No size known
+		return ""
+	end
+	if includeAltSize and groupAltSizes[instance] then
+		-- Add second size
+		retValue = retValue.." or "..tostring(groupAltSizes[instance])
+	end
+	return retValue
 end
 
 function Tourist:GetInstanceAltGroupSize(instance)
@@ -1607,7 +1715,7 @@ local MapIdLookupTable = {
 	[496] = "Zul'Drak",
 	[499] = "Isle of Quel'Danas",
 	[501] = "Wintergrasp",
-	[502] = "The Scarlet Enclave",
+	[502] = "Plaguelands: The Scarlet Enclave",
 	[504] = "Dalaran",
 	[510] = "Crystalsong Forest",
 	[512] = "Strand of the Ancients",
@@ -1651,7 +1759,7 @@ local MapIdLookupTable = {
 	[626] = "Twin Peaks",
 	[640] = "Deepholm",
 	[673] = "The Cape of Stranglethorn",
-	[677] = "The Battle for Gilneas",
+	[677] = "The Battle for Gilneas (Old City Map)",
 	[678] = "Gilneas",
 	[679] = "Gilneas",
 	[680] = "Ragefire Chasm",
@@ -1710,10 +1818,10 @@ local MapIdLookupTable = {
 	[760] = "Razorfen Downs",
 	[761] = "Razorfen Kraul",
 	[762] = "Scarlet Monastery",
-	[763] = "Scholomance",
+	[763] = "ScholomanceOLD",
 	[764] = "Shadowfang Keep",
 	[765] = "Stratholme",
-	[766] = "Temple of Ahn'Qiraj",
+	[766] = "Ahn'Qiraj",
 	[767] = "Throne of the Tides",
 	[768] = "The Stonecore",
 	[769] = "The Vortex Pinnacle",
@@ -1725,7 +1833,7 @@ local MapIdLookupTable = {
 	[779] = "Magtheridon's Lair",
 	[780] = "Serpentshrine Cavern",
 	[781] = "Zul'Aman",
-	[782] = "The Eye",
+	[782] = "Tempest Keep",   -- previously "The Eye"
 	[789] = "Sunwell Plateau",
 	[793] = "Zul'Gurub",
 	[795] = "Molten Front",
@@ -1761,13 +1869,12 @@ local MapIdLookupTable = {
 	[874] = "Scarlet Monastery",
 	[875] = "Gate of the Setting Sun",
 	[876] = "Stormstout Brewery",
-	[877] = "Shado-pan Monastery",
+	[877] = "Shado-Pan Monastery",
 	[878] = "A Brewing Storm",
-	[879] = "Kun-Lai Summit",
 	[880] = "The Jade Forest",
 	[881] = "Temple of Kotmogu",
 	[882] = "Unga Ingoo",
-	[883] = "Zan'vess",
+	[883] = "Assault on Zan'vess",
 	[884] = "Brewmoon Festival",
 	[885] = "Mogu'shan Palace",
 	[886] = "Terrace of Endless Spring",
@@ -1789,11 +1896,25 @@ local MapIdLookupTable = {
 	[905] = "Shrine of Seven Stars",
 	[906] = "Dustwallow Marsh",
 	[907] = "Dustwallow Marsh",
+	[910] = "Krasarang Wilds",
+	[911] = "Krasarang Wilds",
+	[912] = "A Little Patience",
+	[914] = "Dagger in the Dark",
+	[919] = "Black Temple",
+	[920] = "Krasarang Wilds",
+	[922] = "Deeprun Tram",
+	[924] = "Dalaran",
+	[925] = "Brawl'gar Arena",	
 	[928] = "Isle of Thunder",
 	[929] = "Isle of Giants",
 	[930] = "Throne of Thunder",
+	[933] = "Isle of Thunder",
+	[934] = "Thunder King's Citadel",
 	[935] = "Deepwind Gorge",
-	[951] = "Timeless Isle",
+	[937] = "Vale of Eternal Blossoms",
+	[938] = "The Secrets of Ragefire",
+	[939] = "Dun Morogh",
+	[940] = "Battle on the High Seas",
 	[941] = "Frostfire Ridge",
 	[945] = "Tanaan Jungle",
 	[946] = "Talador",
@@ -1801,24 +1922,114 @@ local MapIdLookupTable = {
 	[948] = "Spires of Arak",
 	[949] = "Gorgrond",
 	[950] = "Nagrand",
+	[951] = "Timeless Isle",
 	[953] = "Siege of Orgrimmar",
+	[955] = "Celestial Tournament",
 	[962] = "Draenor",
 	[964] = "Bloodmaul Slag Mines",
 	[969] = "Shadowmoon Burial Grounds",
-	[970] = "Tanaan Jungle - Assault on the Dark Portal",
+	[970] = "Tanaan Jungle",
 	[971] = "Lunarfall",
+	[973] = "Lunarfall",
+	[974] = "Lunarfall",
+	[975] = "Lunarfall",
 	[976] = "Frostwall",
 	[978] = "Ashran",
+	[980] = "Frostwall",
+	[981] = "Frostwall",
+	[982] = "Frostwall",
+	[983] = "Defense of Karabor",
 	[984] = "Auchindoun",
+	[986] = "Shattrath City",
 	[987] = "Iron Docks",
 	[988] = "Blackrock Foundry",
 	[989] = "Skyreach",
+	[990] = "Frostwall",
+	[991] = "Lunarfall",
+	[992] = "Blasted Lands",
 	[993] = "Grimrail Depot",
 	[994] = "Highmaul",
 	[995] = "Upper Blackrock Spire",
+	[1007] = "Broken Isles",
 	[1008] = "The Everbloom",
 	[1009] = "Stormshield",
+	[1010] = "Hillsbrad Foothills (Southshore vs. Tarren Mill)",
 	[1011] = "Warspear",
+	[1014] = "Dalaran",
+	[1015] = "Azsuna",
+	[1017] = "Stormheim",
+	[1018] = "Val'sharah",
+	[1020] = "Twisting Nether",
+	[1021] = "Broken Shore",
+	[1022] = "Helheim",
+	[1024] = "Highmountain",
+	[1026] = "Hellfire Citadel",
+	[1027] = "The Cove of Nashal",
+	[1028] = "Mardum, the Shattered Abyss",
+	[1031] = "Broken Shore",
+	[1032] = "Vault of the Wardens",
+	[1033] = "Suramar",
+	[1034] = "Helmouth Shallows",
+	[1035] = "Skyhold",
+	[1036] = "Shield's Rest",
+	[1037] = "Stormheim",
+	[1038] = "Azshara",
+	[1039] = "Icecrown Citadel",
+	[1040] = "Netherlight Temple",
+	[1041] = "Halls of Valor",
+	[1042] = "Helmouth Cliffs",
+	[1043] = "The Naglfar",
+	[1044] = "The Wandering Isle",
+	[1045] = "Vault of the Wardens",
+	[1046] = "Eye of Azshara",
+	[1047] = "Niskara",
+	[1048] = "Emerald Dreamway",
+	[1049] = "Skywall",
+	[1050] = "Dreadscar Rift",
+	[1051] = "Dreadscar Rift",
+	[1052] = "Mardum, the Shattered Abyss",
+	[1053] = "Azsuna",
+	[1054] = "The Violet Hold",
+	[1055] = "Suramar",
+	[1056] = "The Maelstrom",
+	[1057] = "The Maelstrom",
+	[1058] = "Kun-Lai Summit",
+	[1059] = "Terrace of Endless Spring",
+	[1060] = "Deepholm",
+	[1062] = "Tirisfal Glades",
+	[1065] = "Neltharion's Lair",
+	[1066] = "Violet Hold",
+	[1067] = "Darkheart Thicket",
+	[1068] = "Hall of the Guardian",
+	[1069] = "The Beyond",
+	[1070] = "The Vortex Pinnacle",
+	[1071] = "Firelands",
+	[1072] = "Trueshot Lodge",
+	[1073] = "Shadowgore Citadel",
+	[1075] = "Abyssal Maw",
+	[1076] = "Ulduar",
+	[1077] = "The Dreamgrove",
+	[1078] = "Niskara",
+	[1079] = "The Arcway",
+	[1080] = "Thunder Totem",
+	[1081] = "Black Rook Hold",
+	[1082] = "Ursoc's Lair",
+	[1084] = "Gloaming Reef",
+	[1085] = "Black Temple",
+	[1086] = "Malorne's Nightmare",
+	[1087] = "Court of Stars",
+	[1088] = "The Nighthold",
+	[1090] = "Tol Barad",
+	[1091] = "The Exodar",
+	[1092] = "Azuremyst Isle",
+	[1094] = "The Emerald Nightmare",
+	[1096] = "Eye of Azshara",
+	[1097] = "Temple of the Jade Serpent",
+	[1099] = "Black Rook Hold",
+	[1100] = "Karazhan",
+	[1102] = "The Arcway",
+	[1104] = "The Oculus",
+	[1105] = "Scarlet Monastery",
 }
 
 local zoneTranslation = {
@@ -2302,7 +2513,7 @@ local function CreateLocalizedZoneNameLookups()
 				BZR[localizedZoneName] = englishName
 			end
 		else
---			trace("! ----- No map for ID "..tostring(mapID).." ("..tostring(englishName)..")")
+			trace("! ----- No map name for ID "..tostring(mapID).." ("..tostring(englishName)..")")
 		end
 	end
 
@@ -2331,6 +2542,12 @@ local function AddDuplicatesToLocalizedLookup()
 	
 	BZ[Tourist:GetUniqueEnglishZoneNameForLookup("Hellfire Citadel", 7)] = Tourist:GetUniqueZoneNameForLookup("Hellfire Citadel", 7)
 	BZR[Tourist:GetUniqueZoneNameForLookup("Hellfire Citadel", 7)] = Tourist:GetUniqueEnglishZoneNameForLookup("Hellfire Citadel", 7)
+	
+	BZ[Tourist:GetUniqueEnglishZoneNameForLookup("Dalaran", 8)] = Tourist:GetUniqueZoneNameForLookup("Dalaran", 8)
+	BZR[Tourist:GetUniqueZoneNameForLookup("Dalaran", 8)] = Tourist:GetUniqueEnglishZoneNameForLookup("Dalaran", 8)
+	
+	BZ[Tourist:GetUniqueEnglishZoneNameForLookup("The Violet Hold", 8)] = Tourist:GetUniqueZoneNameForLookup("The Violet Hold", 8)
+	BZR[Tourist:GetUniqueZoneNameForLookup("The Violet Hold", 8)] = Tourist:GetUniqueEnglishZoneNameForLookup("The Violet Hold", 8)
 end
 
 
@@ -2348,9 +2565,10 @@ do
 	end)
 
 
-	trace("Tourist: Initializing localized zone names...")
+	trace("Tourist: Initializing localized zone name lookups...")
 	CreateLocalizedZoneNameLookups()
 	AddDuplicatesToLocalizedLookup()
+
 	
 	-- TRANSPORT DEFINITIONS ----------------------------------------------------------------
 
@@ -2482,6 +2700,10 @@ do
 		continent = Draenor,
 	}
 
+	zones[BZ["Broken Isles"]] = {
+		type = "Continent",
+		continent = BrokenIsles,
+	}
 
 	-- TRANSPORTS ---------------------------------------------------------------
 
@@ -4426,7 +4648,7 @@ do
 			[BZ["Ahn'Qiraj: The Fallen Kingdom"]] = true,
 		},
 		instances = {
-			[BZ["Temple of Ahn'Qiraj"]] = true,
+			[BZ["Ahn'Qiraj"]] = true,
 			[BZ["Ruins of Ahn'Qiraj"]] = true,
 		},
 		complexes = {
@@ -4588,7 +4810,7 @@ do
 		entrancePortal = { BZ["Dustwallow Marsh"], 52, 76 },
 	}
 
-	zones[BZ["Temple of Ahn'Qiraj"]] = {
+	zones[BZ["Ahn'Qiraj"]] = {
 		low = 60,
 		high = 63,
 		continent = Kalimdor,
@@ -4871,25 +5093,26 @@ do
 		battlepet_high = 20,
 	}
 
-	zones[BZ["Tempest Keep"]] = {
-		low = 67,
-		high = 75,
-		continent = Outland,
-		instances = {
-			[BZ["The Mechanar"]] = true,
-			[BZ["The Eye"]] = true,
-			[BZ["The Botanica"]] = true,
-			[BZ["The Arcatraz"]] = true,
-		},
-		paths = {
-			[BZ["Netherstorm"]] = true,
-			[BZ["The Mechanar"]] = true,
-			[BZ["The Eye"]] = true,
-			[BZ["The Botanica"]] = true,
-			[BZ["The Arcatraz"]] = true,
-		},
-		type = "Complex",
-	}
+	-- Had to remove the complex 'Tempest Keep' because of the renamed 'The Eye' instance now has same name (Legion)
+	-- zones[BZ["Tempest Keep"]] = {
+		-- low = 67,
+		-- high = 75,
+		-- continent = Outland,
+		-- instances = {
+			-- [BZ["The Mechanar"]] = true,
+			-- [BZ["Tempest Keep"]] = true,  -- previously "The Eye"
+			-- [BZ["The Botanica"]] = true,
+			-- [BZ["The Arcatraz"]] = true,
+		-- },
+		-- paths = {
+			-- [BZ["Netherstorm"]] = true,
+			-- [BZ["The Mechanar"]] = true,
+			-- [BZ["Tempest Keep"]] = true,
+			-- [BZ["The Botanica"]] = true,
+			-- [BZ["The Arcatraz"]] = true,
+		-- },
+		-- type = "Complex",
+	-- }
 
 	zones[BZ["Netherstorm"]] = {
 		low = 67,
@@ -4899,16 +5122,16 @@ do
 			[BZ["The Mechanar"]] = true,
 			[BZ["The Botanica"]] = true,
 			[BZ["The Arcatraz"]] = true,
-			[BZ["The Eye"]] = true,
+			[BZ["Tempest Keep"]] = true,  -- previously "The Eye"
 			[BZ["Eye of the Storm"]] = true,
 		},
 		paths = {
-			[BZ["Tempest Keep"]] = true,
+--			[BZ["Tempest Keep"]] = true,
 			[BZ["Blade's Edge Mountains"]] = true,
 		},
-		complexes = {
-			[BZ["Tempest Keep"]] = true,
-		},
+--		complexes = {
+--			[BZ["Tempest Keep"]] = true,
+--		},
 		fishing_min = 475,
 		battlepet_low = 20,
 		battlepet_high = 21,
@@ -5084,10 +5307,11 @@ do
 		low = 67,
 		high = 75,
 		continent = Outland,
-		paths = BZ["Tempest Keep"],
+--		paths = BZ["Tempest Keep"],
+		paths = BZ["Netherstorm"],
 		groupSize = 5,
 		type = "Instance",
-		complex = BZ["Tempest Keep"],
+--		complex = BZ["Tempest Keep"],
 		entrancePortal = { BZ["Netherstorm"], 76.5, 65.1 },
 	}
 
@@ -5095,10 +5319,11 @@ do
 		low = 67,
 		high = 75,
 		continent = Outland,
-		paths = BZ["Tempest Keep"],
+--		paths = BZ["Tempest Keep"],
+		paths = BZ["Netherstorm"],
 		groupSize = 5,
 		type = "Instance",
-		complex = BZ["Tempest Keep"],
+--		complex = BZ["Tempest Keep"],
 		entrancePortal = { BZ["Netherstorm"], 76.5, 65.1 },
 	}
 
@@ -5106,21 +5331,23 @@ do
 		low = 68,
 		high = 75,
 		continent = Outland,
-		paths = BZ["Tempest Keep"],
+--		paths = BZ["Tempest Keep"],
+		paths = BZ["Netherstorm"],
 		groupSize = 5,
 		type = "Instance",
-		complex = BZ["Tempest Keep"],
+--		complex = BZ["Tempest Keep"],
 		entrancePortal = { BZ["Netherstorm"], 76.5, 65.1 },
 	}
 
-	zones[BZ["The Eye"]] = {
+	zones[BZ["Tempest Keep"]] = {
 		low = 70,
 		high = 72,
 		continent = Outland,
-		paths = BZ["Tempest Keep"],
+--		paths = BZ["Tempest Keep"],
+		paths = BZ["Netherstorm"],
 		groupSize = 25,
 		type = "Instance",
-		complex = BZ["Tempest Keep"],
+--		complex = BZ["Tempest Keep"],
 		entrancePortal = { BZ["Netherstorm"], 76.5, 65.1 },
 	}
 
@@ -5780,7 +6007,7 @@ do
 			[BZ["Silithus"]] = true,
 		},
 		instances = {
-			[BZ["Temple of Ahn'Qiraj"]] = true,
+			[BZ["Ahn'Qiraj"]] = true,
 			[BZ["Ruins of Ahn'Qiraj"]] = true,
 		},
 		type = "Complex",
@@ -6080,7 +6307,7 @@ do
 		altGroupSize = 25,
 		type = "Instance",
 		complex = BZ["Blackrock Mountain"],
---		entrancePortal = { BZ["Burning Steppes"], 29.7, 37.5 },  -- TODO: coordinates
+		entrancePortal = { BZ["Burning Steppes"], 26.1, 24.6 },
 	}
 
 	zones[BZ["Grim Batol"]] = {
@@ -6262,12 +6489,12 @@ do
 		high = 88,
 		continent = Pandaria,
 		instances = {
-			[BZ["Shado-pan Monastery"]] = true,
+			[BZ["Shado-Pan Monastery"]] = true,
 			[BZ["Mogu'shan Vaults"]] = true,
 			[BZ["The Tiger's Peak"]] = true,
 		},
 		paths = {
-			[BZ["Shado-pan Monastery"]] = true,
+			[BZ["Shado-Pan Monastery"]] = true,
 			[BZ["Mogu'shan Vaults"]] = true,
 			[BZ["Vale of Eternal Blossoms"]] = true,
 			[BZ["The Veiled Stair"]] = true,
@@ -6432,7 +6659,7 @@ do
 		entrancePortal = { BZ["Valley of the Four Winds"], 36.10, 69.10 }, 
 	}
 
-	zones[BZ["Shado-pan Monastery"]] = {
+	zones[BZ["Shado-Pan Monastery"]] = {
 		low = 87,
 		high = 90,
 		continent = Pandaria,
@@ -6542,8 +6769,8 @@ do
 		high = 90,
 		continent = Pandaria,
 		paths = BZ["Vale of Eternal Blossoms"],
-		groupSize = 10,
-		altGroupSize = 25,
+		groupMinSize = 10,
+		groupMaxSize = 30,
 		type = "Instance",
 		entrancePortal = { BZ["Vale of Eternal Blossoms"], 74.0, 42.2 },
 	}
@@ -6781,7 +7008,7 @@ do
 		paths = BZ["Shadowmoon Valley"].." ("..BZ["Draenor"]..")",
 		groupSize = 5,
 		type = "Instance",
---		entrancePortal = { BZ["Shadowmoon Valley"].." ("..BZ["Draenor"]..")", 0.00, 0.00 },   TODO
+		entrancePortal = { BZ["Shadowmoon Valley"].." ("..BZ["Draenor"]..")", 31.9, 42.5 },
 	}
 	
 	zones[BZ["Iron Docks"]] = {
@@ -6801,7 +7028,7 @@ do
 		paths = BZ["Gorgrond"],
 		groupSize = 5,
 		type = "Instance",
---		entrancePortal = { BZ["Gorgrond"], 0.00, 0.00 },   TODO
+		entrancePortal = { BZ["Gorgrond"], 55.2, 32.1 },
 	}	
 	
 	zones[BZ["The Everbloom"]] = {
@@ -6811,7 +7038,7 @@ do
 		paths = BZ["Gorgrond"],
 		groupSize = 5,
 		type = "Instance",
---		entrancePortal = { BZ["Gorgrond"], 0.00, 0.00 },   TODO
+		entrancePortal = { BZ["Gorgrond"], 59.5, 45.3 },
 	}
 	
 	zones[BZ["Blackrock Foundry"]] = {
@@ -6819,10 +7046,10 @@ do
 		high = 100,
 		continent = Draenor,
 		paths = BZ["Gorgrond"],
-		groupSize = 10,
-		altGroupSize = 25,
+		groupMinSize = 10,
+		groupMaxSize = 30,
 		type = "Instance",
---		entrancePortal = { BZ["Gorgrond"], 0.00, 0.00 },   TODO
+		entrancePortal = { BZ["Gorgrond"], 51.5, 27.4 },
 	}	
 	
 	zones[BZ["Auchindoun"]] = {
@@ -6850,10 +7077,10 @@ do
 		high = 100,
 		continent = Draenor,
 		paths = BZ["Nagrand"].." ("..BZ["Draenor"]..")",
-		groupSize = 10,
-		altGroupSize = 25,
+		groupMinSize = 10,
+		groupMaxSize = 30,
 		type = "Instance",
---		entrancePortal = { BZ["Nagrand"].." ("..BZ["Draenor"]..")", 0.00, 0.00 },   TODO
+		entrancePortal = { BZ["Nagrand"].." ("..BZ["Draenor"]..")", 34, 38 },
 	}
 	
 	zones[BZ["Hellfire Citadel"].." ("..BZ["Draenor"]..")"] = {
@@ -6861,13 +7088,280 @@ do
 		high = 100,
 		continent = Draenor,
 		paths = BZ["Tanaan Jungle"],
-		groupSize = 10,
-		altGroupSize = 25,
+		groupMinSize = 10,
+		groupMaxSize = 30,
 		type = "Instance",
---		entrancePortal = { BZ["Tanaan Jungle"], 0.00, 0.00 },   TODO
+		entrancePortal = { BZ["Tanaan Jungle"], 45, 53 },
 	}
 	
 	
+	-- Legion zones --------------------------
+	
+	zones[BZ["Broken Shore"]] = {
+		low = Tourist:GetLegionZoneLevel(),
+		high = Tourist:GetLegionZoneLevel(),
+		continent = BrokenIsles,
+		paths = {
+			[BZ["Suramar"]] = true,
+		},
+		fishing_min = 950,
+		battlepet_low = 25,
+		battlepet_high = 25,
+	}
+
+	zones[BZ["Suramar"]] = {
+		low = Tourist:GetLegionZoneLevel(),
+		high = Tourist:GetLegionZoneLevel(),
+		continent = BrokenIsles,
+		instances = {
+			[BZ["Court of Stars"]] = true,
+			[BZ["The Arcway"]] = true,
+			[BZ["The Nighthold"]] = true,		
+		},
+		paths = {
+			[BZ["Broken Shore"]] = true,
+			[BZ["Azsuna"]] = true,
+			[BZ["Val'sharah"]] = true,
+			[BZ["Highmountain"]] = true,
+			[BZ["Stormheim"]] = true,
+		},
+		fishing_min = 950,
+		battlepet_low = 25,
+		battlepet_high = 25,
+	}
+	
+	zones[BZ["Azsuna"]] = {
+		low = Tourist:GetLegionZoneLevel(),
+		high = Tourist:GetLegionZoneLevel(),
+		continent = BrokenIsles,
+		instances = {
+			[BZ["Vault of the Wardens"]] = true,
+			[BZ["Eye of Azshara"]] = true,
+		},
+		paths = {
+			[BZ["Suramar"]] = true,
+			[BZ["Val'sharah"]] = true,
+		},
+		fishing_min = 950,
+		battlepet_low = 25,
+		battlepet_high = 25,
+	}
+	
+	zones[BZ["Val'sharah"]] = {
+		low = Tourist:GetLegionZoneLevel(),
+		high = Tourist:GetLegionZoneLevel(),
+		continent = BrokenIsles,
+		instances = {
+			[BZ["Black Rook Hold"]] = true,
+			[BZ["Darkheart Thicket"]] = true,
+			[BZ["The Emerald Nightmare"]] = true,
+		},
+		paths = {
+			[BZ["Suramar"]] = true,
+			[BZ["Azsuna"]] = true,
+			[BZ["Highmountain"]] = true,
+		},
+		fishing_min = 950,
+		battlepet_low = 25,
+		battlepet_high = 25,
+	}
+	
+	zones[BZ["Highmountain"]] = {
+		low = Tourist:GetLegionZoneLevel(),
+		high = Tourist:GetLegionZoneLevel(),
+		continent = BrokenIsles,
+		instances = {
+			[BZ["Neltharion's Lair"]] = true,
+		},
+		paths = {
+			[BZ["Suramar"]] = true,
+			[BZ["Stormheim"]] = true,
+			[BZ["Val'sharah"]] = true,
+		},
+		fishing_min = 950,
+		battlepet_low = 25,
+		battlepet_high = 25,
+	}
+	
+	zones[BZ["Stormheim"]] = {
+		low = Tourist:GetLegionZoneLevel(),
+		high = Tourist:GetLegionZoneLevel(),
+		continent = BrokenIsles,
+		instances = {
+			[BZ["Halls of Valor"]] = true,
+--			[BZ["Maw of Souls"]] = true,   -- TODO: enable when map ID is known
+		},
+		paths = {
+			[BZ["Suramar"]] = true,
+			[BZ["Highmountain"]] = true,
+		},
+		fishing_min = 950,
+		battlepet_low = 25,
+		battlepet_high = 25,
+	}
+	
+	
+	-- Legion cities --------------------------
+
+	zones[BZ["Thunder Totem"]] = {
+		continent = BrokenIsles,
+		paths = {
+			[BZ["Highmountain"]] = true,
+			[BZ["Stormheim"]] = true,
+		},
+		faction = "Sanctuary",
+		type = "City",
+--		fishing_min = 950,  TODO: check for fishable waters
+		battlepet_low = 25,
+		battlepet_high = 25,
+	}
+
+	
+	zones[BZ["Dalaran"].." ("..BZ["Broken Isles"]..")"] = {
+		continent = BrokenIsles,
+		paths = {
+			[BZ["The Violet Hold"].." ("..BZ["Broken Isles"]..")"] = true,
+		},
+		instances = {
+			[BZ["The Violet Hold"].." ("..BZ["Broken Isles"]..")"] = true,
+		},		
+		faction = "Sanctuary",
+		type = "City",
+		fishing_min = 950,
+		battlepet_low = 25,
+		battlepet_high = 25,
+	}
+	
+	
+	
+	-- Legion dungeons and raids --------------------------
+	
+	zones[BZ["Vault of the Wardens"]] = {
+		low = 110,
+		high = 110,
+		continent = BrokenIsles,
+		paths = BZ["Aszuna"],
+		groupSize = 5,
+		type = "Instance",
+		entrancePortal = { BZ["Aszuna"], 48.2, 82.7 }, 
+	}
+	
+	zones[BZ["Eye of Azshara"]] = {
+		low = 100,
+		high = 110,
+		continent = BrokenIsles,
+		paths = BZ["Aszuna"],
+		groupSize = 5,
+		type = "Instance",
+		entrancePortal = { BZ["Aszuna"], 67.1, 41.1 }, 
+	}	
+	
+	zones[BZ["Black Rook Hold"]] = {
+		low = 110,
+		high = 110,
+		continent = BrokenIsles,
+		paths = BZ["Val'sharah"],
+		groupSize = 5,
+		type = "Instance",
+		entrancePortal = { BZ["Val'sharah"], 38.7, 53.2 }, 
+	}	
+
+	zones[BZ["Darkheart Thicket"]] = {
+		low = 100,
+		high = 110,
+		continent = BrokenIsles,
+		paths = BZ["Val'sharah"],
+		groupSize = 5,
+		type = "Instance",
+		entrancePortal = { BZ["Val'sharah"], 59.2, 31.5 }, 
+	}
+
+	zones[BZ["The Emerald Nightmare"]] = {
+		low = 110,
+		high = 110,
+		continent = BrokenIsles,
+		paths = BZ["Val'sharah"],
+		groupMinSize = 10,
+		groupMaxSize = 30,
+		altGroupSize = 20,
+		type = "Instance",
+		entrancePortal = { BZ["Val'sharah"], 57.1, 39.9 }, 
+	}
+	
+	zones[BZ["Neltharion's Lair"]] = {
+		low = 100,
+		high = 110,
+		continent = BrokenIsles,
+		paths = BZ["Highmountain"],
+		groupSize = 5,
+		type = "Instance",
+		entrancePortal = { BZ["Highmountain"], 49.9, 63.6 }, 
+	}
+	
+	zones[BZ["Halls of Valor"]] = {
+		low = 100,
+		high = 110,
+		continent = BrokenIsles,
+		paths = BZ["Stormheim"],
+		groupSize = 5,
+		type = "Instance",
+		entrancePortal = { BZ["Stormheim"], 68.3, 66.2 }, 
+	}	
+	
+-- TODO: enable when map ID is known
+--	zones[BZ["The Maw of Souls"]] = {
+--		low = 110,
+--		high = 110,
+--		continent = BrokenIsles,
+--		paths = BZ["Stormheim"],
+--		groupSize = 5,
+--		type = "Instance",
+--		entrancePortal = { BZ["Stormheim"], 53.0, 47.2 }, 
+--	}	
+	
+	zones[BZ["Court of Stars"]] = {
+		low = 110,
+		high = 110,
+		continent = BrokenIsles,
+		paths = BZ["Suramar"],
+		groupSize = 5,
+		type = "Instance",
+		entrancePortal = { BZ["Suramar"], 50.7, 65.5 }, 
+	}		
+	
+	zones[BZ["The Arcway"]] = {
+		low = 110,
+		high = 110,
+		continent = BrokenIsles,
+		paths = BZ["Suramar"],
+		groupSize = 5,
+		type = "Instance",
+		entrancePortal = { BZ["Suramar"], 43, 62 }, 
+	}		
+	
+	zones[BZ["The Nighthold"]] = {
+		low = 110,
+		high = 110,
+		continent = BrokenIsles,
+		paths = BZ["Suramar"],
+		groupMinSize = 10,
+		groupMaxSize = 30,
+		altGroupSize = 20,
+		type = "Instance",
+		entrancePortal = { BZ["Suramar"], 43, 62 }, 
+	}
+	
+	zones[BZ["The Violet Hold"].." ("..BZ["Broken Isles"]..")"] = {
+		low = 105,
+		high = 110,
+		continent = BrokenIsles,
+		paths = {
+			[BZ["Dalaran"].." ("..BZ["Broken Isles"]..")"] = true,
+		},
+		groupSize = 5,
+		type = "Instance",
+		entrancePortal = { BZ["Dalaran"].." ("..BZ["Broken Isles"]..")", 66.78, 68.19 },
+	}
 	
 --------------------------------------------------------------------------------------------------------
 --                                                CORE                                                --
@@ -6895,7 +7389,7 @@ do
 			zones[continentName].x_shift = (cLeft + cRight) / 2
 			zones[continentName].y_shift = (cTop + cBottom) / 2
 					
-			trace("Tourist: Continent size in yards for "..tostring(continentName)..": "..tostring(round(zones[continentName].yards, 2)))
+			trace("Tourist: Continent size in yards for "..tostring(continentName).." ("..tostring(continentID).."): "..tostring(round(zones[continentName].yards, 2)))
 		else
 			-- Unknown Continent
 			trace("|r|cffff4422! -- Tourist:|r TODO: Add Continent '"..tostring(continentName).."'")		
@@ -6954,7 +7448,7 @@ do
 		end
 		
 		for i = 1, #zoneNames do		
-			-- Draenor zones Frostfire Ridge and Shadowmoon Valley appear twice in the collection of Draenor zones
+			-- The zones Frostfire Ridge, Highmountain and Val'sharah appear twice in the collection of zones of their continent
 			-- so we need to be able to skip duplicates, even within a Continent
 			if not doneZones[continentName.."."..zoneNames[i]] then
 				local zoneName = Tourist:GetUniqueZoneNameForLookup(zoneNames[i], continentID)
@@ -7011,6 +7505,8 @@ do
 
 	SetMapToCurrentZone()
 
+	trace("Tourist: Filling lookup tables...")
+	
 	-- Fill the lookup tables
 	for k,v in pairs(zones) do
 		lows[k] = v.low or 0
@@ -7020,6 +7516,8 @@ do
 		paths[k] = v.paths or false
 		types[k] = v.type or "Zone"
 		groupSizes[k] = v.groupSize
+		groupMinSizes[k] = v.groupMinSize
+		groupMaxSizes[k] = v.groupMaxSize
 		groupAltSizes[k] = v.altGroupSize
 		factions[k] = v.faction
 		yardWidths[k] = v.yards
