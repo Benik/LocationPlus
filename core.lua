@@ -94,6 +94,7 @@ local currency = {
 	-- Legion
 	1155,	-- Ancient Mana
 	1220,	-- Order Resources
+	1226,	-- Nethershard (Invasion scenarios)
 	1172,	-- Highborne Archaeology Fragment
 	1173,	-- Highmountain Tauren Archaeology Fragment
 	1174,	-- Demonic Archaeology Fragment
