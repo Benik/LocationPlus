@@ -768,7 +768,7 @@ function LPB:TransparentPanels()
 	local panelsToAddTrans = {LocationPlusPanel, XCoordsPanel, YCoordsPanel, LeftCoordDtPanel, RightCoordDtPanel}
 	
 	for _, frame in pairs(panelsToAddTrans) do
-		frame:StripTextures(frame)
+		frame:SetTemplate('NoBackdrop')
 		if not E.db.locplus.noback then 
 			E.db.locplus.shadow = false
 		elseif E.db.locplus.trans then
