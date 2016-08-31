@@ -373,6 +373,8 @@ local function GetLevelRange(zoneText, ontt)
 	return dlevel or ""
 end
 
+local capRank = 800
+
 local function UpdateTooltip()
 	
 	local mapID = GetCurrentMapAreaID()
@@ -470,7 +472,6 @@ local function UpdateTooltip()
 	end
 
 	-- Professions
-	local capRank = 700
 	local prof1, prof2, archy, fishing, cooking, firstAid = GetProfessions()
 	if E.db.locplus.prof and (prof1 or prof2 or archy or fishing or cooking or firstAid) then	
 		GameTooltip:AddLine(" ")
