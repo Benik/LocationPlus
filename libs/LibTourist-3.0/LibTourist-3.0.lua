@@ -1,6 +1,6 @@
 ﻿--[[
 Name: LibTourist-3.0
-Revision: $Rev: 184 $
+Revision: $Rev: 185 $
 Author(s): Odica (maintainer), originally created by ckknight and Arrowmaster
 Documentation: http://www.wowace.com/addons/libtourist-3-0/
 SVN: svn://svn.wowace.com/wow/libtourist-3-0/mainline/trunk
@@ -9,7 +9,7 @@ License: MIT
 ]]
 
 local MAJOR_VERSION = "LibTourist-3.0"
-local MINOR_VERSION = 90000 + tonumber(("$Revision: 184 $"):match("(%d+)"))
+local MINOR_VERSION = 90000 + tonumber(("$Revision: 185 $"):match("(%d+)"))
 
 if not LibStub then error(MAJOR_VERSION .. " requires LibStub") end
 
@@ -128,6 +128,9 @@ local function PLAYER_LEVEL_UP(self, level)
 	for k in pairs(cost) do
 		cost[k] = nil
 	end
+	
+	UpdateCachedLegionZoneLevels(level)	
+	
 	for zone in pairs(lows) do
 		if not self:IsHostile(zone) then
 			local low, high = self:GetLevel(zone)
@@ -146,6 +149,19 @@ local function PLAYER_LEVEL_UP(self, level)
 					recInstances[zone] = true
 				end
 			end
+		end
+	end
+end
+
+function UpdateCachedLegionZoneLevels()
+	-- Because the cache for highs and lows is initialized before the player level is known, update the values on PLAYER_LEVEL_UP
+	-- which fires directly after initialization. Is also assures the cache is being updated when the player levels up during play
+	local legionZoneLevel = Tourist:GetLegionZoneLevel()
+	for k in Tourist:IterateBrokenIsles() do
+		if types[k] ~= "Instance" and types[k] ~= "Battleground" and types[k] ~= "Arena" and types[k] ~= "Complex" and types[k] ~= "City" and types[k] ~= "Continent" then
+			lows[k] = legionZoneLevel
+			highs[k] = legionZoneLevel
+			trace("Level for "..tostring(k).." is "..tostring(legionZoneLevel))
 		end
 	end
 end
