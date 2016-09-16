@@ -608,6 +608,9 @@ local function CreateLocPanel()
 	-- Location Text
 	loc_panel.Text = LocationPlusPanel:CreateFontString(nil, "LOW")
 	loc_panel.Text:Point("CENTER", 0, 0)
+	loc_panel.Text:SetAllPoints()
+	loc_panel.Text:SetJustifyH("CENTER")
+	loc_panel.Text:SetJustifyV("MIDDLE")
 	
 	-- Hide in combat/Pet battle
 	loc_panel:SetScript("OnEvent",function(self, event)
@@ -659,7 +662,9 @@ local function CreateCoordPanels()
 	coordsX:Height(E.db.locplus.dtheight)
 	coordsX:SetFrameStrata('LOW')
 	coordsX.Text = XCoordsPanel:CreateFontString(nil, "LOW")
-	coordsX.Text:Point("CENTER", 1, 0)
+	coordsX.Text:SetAllPoints()
+	coordsX.Text:SetJustifyH("CENTER")
+	coordsX.Text:SetJustifyV("MIDDLE")
 
 	-- Y Coord panel
 	local coordsY = CreateFrame('Frame', "YCoordsPanel", LocationPlusPanel)
@@ -667,7 +672,9 @@ local function CreateCoordPanels()
 	coordsY:Height(E.db.locplus.dtheight)
 	coordsY:SetFrameStrata('LOW')
 	coordsY.Text = YCoordsPanel:CreateFontString(nil, "LOW")
-	coordsY.Text:Point("CENTER", 1, 0)
+	coordsY.Text:SetAllPoints()
+	coordsY.Text:SetJustifyH("CENTER")
+	coordsY.Text:SetJustifyV("MIDDLE")
 
 	LPB:CoordsColor()
 end
