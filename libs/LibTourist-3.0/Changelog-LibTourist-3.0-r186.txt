@@ -1,0 +1,80 @@
+------------------------------------------------------------------------
+r186 | Odica | 2016-09-22 23:13:35 +0000 (Thu, 22 Sep 2016) | 62 lines
+Changed paths:
+   M /trunk/LibTourist-3.0.lua
+
+- Corrected levels for Darkheart Thicket, Eye of Azshara, Halls of Valor and Neltharion's Lair: was 100-110, now 98-110.
+
+- Portal changes:
+
+Added portals:
+
+Thunder Bluff -> Hellfire Peninsula
+Undercity -> Hellfire Peninsula
+Silvermoon City -> Hellfire Peninsula
+Darnassus -> Hellfire Peninsula
+The Exodar -> Hellfire Peninsula
+Ironforge -> Hellfire Peninsula
+
+Shrine of Seven Stars -> The Exodar
+Shrine of Seven Stars -> Silvermoon City
+Shrine of Seven Stars -> Ironforge
+Shrine of Seven Stars -> Darnassus
+Shrine of Seven Stars -> Shattrath City (Outland)
+Shrine of Seven Stars -> Dalaran (Northrend)
+
+Shrine of Two Moons -> Orgrimmar
+Shrine of Two Moons -> Undercity
+Shrine of Two Moons -> Thunder Bluff
+Shrine of Two Moons -> Silvermoon City
+Shrine of Two Moons -> Shattrath City (Outland)
+Shrine of Two Moons -> Dalaran (Northrend)
+
+Shattrath City (Outland) -> Orgrimmar
+Shattrath City (Outland) -> Stormwind City
+
+Orgrimmar -> Dalaran (Broken Isles)
+Stormwind City -> Dalaran (Broken Isles)
+
+Dalaran (Broken Isles) -> Shrine of Seven Stars
+Dalaran (Broken Isles) -> Stormwind City
+Dalaran (Broken Isles) -> The Exodar
+Dalaran (Broken Isles) -> Darnassus
+Dalaran (Broken Isles) -> Ironforge
+Dalaran (Broken Isles) -> Shrine of Two Moons
+Dalaran (Broken Isles) -> Orgrimmar
+Dalaran (Broken Isles) -> Undercity
+Dalaran (Broken Isles) -> Thunder Bluff
+Dalaran (Broken Isles) -> Silvermoon City
+Dalaran (Broken Isles) -> Caverns of Time
+Dalaran (Broken Isles) -> Shattrath City (Outland)
+Dalaran (Broken Isles) -> Dragonblight (Wyrmrest Temple)
+Dalaran (Broken Isles) -> Hillsbrad Foothills (Dalaran Crater)
+Dalaran (Broken Isles) -> Karazhan
+
+
+Removed portals:
+
+Thunder Bluff -> Blasted Lands
+Undercity -> Blasted Lands
+Silvermoon City -> Blasted Lands
+Darnassus -> Blasted Lands
+The Exodar -> Blasted Lands
+Ironforge -> Blasted Lands
+Shattrath City (Outland) -> Caverns of Time
+
+
+
+------------------------------------------------------------------------
+r185 | Odica | 2016-09-03 13:59:41 +0000 (Sat, 03 Sep 2016) | 1 line
+Changed paths:
+   M /trunk/LibTourist-3.0.lua
+
+Bugfix: repaired the mechanism that sets the player level for the six Legion zones. Cached values were empty because they were initialized before the player level was known. Values should now also be updated when the player levels up during play.
+------------------------------------------------------------------------
+r184 | iceeagle | 2016-08-06 17:57:08 +0000 (Sat, 06 Aug 2016) | 1 line
+Changed paths:
+   M /trunk/LibTourist-3.0.lua
+
+fix lua error "LibTourist-3.0.lua line 2525: table index is nil" due to missing  Tempest Keep complex name in EN table
+------------------------------------------------------------------------
