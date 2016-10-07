@@ -1,3 +1,8 @@
+[b]2.19[/b]
+*Updated French and Spanish locales
+*Fixed a visual glitch on texts
+*LibTourist update
+
 [b]2.18[/b]
 *LibTourist update. Fixes the recommended zones for Legion
 
