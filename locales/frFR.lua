@@ -36,7 +36,8 @@ L["Enable/Disable the coords for area dungeons and recommended dungeon entrances
 L["Enable/Disable the currencies, on Tooltip."] = "Activer/Désactiver la monnaie dans le Tooltip." -- Needs review
 L["Enable/Disable the professions, on Tooltip."] = "Activer/Désactiver les professions dans le Tooltip." -- Needs review
 L["Enable/Disable transparent layout."] = "Activer / désactiver l'agencement avec la transparence."
--- L["Hide capped"] = ""
+L["Hide Blizzard Zone Text"] = true
+L["Hide capped"] = true
 L["Hide PvP"] = "Cacher PvP"
 L["Hide Raid"] = "Cacher Raid"
 L["Hides all panels background so you can place them on ElvUI's top or bottom panel."] = "Cache le fond des panneaux, vous pouvez ainsi les placer en haut ou en bas des panneaux d'ElvUI's" -- Needs review

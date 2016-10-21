@@ -39,6 +39,7 @@ L["Enable/Disable the currencies, on Tooltip."] = true
 L["Enable/Disable the professions, on Tooltip."] = true
 L["Enable/Disable the Login Message"] = true
 L["Enable/Disable transparent layout."] = true
+L["Hide Blizzard Zone Text"] = true
 L["Hide capped"] = true
 L["Hide PvP"] = true
 L["Hide Raid"] = true

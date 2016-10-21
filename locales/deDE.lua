@@ -38,6 +38,7 @@ L["Enable/Disable the currencies, on Tooltip."] = "Aktiviere/Deaktiviere Währun
 L["Enable/Disable the Login Message"] = "Aktiviert/Deaktiviert die Login Nachricht"
 L["Enable/Disable the professions, on Tooltip."] = "Aktiviere/Deaktiviere Berufe im Tooltip."
 L["Enable/Disable transparent layout."] = "Aktiviere/Deaktiviere transparentes Aussehen."
+L["Hide Blizzard Zone Text"] = true
 L["Hide capped"] = "Verstecke Volle" --need to review this.
 L["Hide Coords"] = "Verstecke Koordinaten"
 L["Hide PvP"] = "Verstecke PvP"

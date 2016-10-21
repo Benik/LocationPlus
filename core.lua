@@ -946,6 +946,16 @@ function LPB:LocPlusDefaults()
 	end	
 end
 
+function LPB:ToggleBlizZoneText()
+	if E.db.locplus.zonetext then
+		ZoneTextFrame:UnregisterAllEvents()
+	else
+		ZoneTextFrame:RegisterEvent("ZONE_CHANGED_NEW_AREA")
+		ZoneTextFrame:RegisterEvent("ZONE_CHANGED_INDOORS")
+		ZoneTextFrame:RegisterEvent("ZONE_CHANGED")	
+	end
+end
+
 function LPB:TimerUpdate()
 	self:ScheduleRepeatingTimer('UpdateCoords', E.db.locplus.timer)
 end
@@ -967,6 +977,7 @@ function LPB:Initialize()
 	CreateCoordPanels()
 	self:LocPlusUpdate()
 	self:TimerUpdate()
+	self:ToggleBlizZoneText()
 	self:ScheduleRepeatingTimer('UpdateLocation', 0.5)
 	EP:RegisterPlugin(addon, LPB.AddOptions)
 	LocationPlusPanel:RegisterEvent("PLAYER_REGEN_DISABLED")

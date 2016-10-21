@@ -38,6 +38,7 @@ L["Enable/Disable the coords for area dungeons and recommended dungeon entrances
 L["Enable/Disable the currencies, on Tooltip."] = "Enable/Disable the currencies, on Tooltip." -- Requires localization
 L["Enable/Disable the professions, on Tooltip."] = "Enable/Disable the professions, on Tooltip." -- Requires localization
 L["Enable/Disable transparent layout."] = "启用/禁用 透明效果."
+L["Hide Blizzard Zone Text"] = true
 L["Hide capped"] = "Hide capped" -- Requires localization
 L["Hide PvP"] = "PvP区域内隐藏"
 L["Hide Raid"] = "副本区域内隐藏"

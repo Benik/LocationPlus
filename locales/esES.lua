@@ -38,6 +38,7 @@ L["Enable/Disable the coords for area dungeons and recommended dungeon entrances
 L["Enable/Disable the currencies, on Tooltip."] = "Activar / Desactivar las monedas, en el desplegable."
 L["Enable/Disable the professions, on Tooltip."] = "Activar / desactivar profesiones, en el desplegable."
 L["Enable/Disable transparent layout."] = "Activar / Desactivar transparencia"
+L["Hide Blizzard Zone Text"] = true
 L["Hide capped"] = "Ocultar completadas"
 L["Hide PvP"] = "Ocultar PvP"
 L["Hide Raid"] = "Ocultar bandas"

@@ -17,6 +17,7 @@ P['locplus'] = {
 	['displayOther'] = "RLEVEL",
 	['showicon'] = true,
 	['hidecoords'] = false,
+	['zonetext'] = true,
 -- Tooltip
 	['tt'] = true,
 	['ttcombathide'] = true,
@@ -93,8 +94,17 @@ function LPB:AddOptions()
 				name = L["General"],
 				guiInline = true,
 				args = {
+					LoginMsg = {
+							order = 1,
+							name = L["Login Message"],
+							desc = L["Enable/Disable the Login Message"],
+							type = 'toggle',
+							width = "full",
+							get = function(info) return E.db.locplus[ info[#info] ] end,
+							set = function(info, value) E.db.locplus[ info[#info] ] = value; end,                                  
+					},
 					combat = {
-						order = 1,
+						order = 2,
 						name = L["Combat Hide"],
 						desc = L["Show/Hide all panels when in combat"],
 						type = 'toggle',
@@ -102,7 +112,7 @@ function LPB:AddOptions()
 						set = function(info, value) E.db.locplus[ info[#info] ] = value; end,					
 					},
 					timer = {
-						order = 2,
+						order = 3,
 						name = L["Update Timer"],
 						desc = L["Adjust coords updates (in seconds) to avoid cpu load. Bigger number = less cpu load. Requires reloadUI."],
 						type = "range",
@@ -110,13 +120,12 @@ function LPB:AddOptions()
 						get = function(info) return E.db.locplus[ info[#info] ] end,
 						set = function(info, value) E.db.locplus[ info[#info] ] = value; E:StaticPopup_Show("PRIVATE_RL"); end,					
 					},
-					LoginMsg = {
-							order = 3,
-							name = L["Login Message"],
-							desc = L["Enable/Disable the Login Message"],
-							type = 'toggle',
-							get = function(info) return E.db.locplus[ info[#info] ] end,
-							set = function(info, value) E.db.locplus[ info[#info] ] = value; end,                                  
+					zonetext = {
+						order = 4,
+						name = L["Hide Blizzard Zone Text"],
+						type = 'toggle',
+						get = function(info) return E.db.locplus[ info[#info] ] end,
+						set = function(info, value) E.db.locplus[ info[#info] ] = value; LPB:ToggleBlizZoneText() end,					
 					},
 				},
 			},
