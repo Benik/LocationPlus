@@ -4,7 +4,7 @@
 ## Notes: A library to provide information about zones and instances.
 ## Author: Odica
 ## X-Category: Library
-## X-Curse-Packaged-Version: Wow-7.0-beta1
+## X-Curse-Packaged-Version: r189
 ## X-Curse-Project-Name: LibTourist-3.0
 ## X-Curse-Project-ID: libtourist-3-0
 ## X-Curse-Repository-ID: wow/libtourist-3-0/mainline

@@ -1,6 +1,6 @@
 ﻿--[[
 Name: LibTourist-3.0
-Revision: $Rev: 186 $
+Revision: $Rev: 189 $
 Author(s): Odica (maintainer), originally created by ckknight and Arrowmaster
 Documentation: http://www.wowace.com/addons/libtourist-3-0/
 SVN: svn://svn.wowace.com/wow/libtourist-3-0/mainline/trunk
@@ -9,7 +9,7 @@ License: MIT
 ]]
 
 local MAJOR_VERSION = "LibTourist-3.0"
-local MINOR_VERSION = 90000 + tonumber(("$Revision: 186 $"):match("(%d+)"))
+local MINOR_VERSION = 90000 + tonumber(("$Revision: 189 $"):match("(%d+)"))
 
 if not LibStub then error(MAJOR_VERSION .. " requires LibStub") end
 
@@ -159,9 +159,12 @@ function UpdateCachedLegionZoneLevels()
 	local legionZoneLevel = Tourist:GetLegionZoneLevel()
 	for k in Tourist:IterateBrokenIsles() do
 		if types[k] ~= "Instance" and types[k] ~= "Battleground" and types[k] ~= "Arena" and types[k] ~= "Complex" and types[k] ~= "City" and types[k] ~= "Continent" then
-			lows[k] = legionZoneLevel
-			highs[k] = legionZoneLevel
-			trace("Level for "..tostring(k).." is "..tostring(legionZoneLevel))
+			-- Exception for Suramar (which is fixed at lvl 110)
+			if k ~= BZ["Suramar"] then
+				lows[k] = legionZoneLevel
+				highs[k] = legionZoneLevel
+				trace("Level for "..tostring(k).." is "..tostring(legionZoneLevel))
+			end
 		end
 	end
 end
@@ -7411,8 +7414,8 @@ do
 	}
 
 	zones[BZ["Suramar"]] = {
-		low = Tourist:GetLegionZoneLevel(),
-		high = Tourist:GetLegionZoneLevel(),
+		low = 110,
+		high = 110,
 		continent = BrokenIsles,
 		instances = {
 			[BZ["Court of Stars"]] = true,
@@ -7744,6 +7747,11 @@ do
 	zones[BZ["Pandaria"]].x_offset = 12223.65
 	zones[BZ["Pandaria"]].y_offset = 520.24
 	zones[BZ["Pandaria"]].scale = 0.6514
+	
+	zones[BZ["Broken Isles"]].x_offset = 16297
+	zones[BZ["Broken Isles"]].y_offset = 8225.3
+	zones[BZ["Broken Isles"]].scale = 0.4469
+	
 	-- --------------------------------------------------------------------------------------------------------------------------
 
 	
