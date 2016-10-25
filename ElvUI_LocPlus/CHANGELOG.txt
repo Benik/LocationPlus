@@ -1,3 +1,6 @@
+[b]2.21[/b]
+*Fixed coords creation when in instance
+
 [b]2.20[/b]
 *Added option to hide Blizzard ZoneText
 *toc update for patch 7.1
