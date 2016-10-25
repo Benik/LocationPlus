@@ -548,8 +548,12 @@ local function CreateCoords()
 		dig = 0
 	end
 	
-	x = tonumber(E:Round(100 * x, dig))
-	y = tonumber(E:Round(100 * y, dig))
+	if x then
+		x = tonumber(E:Round(100 * x, dig))
+	end
+	if y then
+		y = tonumber(E:Round(100 * y, dig))
+	end
 	
 	return x, y
 end
@@ -860,7 +864,7 @@ function LPB:UpdateCoords()
 	local x, y = CreateCoords()
 	local xt,yt
 
-	if x == 0 and y == 0 then
+	if (x == 0 or x == nil) and (y == 0 or y == nil) then
 		XCoordsPanel.Text:SetText("-")
 		YCoordsPanel.Text:SetText("-")
 	else
