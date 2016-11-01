@@ -1,6 +1,6 @@
 ﻿--[[
 Name: LibTourist-3.0
-Revision: $Rev: 189 $
+Revision: $Rev: 190 $
 Author(s): Odica (maintainer), originally created by ckknight and Arrowmaster
 Documentation: http://www.wowace.com/addons/libtourist-3-0/
 SVN: svn://svn.wowace.com/wow/libtourist-3-0/mainline/trunk
@@ -9,7 +9,7 @@ License: MIT
 ]]
 
 local MAJOR_VERSION = "LibTourist-3.0"
-local MINOR_VERSION = 90000 + tonumber(("$Revision: 189 $"):match("(%d+)"))
+local MINOR_VERSION = 90000 + tonumber(("$Revision: 190 $"):match("(%d+)"))
 
 if not LibStub then error(MAJOR_VERSION .. " requires LibStub") end
 
@@ -1996,7 +1996,7 @@ local MapIdLookupTable = {
 	[1039] = "Icecrown Citadel",
 	[1040] = "Netherlight Temple",
 	[1041] = "Halls of Valor",
-	[1042] = "Helmouth Cliffs",
+	[1042] = "Maw of Souls",
 	[1043] = "The Naglfar",
 	[1044] = "The Wandering Isle",
 	[1045] = "Vault of the Wardens",
@@ -2044,6 +2044,7 @@ local MapIdLookupTable = {
 	[1094] = "The Emerald Nightmare",
 	[1096] = "Eye of Azshara",
 	[1097] = "Temple of the Jade Serpent",
+	[1098] = "Eye of Azshara",
 	[1099] = "Black Rook Hold",
 	[1100] = "Karazhan",
 	[1102] = "The Arcway",
@@ -7493,7 +7494,7 @@ do
 		continent = BrokenIsles,
 		instances = {
 			[BZ["Halls of Valor"]] = true,
---			[BZ["Maw of Souls"]] = true,   -- TODO: enable when map ID is known
+			[BZ["Maw of Souls"]] = true, 
 		},
 		paths = {
 			[BZ["Suramar"]] = true,
@@ -7627,16 +7628,15 @@ do
 		entrancePortal = { BZ["Stormheim"], 68.3, 66.2 }, 
 	}	
 	
--- TODO: enable when map ID is known
---	zones[BZ["The Maw of Souls"]] = {
---		low = 110,
---		high = 110,
---		continent = BrokenIsles,
---		paths = BZ["Stormheim"],
---		groupSize = 5,
---		type = "Instance",
---		entrancePortal = { BZ["Stormheim"], 53.0, 47.2 }, 
---	}	
+	zones[BZ["Maw of Souls"]] = {
+		low = 110,
+		high = 110,
+		continent = BrokenIsles,
+		paths = BZ["Stormheim"],
+		groupSize = 5,
+		type = "Instance",
+		entrancePortal = { BZ["Stormheim"], 53.0, 47.2 }, 
+	}	
 	
 	zones[BZ["Court of Stars"]] = {
 		low = 110,
@@ -7796,7 +7796,7 @@ do
 						-- Skip offset calculation as we obviously got no data from GetCurrentMapZone
 					else 
 						if cWidth ~= 0 then
-							-- Calculate zone offsets if the size of the continent is know (The Maelstrom has no continent size).
+							-- Calculate zone offsets if the size of the continent is known (The Maelstrom has no continent size).
 							-- LibTourist uses positive x and y axis with the source located at the top left corner of the map.
 							-- GetCurrentMapZone uses a source *somewhere* in the middle of the map, and the x axis is 
 							-- reversed so it's positive to the LEFT.

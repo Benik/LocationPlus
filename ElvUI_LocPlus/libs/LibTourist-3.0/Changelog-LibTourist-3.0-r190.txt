@@ -1,4 +1,14 @@
 ------------------------------------------------------------------------
+r190 | Odica | 2016-10-30 22:07:20 +0000 (Sun, 30 Oct 2016) | 4 lines
+Changed paths:
+   M /trunk/LibTourist-3.0.lua
+   M /trunk/LibTourist-3.0.toc
+
+- renamed Helmouth Cliffs into Maw of Souls
+- added Maw of Souls
+- added map ID for Eye of Azshara to lookup table
+- updated TOC to 70100
+------------------------------------------------------------------------
 r189 | Odica | 2016-10-19 17:28:17 +0000 (Wed, 19 Oct 2016) | 1 line
 Changed paths:
    M /trunk/LibTourist-3.0.lua
@@ -80,10 +90,4 @@ Shattrath City (Outland) -> Caverns of Time
 
 
 
-------------------------------------------------------------------------
-r185 | Odica | 2016-09-03 13:59:41 +0000 (Sat, 03 Sep 2016) | 1 line
-Changed paths:
-   M /trunk/LibTourist-3.0.lua
-
-Bugfix: repaired the mechanism that sets the player level for the six Legion zones. Cached values were empty because they were initialized before the player level was known. Values should now also be updated when the player levels up during play.
 ------------------------------------------------------------------------
