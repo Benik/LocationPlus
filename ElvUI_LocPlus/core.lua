@@ -98,6 +98,7 @@ local currency = {
 	1172,	-- Highborne Archaeology Fragment
 	1173,	-- Highmountain Tauren Archaeology Fragment
 	1174,	-- Demonic Archaeology Fragment
+	1273,	-- Seal of Broken Fate (Bonus Rolls)
 }
 ------------------------
 -- end of Currency Table
