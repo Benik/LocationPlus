@@ -1,3 +1,7 @@
+[b]2.22[/b]
+*LibTourist update to r190
+*Added Seal of Broken Fate (Bonus Rolls) to the currencies
+
 [b]2.21[/b]
 *Fixed coords creation when in instance
 
