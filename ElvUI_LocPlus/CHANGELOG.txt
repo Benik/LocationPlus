@@ -1,3 +1,9 @@
+[b]2.24[/b]
+Fixed a tooltip icon error
+
+[b]2.23[/b]
+*toc update for patch 7.2
+
 [b]2.22[/b]
 *LibTourist update to r190
 *Added Seal of Broken Fate (Bonus Rolls) to the currencies

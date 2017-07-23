@@ -461,8 +461,9 @@ local function UpdateTooltip()
 
 		for i, id in pairs(currency) do
 			local name, amount, icon, _, _, totalMax, isDiscovered = GetCurrencyInfo(id)
-			icon = ("|T%s:12:12:1:0|t"):format(icon)
-			if(name and amount > 0) then	
+
+			if(name and amount > 0) then
+				icon = ("|T%s:12:12:1:0|t"):format(icon)
 				if totalMax == 0 then
 					GameTooltip:AddDoubleLine(icon..format(" %s : ", name), format("%s", amount ), 1, 1, 1, selectioncolor)
 				else
@@ -481,8 +482,9 @@ local function UpdateTooltip()
 		local proftable = { GetProfessions() }
 		for _, id in pairs(proftable) do
 			local name, icon, rank, maxRank, _, _, _, rankModifier = GetProfessionInfo(id)
-			icon = ("|T%s:12:12:1:0|t"):format(icon)
+
 			if rank < capRank or (not E.db.locplus.profcap) then
+				icon = ("|T%s:12:12:1:0|t"):format(icon)
 				if (rankModifier and rankModifier > 0) then
 					GameTooltip:AddDoubleLine(format("%s %s :", icon, name), (format("%s |cFF6b8df4+ %s|r / %s", rank, rankModifier, maxRank)), 1, 1, 1, selectioncolor)				
 				else
