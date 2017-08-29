@@ -118,7 +118,7 @@ local zoneIDtoContinentID = {}
 -- HELPER AND LOOKUP FUNCTIONS -------------------------------------------------------------
 
 local function PLAYER_LEVEL_UP(self, level)
-	playerLevel = level or UnitLevel("player")
+	playerLevel = (level and level ~= true) and level or UnitLevel("player")
 	for k in pairs(recZones) do
 		recZones[k] = nil
 	end
