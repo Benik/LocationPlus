@@ -1,5 +1,9 @@
+[b]2.25[/b]
+*toc update for patch 7.3
+*Updated the tokens table
+
 [b]2.24[/b]
-Fixed a tooltip icon error
+*Fixed a tooltip icon error
 
 [b]2.23[/b]
 *toc update for patch 7.2
