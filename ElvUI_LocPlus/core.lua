@@ -78,27 +78,39 @@ local currency = {
 	--776,	-- Warforged Seal
 	
 	-- WoD
-	824,	-- Garrison Resources
-	823,	-- Apexis Crystal (for gear, like the valors)
+	--824,	-- Garrison Resources
+	--823,	-- Apexis Crystal (for gear, like the valors)
 	--994,	-- Seal of Tempered Fate (Raid loot roll)
 	--980,	-- Dingy Iron Coins (rogue only, from pickpocketing)
 	--944,	-- Artifact Fragment (PvP)
-	1101,	-- Oil
-	1129,	-- Seal of Inevitable Fate
+	--1101,	-- Oil
+	--1129,	-- Seal of Inevitable Fate
 	--821,	-- Draenor Clans Archaeology Fragment
 	--828,	-- Ogre Archaeology Fragment
 	--829,	-- Arakkoa Archaeology Fragment
 	1166, 	-- Timewarped Badge (6.22)
-	1191,	-- Valor Points (6.23)
+	--1191,	-- Valor Points (6.23)
 	
 	-- Legion
-	1155,	-- Ancient Mana
-	1220,	-- Order Resources
-	1226,	-- Nethershard (Invasion scenarios)
+	--1226,	-- Nethershard (Invasion scenarios)
 	1172,	-- Highborne Archaeology Fragment
 	1173,	-- Highmountain Tauren Archaeology Fragment
-	1174,	-- Demonic Archaeology Fragment
-	1273,	-- Seal of Broken Fate (Bonus Rolls)
+	--1155,	-- Ancient Mana
+	1220,	-- Order Resources
+	1275,	-- Curious Coin (Buy stuff :P)
+	--1226,	-- Nethershard (Invasion scenarios)
+	1273,	-- Seal of Broken Fate (Raid)
+	--1154,	-- Shadowy Coins
+	--1149,	-- Sightless Eye (PvP)
+	--1268,	-- Timeworn Artifact (Honor Points?)
+	--1299,	-- Brawler's Gold
+	--1314,	-- Lingering Soul Fragment (Good luck with this one :D)
+	1342,	-- Legionfall War Supplies (Construction at the Broken Shore)
+	1355,	-- Felessence (Craft Legentary items)
+	--1356,	-- Echoes of Battle (PvP Gear)
+	--1357,	-- Echoes of Domination (Elite PvP Gear)
+	1416,	-- Coins of Air
+	1506,	-- Argus Waystone
 }
 ------------------------
 -- end of Currency Table
