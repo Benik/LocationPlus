@@ -111,6 +111,7 @@ local currency = {
 	--1357,	-- Echoes of Domination (Elite PvP Gear)
 	1416,	-- Coins of Air
 	1506,	-- Argus Waystone
+	1508,	-- Veiled Argunite
 }
 ------------------------
 -- end of Currency Table
