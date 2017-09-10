@@ -1,6 +1,6 @@
 --[[
 Name: LibTourist-3.0
-Revision: $Rev: 193 $
+Revision: $Rev: 197 $
 Author(s): Odica (maintainer), originally created by ckknight and Arrowmaster
 Documentation: https://www.wowace.com/projects/libtourist-3-0/pages/api-reference
 SVN: svn://svn.wowace.com/wow/libtourist-3-0/mainline/trunk
@@ -9,7 +9,7 @@ License: MIT
 ]]
 
 local MAJOR_VERSION = "LibTourist-3.0"
-local MINOR_VERSION = 90000 + tonumber(("$Revision: 193 $"):match("(%d+)"))
+local MINOR_VERSION = 90000 + tonumber(("$Revision: 197 $"):match("(%d+)"))
 
 if not LibStub then error(MAJOR_VERSION .. " requires LibStub") end
 
@@ -33,7 +33,8 @@ end
 local BZ = {}
 local BZR = {}
 
-local playerLevel = 1
+local playerLevel = UnitLevel("player")
+trace("INIT: Player Level = "..tostring(playerLevel))
 
 local isAlliance, isHorde, isNeutral
 do
@@ -54,6 +55,7 @@ local The_Maelstrom = "The Maelstrom"
 local Pandaria = "Pandaria"
 local Draenor = "Draenor"
 local BrokenIsles = "Broken Isles"
+local Argus = "Argus"
 
 local X_Y_ZEPPELIN = "%s - %s Zeppelin"
 local X_Y_BOAT = "%s - %s Boat"
@@ -140,7 +142,9 @@ local function UpdateCachedLegionZoneLevels()
 end
 
 local function PLAYER_LEVEL_UP(self, level)
-	playerLevel = (level and level ~= true) and level or UnitLevel("player")
+	playerLevel = UnitLevel("player")
+	trace("PLAYER_LEVEL_UP: Player Level = "..tostring(playerLevel))
+	
 	for k in pairs(recZones) do
 		recZones[k] = nil
 	end
@@ -2055,7 +2059,7 @@ local MapIdLookupTable = {
 	[1039] = "Icecrown Citadel",
 	[1040] = "Netherlight Temple",
 	[1041] = "Halls of Valor",
-	[1042] = "Maw of Souls",
+	[1042] = "Helmouth Cliffs",
 	[1043] = "The Naglfar",
 	[1044] = "The Wandering Isle",
 	[1045] = "Vault of the Wardens",
@@ -2119,10 +2123,14 @@ local MapIdLookupTable = {
 	[1130] = "Stratholme",
 	[1131] = "The Eye of Eternity",
 	[1132] = "Halls of Valor",
+	[1135] = "Krokuun",
+    [1136] = "Coldridge Valley",
+    [1137] = "The Deadmines",
 	[1139] = "Arathi Basin",
 	[1140] = "Battle for Blackrock Mountain",
 	[1142] = "The Maelstrom",
-	[1144] = "Small Battleground C",
+    [1143] = "Gnomeregan",
+	[1144] = "Shado-Pan Showdown",
 	[1146] = "Cathedral of Eternal Night",
 	[1147] = "Tomb of Sargeras",
 	[1148] = "Throne of the Four Winds",
@@ -2138,6 +2146,27 @@ local MapIdLookupTable = {
 	[1164] = "Fields of the Eternal Hunt",
 	[1165] = "Mardum, the Shattered Abyss",
 	[1166] = "The Eye of Eternity",
+    [1170] = "Mac'Aree",
+    [1171] = "Antoran Wastes",
+    [1172] = "Hall of Communion",
+    [1173] = "Arcatraz",
+    [1174] = "Azuremyst Isle",
+    [1177] = "The Deaths of Chromie",
+    [1178] = "The Seat of the Triumvirate",
+    [1184] = "Argus",
+    [1188] = "Antorus, the Burning Throne",
+    [1190] = "Invasion Point: Aurinor",
+    [1191] = "Invasion Point: Bonich",
+    [1192] = "Invasion Point: Cen'gar",
+    [1193] = "Invasion Point: Naigtal",
+    [1194] = "Invasion Point: Sangua",
+    [1195] = "Invasion Point: Val",
+    [1196] = "Greater Invasion Point: Pit Lord Vilemus",
+    [1197] = "Greater Invasion Point: Mistress Alluradel",
+    [1198] = "Greater Invasion Point: Matron Folnuna",
+    [1199] = "Greater Invasion Point: Inquisitor Meto",
+    [1200] = "Greater Invasion Point: Sotanathor",
+    [1201] = "Greater Invasion Point: Occularus",
 }
 
 local zoneTranslation = {
@@ -2846,6 +2875,11 @@ do
 		continent = BrokenIsles,
 	}
 
+	zones[BZ["Argus"]] = {
+		type = "Continent",
+		continent = Argus,
+	}
+	
 	-- TRANSPORTS ---------------------------------------------------------------
 
 	zones[transports["STORMWIND_BOREANTUNDRA_BOAT"]] = {
@@ -7582,7 +7616,7 @@ do
 		continent = BrokenIsles,
 		instances = {
 			[BZ["Halls of Valor"]] = true,
-			[BZ["Maw of Souls"]] = true, 
+			[BZ["Helmouth Cliffs"]] = true, 
 		},
 		paths = {
 			[BZ["Suramar"]] = true,
@@ -7593,6 +7627,27 @@ do
 		battlepet_high = 25,
 	}
 	
+	-- Patch 7.3 zones
+	zones[BZ["Krokuun"]] = {
+		low = 110,
+		high = 110,
+		continent = Argus,
+	}
+	
+	zones[BZ["Antoran Wastes"]] = {
+		low = 110,
+		high = 110,
+		continent = Argus,
+	}
+	
+	zones[BZ["Mac'Aree"]] = {
+		low = 110,
+		high = 110,
+		continent = Argus,
+		instances = {
+			[BZ["The Seat of the Triumvirate"]] = true,
+		},
+	}
 	
 	-- Legion cities --------------------------
 
@@ -7691,7 +7746,6 @@ do
 		paths = BZ["Val'sharah"],
 		groupMinSize = 10,
 		groupMaxSize = 30,
-		altGroupSize = 20,
 		type = "Instance",
 		entrancePortal = { BZ["Val'sharah"], 57.1, 39.9 }, 
 	}
@@ -7716,7 +7770,7 @@ do
 		entrancePortal = { BZ["Stormheim"], 68.3, 66.2 }, 
 	}	
 	
-	zones[BZ["Maw of Souls"]] = {
+	zones[BZ["Helmouth Cliffs"]] = {
 		low = 110,
 		high = 110,
 		continent = BrokenIsles,
@@ -7753,7 +7807,6 @@ do
 		paths = BZ["Suramar"],
 		groupMinSize = 10,
 		groupMaxSize = 30,
-		altGroupSize = 20,
 		type = "Instance",
 		entrancePortal = { BZ["Suramar"], 43, 62 }, 
 	}
@@ -7778,8 +7831,32 @@ do
 		paths = BZ["Broken Shore"],
 		groupSize = 5,
 		type = "Instance",
-		--entrancePortal = { BZ["Broken Shore"], 43, 62 },  -- TODO
+		entrancePortal = { BZ["Broken Shore"], 63, 18 },
 	}			
+	
+	
+	-- Patch 7.3 dungeon
+	zones[BZ["The Seat of the Triumvirate"]] = {
+		low = 110,
+		high = 110,
+		continent = Argus,
+		paths = BZ["Mac'Aree"],
+		groupSize = 5,
+		type = "Instance",
+		entrancePortal = { BZ["Mac'Aree"], 22.3, 56.1 }, 
+	}	
+	
+	-- Patch 7.3 raid
+	zones[BZ["Antorus, the Burning Throne"]] = {
+		low = 110,
+		high = 110,
+		continent = Argus,
+		paths = BZ["Antoran Wastes"],
+		groupMinSize = 10,
+		groupMaxSize = 30,
+		type = "Instance",
+		--entrancePortal = { BZ["Antoran Wastes"], 0, 0 }, TODO
+	}
 	
 --------------------------------------------------------------------------------------------------------
 --                                                CORE                                                --
