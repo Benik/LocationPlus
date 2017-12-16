@@ -740,7 +740,7 @@ function LPB:ChangeFont()
 	end
 
 	local dtToFont = {RightCoordDtPanel, LeftCoordDtPanel}
-	for panelName, panel in pairs(dtToFont) do
+	for _, panel in pairs(dtToFont) do
 		for i=1, panel.numPoints do
 			local pointIndex = DT.PointLocation[i]
 			panel.dataPanels[pointIndex].text:FontTemplate(E["media"].lpFont, E.db.locplus.lpfontsize, E.db.locplus.lpfontflags)
