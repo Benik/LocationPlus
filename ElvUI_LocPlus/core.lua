@@ -199,7 +199,7 @@ local function unpackColor(color)
 end
 
 -- Location panel
-local function CreateLocPanel()
+local function CreateLocationPanel()
 	local loc_panel = CreateFrame('Frame', 'LocationPlusPanel', E.UIParent)
 	loc_panel:Width(E.db.locplus.lpwidth)
 	loc_panel:Height(E.db.locplus.dtheight)
@@ -244,6 +244,11 @@ local function CreateLocPanel()
 			end
 		end
 	end)
+
+	loc_panel:RegisterEvent("PLAYER_REGEN_DISABLED")
+	loc_panel:RegisterEvent("PLAYER_REGEN_ENABLED")
+	loc_panel:RegisterEvent("PET_BATTLE_CLOSE")
+	loc_panel:RegisterEvent("PET_BATTLE_OPENING_START")
 
 	-- Mover
 	E:CreateMover(LocationPlusPanel, "LocationMover", L["LocationPlus "])
@@ -511,7 +516,7 @@ function LP:CoordsColor()
 end
 
 -- Datatext panels
-local function CreateDTPanels()
+local function CreateDatatextPanels()
 
 	-- Left coords Datatext panel
 	left_dtp:Width(E.db.locplus.dtwidth)
@@ -574,19 +579,15 @@ end
 
 function LP:Initialize()
 	self:LocPlusDefaults()
-	CreateLocPanel()
-	CreateDTPanels()
+	CreateLocationPanel()
+	CreateDatatextPanels()
 	CreateCoordPanels()
 	self:LocPlusUpdate()
 	self:TimerUpdate()
 	self:ToggleBlizZoneText()
 	self:ScheduleRepeatingTimer('UpdateLocation', 0.5)
-	EP:RegisterPlugin(addon, LP.AddOptions)
-	LocationPlusPanel:RegisterEvent("PLAYER_REGEN_DISABLED")
-	LocationPlusPanel:RegisterEvent("PLAYER_REGEN_ENABLED")
-	LocationPlusPanel:RegisterEvent("PET_BATTLE_CLOSE")
-	LocationPlusPanel:RegisterEvent("PET_BATTLE_OPENING_START")
 	self:RegisterEvent('PLAYER_ENTERING_WORLD')
+	EP:RegisterPlugin(addon, LP.AddOptions)
 
 	if E.db.locplus.LoginMsg then
 		print(L["Location Plus "]..format("v|cff33ffff%s|r",LP.version)..L[" is loaded. Thank you for using it."])
