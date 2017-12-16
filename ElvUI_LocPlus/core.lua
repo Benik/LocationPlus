@@ -15,7 +15,7 @@ a plugin for ElvUI, that adds player location and coords + 2 Datatexts
 ]]--
 
 local E, L, V, P, G = unpack(ElvUI);
-local LPB = E:NewModule('LocationPlus', 'AceTimer-3.0', 'AceEvent-3.0');
+local LP = E:NewModule('LocationPlus', 'AceTimer-3.0', 'AceEvent-3.0');
 local DT = E:GetModule('DataTexts');
 local LSM = LibStub("LibSharedMedia-3.0");
 local EP = LibStub("LibElvUIPlugin-1.0")
@@ -117,7 +117,7 @@ local currency = {
 -- end of Currency Table
 ------------------------
 
-LPB.version = GetAddOnMetadata("ElvUI_LocPlus", "Version")
+LP.version = GetAddOnMetadata("ElvUI_LocPlus", "Version")
 
 if E.db.locplus == nil then E.db.locplus = {} end
 
@@ -696,11 +696,11 @@ local function CreateCoordPanels()
 	coordsY.Text:SetJustifyH("CENTER")
 	coordsY.Text:SetJustifyV("MIDDLE")
 
-	LPB:CoordsColor()
+	LP:CoordsColor()
 end
 
 -- mouse over option
-function LPB:MouseOver()
+function LP:MouseOver()
 	if E.db.locplus.mouseover then
 		LocationPlusPanel:SetAlpha(E.db.locplus.malpha)
 	else
@@ -709,13 +709,13 @@ function LPB:MouseOver()
 end
 
 -- datatext panels width
-function LPB:DTWidth()
+function LP:DTWidth()
 	LeftCoordDtPanel:Width(E.db.locplus.dtwidth)
 	RightCoordDtPanel:Width(E.db.locplus.dtwidth)
 end
 
 -- all panels height
-function LPB:DTHeight()
+function LP:DTHeight()
 	if E.db.locplus.ht then
 		LocationPlusPanel:Height((E.db.locplus.dtheight)+6)
 	else
@@ -730,7 +730,7 @@ function LPB:DTHeight()
 end
 
 -- Fonts
-function LPB:ChangeFont()
+function LP:ChangeFont()
 
 	E["media"].lpFont = LSM:Fetch("font", E.db.locplus.lpfont)
 
@@ -750,7 +750,7 @@ function LPB:ChangeFont()
 end
 
 -- Enable/Disable shadows
-function LPB:ShadowPanels()
+function LP:ShadowPanels()
 	local panelsToAddShadow = {LocationPlusPanel, XCoordsPanel, YCoordsPanel, LeftCoordDtPanel, RightCoordDtPanel}
 	
 	for _, frame in pairs(panelsToAddShadow) do
@@ -772,7 +772,7 @@ function LPB:ShadowPanels()
 end
 
 -- Show/Hide coord frames
-function LPB:HideCoords()
+function LP:HideCoords()
 	XCoordsPanel:Point('RIGHT', LocationPlusPanel, 'LEFT', -SPACING, 0)
 	YCoordsPanel:Point('LEFT', LocationPlusPanel, 'RIGHT', SPACING, 0)
 	
@@ -793,7 +793,7 @@ function LPB:HideCoords()
 end
 
 -- Toggle transparency
-function LPB:TransparentPanels()
+function LP:TransparentPanels()
 	local panelsToAddTrans = {LocationPlusPanel, XCoordsPanel, YCoordsPanel, LeftCoordDtPanel, RightCoordDtPanel}
 	
 	for _, frame in pairs(panelsToAddTrans) do
@@ -808,7 +808,7 @@ function LPB:TransparentPanels()
 	end
 end
 
-function LPB:UpdateLocation()
+function LP:UpdateLocation()
 	local subZoneText = GetMinimapZoneText() or ""
 	local zoneText = GetRealZoneText() or UNKNOWN;
 	local displayLine
@@ -876,7 +876,7 @@ function LPB:UpdateLocation()
 	end		
 end
 
-function LPB:UpdateCoords()
+function LP:UpdateCoords()
 	local x, y = CreateCoords()
 	local xt,yt
 
@@ -901,7 +901,7 @@ function LPB:UpdateCoords()
 end
 
 -- Coord panels width
-function LPB:CoordsDigit()
+function LP:CoordsDigit()
 	if E.db.locplus.dig then
 		XCoordsPanel:Width(COORDS_WIDTH*1.5)
 		YCoordsPanel:Width(COORDS_WIDTH*1.5)
@@ -911,7 +911,7 @@ function LPB:CoordsDigit()
 	end
 end
 
-function LPB:CoordsColor()
+function LP:CoordsColor()
 	if E.db.locplus.customCoordsColor == 1 then
 		XCoordsPanel.Text:SetTextColor(unpackColor(E.db.locplus.userColor))
 		YCoordsPanel.Text:SetTextColor(unpackColor(E.db.locplus.userColor))			
@@ -941,7 +941,7 @@ local function CreateDTPanels()
 end
 
 -- Update changes
-function LPB:LocPlusUpdate()
+function LP:LocPlusUpdate()
 	self:TransparentPanels()
 	self:ShadowPanels()
 	self:DTHeight()
@@ -952,7 +952,7 @@ function LPB:LocPlusUpdate()
 end
 
 -- Defaults in case something is wrong on first load
-function LPB:LocPlusDefaults()
+function LP:LocPlusDefaults()
 	if E.db.locplus.lpwidth == nil then
 		E.db.locplus.lpwidth = 200
 	end	
@@ -966,7 +966,7 @@ function LPB:LocPlusDefaults()
 	end	
 end
 
-function LPB:ToggleBlizZoneText()
+function LP:ToggleBlizZoneText()
 	if E.db.locplus.zonetext then
 		ZoneTextFrame:UnregisterAllEvents()
 	else
@@ -976,17 +976,17 @@ function LPB:ToggleBlizZoneText()
 	end
 end
 
-function LPB:TimerUpdate()
+function LP:TimerUpdate()
 	self:ScheduleRepeatingTimer('UpdateCoords', E.db.locplus.timer)
 end
 
-function LPB:PLAYER_ENTERING_WORLD(...)
+function LP:PLAYER_ENTERING_WORLD(...)
 	self:ChangeFont()
 	self:UpdateCoords()
 	self:UnregisterEvent("PLAYER_ENTERING_WORLD")
 end
 
-function LPB:Initialize()
+function LP:Initialize()
 	self:LocPlusDefaults()
 	CreateLocPanel()
 	CreateDTPanels()
@@ -995,7 +995,7 @@ function LPB:Initialize()
 	self:TimerUpdate()
 	self:ToggleBlizZoneText()
 	self:ScheduleRepeatingTimer('UpdateLocation', 0.5)
-	EP:RegisterPlugin(addon, LPB.AddOptions)
+	EP:RegisterPlugin(addon, LP.AddOptions)
 	LocationPlusPanel:RegisterEvent("PLAYER_REGEN_DISABLED")
 	LocationPlusPanel:RegisterEvent("PLAYER_REGEN_ENABLED")
 	LocationPlusPanel:RegisterEvent("PET_BATTLE_CLOSE")
@@ -1003,8 +1003,8 @@ function LPB:Initialize()
 	self:RegisterEvent('PLAYER_ENTERING_WORLD')
 
 	if E.db.locplus.LoginMsg then
-		print(L["Location Plus "]..format("v|cff33ffff%s|r",LPB.version)..L[" is loaded. Thank you for using it."])
+		print(L["Location Plus "]..format("v|cff33ffff%s|r",LP.version)..L[" is loaded. Thank you for using it."])
 	end
 end
 
-E:RegisterModule(LPB:GetName())
+E:RegisterModule(LP:GetName())
