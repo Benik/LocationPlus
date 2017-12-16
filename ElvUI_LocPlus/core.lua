@@ -47,7 +47,7 @@ local GameTooltip, WorldMapFrame = _G['GameTooltip'], _G['WorldMapFrame']
 local PLAYER, UNKNOWN, TRADE_SKILLS, TOKENS, DUNGEONS, PROFESSIONS_FISHING, LEVEL_RANGE, STATUS, HOME, CONTINENT = PLAYER, UNKNOWN, TRADE_SKILLS, TOKENS, DUNGEONS, PROFESSIONS_FISHING, LEVEL_RANGE, STATUS, HOME, CONTINENT
 local SANCTUARY_TERRITORY, ARENA, FRIENDLY, HOSTILE, CONTESTED_TERRITORY, COMBAT, AGGRO_WARNING_IN_INSTANCE, PVP, RAID = SANCTUARY_TERRITORY, ARENA, FRIENDLY, HOSTILE, CONTESTED_TERRITORY, COMBAT, AGGRO_WARNING_IN_INSTANCE, PVP, RAID
 
--- GLOBALS: LocationPlusPanel, LeftCoordDtPanel, RightCoordDtPanel, XCoordsPanel, YCoordsPanel, selectioncolor, continent, continentID
+-- GLOBALS: LocationPlusPanel, LeftCoordDtPanel, RightCoordDtPanel, XCoordsPanel, YCoordsPanel, selectioncolor, continent, continentID, CUSTOM_CLASS_COLORS
 
 local left_dtp = CreateFrame('Frame', 'LeftCoordDtPanel', E.UIParent)
 local right_dtp = CreateFrame('Frame', 'RightCoordDtPanel', E.UIParent)
