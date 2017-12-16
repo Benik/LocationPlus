@@ -21,7 +21,7 @@ local LSM = LibStub("LibSharedMedia-3.0");
 local EP = LibStub("LibElvUIPlugin-1.0")
 local addon, ns = ...
 
-local tourist = LibStub("LibTourist-3.0");
+local T = LibStub("LibTourist-3.0");
 
 local format, tonumber, pairs, print = string.format, tonumber, pairs, print
 
@@ -180,8 +180,8 @@ local function GetDungeonCoords(zone)
 	local z, x, y = "", 0, 0;
 	local dcoords
 	
-	if tourist:IsInstance(zone) then
-		z, x, y = tourist:GetEntrancePortalLocation(zone);
+	if T:IsInstance(zone) then
+		z, x, y = T:GetEntrancePortalLocation(zone);
 	end
 	
 	if z == nil then
@@ -205,14 +205,14 @@ end
 	isPvP = nil;
 	isRaid = nil;
 	
-	if(tourist:IsArena(zone) or tourist:IsBattleground(zone)) then
+	if(T:IsArena(zone) or T:IsBattleground(zone)) then
 		if E.db.locplus.tthidepvp then
 			return;
 		end
 		isPvP = true;
 	end
 	
-	if(not isPvP and tourist:GetInstanceGroupSize(zone) >= 10) then
+	if(not isPvP and T:GetInstanceGroupSize(zone) >= 10) then
 		if E.db.locplus.tthideraid then
 			return
 		end
@@ -226,9 +226,9 @@ end
 -- Recommended zones
 local function GetRecomZones(zone)
 
-	local low, high = tourist:GetLevel(zone)
-	local r, g, b = tourist:GetLevelColor(zone)
-	local zContinent = tourist:GetContinent(zone)
+	local low, high = T:GetLevel(zone)
+	local r, g, b = T:GetLevelColor(zone)
+	local zContinent = T:GetContinent(zone)
 
 	if PvPorRaidFilter(zone) == nil then return end
 	
@@ -243,10 +243,10 @@ end
 -- Dungeons in the zone
 local function GetZoneDungeons(dungeon)
 
-	local low, high = tourist:GetLevel(dungeon)
-	local r, g, b = tourist:GetLevelColor(dungeon)
-	local groupSize = tourist:GetInstanceGroupSize(dungeon)
-	local altGroupSize = tourist:GetInstanceAltGroupSize(dungeon)
+	local low, high = T:GetLevel(dungeon)
+	local r, g, b = T:GetLevelColor(dungeon)
+	local groupSize = T:GetInstanceGroupSize(dungeon)
+	local altGroupSize = T:GetInstanceAltGroupSize(dungeon)
 	local groupSizeStyle = (groupSize > 0 and format("|cFFFFFF00|r (%d", groupSize) or "")
 	local altGroupSizeStyle = (altGroupSize > 0 and format("|cFFFFFF00|r/%d", altGroupSize) or "")
 	local name = dungeon
@@ -266,9 +266,9 @@ end
 -- Recommended Dungeons
 local function GetRecomDungeons(dungeon)
 		
-	local low, high = tourist:GetLevel(dungeon);	
-	local r, g, b = tourist:GetLevelColor(dungeon);
-	local instZone = tourist:GetInstanceZone(dungeon);
+	local low, high = T:GetLevel(dungeon);	
+	local r, g, b = T:GetLevelColor(dungeon);
+	local instZone = T:GetInstanceZone(dungeon);
 	local name = dungeon
 	
 	if PvPorRaidFilter(dungeon) == nil then return end
@@ -296,9 +296,9 @@ local LEVEL_ICON = "|TInterface\\AddOns\\ElvUI_LocPlus\\media\\levelup.tga:14:14
 -- Get Fishing Level
 local function GetFishingLvl(minFish, ontt)
 	local mapID = GetCurrentMapAreaID()
-	local zoneText = tourist:GetMapNameByIDAlt(mapID) or UNKNOWN;
-	local uniqueZone = tourist:GetUniqueZoneNameForLookup(zoneText, continentID)
-	local minFish = tourist:GetFishingLevel(uniqueZone)
+	local zoneText = T:GetMapNameByIDAlt(mapID) or UNKNOWN;
+	local uniqueZone = T:GetUniqueZoneNameForLookup(zoneText, continentID)
+	local minFish = T:GetFishingLevel(uniqueZone)
 	local _, _, _, fishing = GetProfessions()
 	local r, g, b = 1, 0, 0
 	local r1, g1, b1 = 1, 0, 0
@@ -334,9 +334,9 @@ end
 -- PetBattle Range
 local function GetBattlePetLvl(zoneText, ontt)
 	local mapID = GetCurrentMapAreaID()
-	local zoneText = tourist:GetMapNameByIDAlt(mapID) or UNKNOWN;
-	local uniqueZone = tourist:GetUniqueZoneNameForLookup(zoneText, continentID)
-	local low,high = tourist:GetBattlePetLevel(uniqueZone)
+	local zoneText = T:GetMapNameByIDAlt(mapID) or UNKNOWN;
+	local uniqueZone = T:GetUniqueZoneNameForLookup(zoneText, continentID)
+	local low,high = T:GetBattlePetLevel(uniqueZone)
 	local plevel
 	if low ~= nil or high ~= nil then
 		if low ~= high then
@@ -362,11 +362,11 @@ end
 -- Zone level range
 local function GetLevelRange(zoneText, ontt)
 	local mapID = GetCurrentMapAreaID()
-	local zoneText = tourist:GetMapNameByIDAlt(mapID) or UNKNOWN;	
-	local low, high = tourist:GetLevel(zoneText)
+	local zoneText = T:GetMapNameByIDAlt(mapID) or UNKNOWN;	
+	local low, high = T:GetLevel(zoneText)
 	local dlevel
 	if low > 0 and high > 0 then
-		local r, g, b = tourist:GetLevelColor(zoneText)
+		local r, g, b = T:GetLevelColor(zoneText)
 		if low ~= high then
 			dlevel = format("|cff%02x%02x%02x%d-%d|r", r*255, g*255, b*255, low, high) or ""
 		else
@@ -392,7 +392,7 @@ local capRank = 800
 local function UpdateTooltip()
 	
 	local mapID = GetCurrentMapAreaID()
-	local zoneText = tourist:GetMapNameByIDAlt(mapID) or UNKNOWN;
+	local zoneText = T:GetMapNameByIDAlt(mapID) or UNKNOWN;
 	local curPos = (zoneText.." ") or "";
 	
 	GameTooltip:ClearLines()
@@ -401,7 +401,7 @@ local function UpdateTooltip()
 	GameTooltip:AddDoubleLine(L["Zone : "], zoneText, 1, 1, 1, selectioncolor)
 	
 	-- Continent
-	GameTooltip:AddDoubleLine(CONTINENT.." : ", tourist:GetContinent(zoneText), 1, 1, 1, selectioncolor)
+	GameTooltip:AddDoubleLine(CONTINENT.." : ", T:GetContinent(zoneText), 1, 1, 1, selectioncolor)
 	
 	-- Home
 	GameTooltip:AddDoubleLine(HOME.." :", GetBindLocation(), 1, 1, 1, 0.41, 0.8, 0.94)
@@ -440,28 +440,28 @@ local function UpdateTooltip()
 		GameTooltip:AddLine(" ")
 		GameTooltip:AddLine(L["Recommended Zones :"], selectioncolor)
 	
-		for zone in tourist:IterateRecommendedZones() do
+		for zone in T:IterateRecommendedZones() do
 			GetRecomZones(zone);
 		end		
 	end
 	
 	-- Instances in the zone
-	if E.db.locplus.ttinst and tourist:DoesZoneHaveInstances(zoneText) then 
+	if E.db.locplus.ttinst and T:DoesZoneHaveInstances(zoneText) then 
 		GameTooltip:AddLine(" ")
 		GameTooltip:AddLine(curPos..DUNGEONS.." :", selectioncolor)
 			
-		for dungeon in tourist:IterateZoneInstances(zoneText) do
+		for dungeon in T:IterateZoneInstances(zoneText) do
 			GetZoneDungeons(dungeon);
 		end	
 	end
 	
 	-- Recommended Instances
 	local level = UnitLevel('player')
-	if E.db.locplus.ttrecinst and tourist:HasRecommendedInstances() and level >= 15 then
+	if E.db.locplus.ttrecinst and T:HasRecommendedInstances() and level >= 15 then
 		GameTooltip:AddLine(" ")
 		GameTooltip:AddLine(L["Recommended Dungeons :"], selectioncolor)
 			
-		for dungeon in tourist:IterateRecommendedInstances() do
+		for dungeon in T:IterateRecommendedInstances() do
 			GetRecomDungeons(dungeon);
 		end
 	end
@@ -986,6 +986,7 @@ f:RegisterEvent("PLAYER_ENTERING_WORLD")
 f:SetScript("OnEvent",function(self, event)
 	if event == "PLAYER_ENTERING_WORLD" then
 		LPB:ChangeFont()
+		LPB:UpdateCoords()
 		f:UnregisterEvent("PLAYER_ENTERING_WORLD")
 	end
 end)
