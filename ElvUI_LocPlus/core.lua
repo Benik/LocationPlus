@@ -140,7 +140,7 @@ local function LocPanel_OnClick(self, btn)
 		end
 	end
 	if btn == "RightButton" then
-		E:ToggleConfig()
+		E:ToggleConfig(); LibStub("AceConfigDialog-3.0-ElvUI"):SelectGroup("ElvUI", "locplus")
 	end
 end
 
