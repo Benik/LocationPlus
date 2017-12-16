@@ -61,46 +61,6 @@ do
 	P.datatexts.panels.LeftCoordDtPanel = 'Durability'
 end
 
--- Status
-function LP:GetStatus(color)
-	local status = ""
-	local statusText
-	local r, g, b = 1, 1, 0
-	local pvpType = GetZonePVPInfo()
-	local inInstance, _ = IsInInstance()
-		if (pvpType == "sanctuary") then
-			status = SANCTUARY_TERRITORY
-			r, g, b = 0.41, 0.8, 0.94
-		elseif(pvpType == "arena") then
-			status = ARENA
-			r, g, b = 1, 0.1, 0.1
-		elseif(pvpType == "friendly") then
-			status = FRIENDLY
-			r, g, b = 0.1, 1, 0.1
-		elseif(pvpType == "hostile") then
-			status = HOSTILE
-			r, g, b = 1, 0.1, 0.1
-		elseif(pvpType == "contested") then
-			status = CONTESTED_TERRITORY
-			r, g, b = 1, 0.7, 0.10
-		elseif(pvpType == "combat" ) then
-			status = COMBAT
-			r, g, b = 1, 0.1, 0.1
-		elseif inInstance then
-			status = AGGRO_WARNING_IN_INSTANCE
-			r, g, b = 1, 0.1, 0.1
-		else
-			status = CONTESTED_TERRITORY
-		end
-
-	statusText = format("|cff%02x%02x%02x%s|r", r*255, g*255, b*255, status)
-	if color then
-		return r, g, b
-	else
-		return statusText
-	end
-end
-
 -- mouse over the location panel
 local function LocPanel_OnEnter(self)
 	GameTooltip:SetOwner(self, "ANCHOR_BOTTOM", 0, -4)
