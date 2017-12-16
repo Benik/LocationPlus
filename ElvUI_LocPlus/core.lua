@@ -15,7 +15,7 @@ a plugin for ElvUI, that adds player location and coords + 2 Datatexts
 ]]--
 
 local E, L, V, P, G = unpack(ElvUI);
-local LPB = E:NewModule('LocationPlus', 'AceTimer-3.0');
+local LPB = E:NewModule('LocationPlus', 'AceTimer-3.0', 'AceEvent-3.0');
 local DT = E:GetModule('DataTexts');
 local LSM = LibStub("LibSharedMedia-3.0");
 local EP = LibStub("LibElvUIPlugin-1.0")
@@ -980,16 +980,11 @@ function LPB:TimerUpdate()
 	self:ScheduleRepeatingTimer('UpdateCoords', E.db.locplus.timer)
 end
 
--- needed to fix LocPlus datatext font
-local f = CreateFrame("Frame")
-f:RegisterEvent("PLAYER_ENTERING_WORLD")
-f:SetScript("OnEvent",function(self, event)
-	if event == "PLAYER_ENTERING_WORLD" then
-		LPB:ChangeFont()
-		LPB:UpdateCoords()
-		f:UnregisterEvent("PLAYER_ENTERING_WORLD")
-	end
-end)
+function LPB:PLAYER_ENTERING_WORLD(...)
+	self:ChangeFont()
+	self:UpdateCoords()
+	self:UnregisterEvent("PLAYER_ENTERING_WORLD")
+end
 
 function LPB:Initialize()
 	self:LocPlusDefaults()
@@ -1005,6 +1000,7 @@ function LPB:Initialize()
 	LocationPlusPanel:RegisterEvent("PLAYER_REGEN_ENABLED")
 	LocationPlusPanel:RegisterEvent("PET_BATTLE_CLOSE")
 	LocationPlusPanel:RegisterEvent("PET_BATTLE_OPENING_START")
+	self:RegisterEvent('PLAYER_ENTERING_WORLD')
 
 	if E.db.locplus.LoginMsg then
 		print(L["Location Plus "]..format("v|cff33ffff%s|r",LPB.version)..L[" is loaded. Thank you for using it."])
