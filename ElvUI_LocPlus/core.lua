@@ -473,7 +473,7 @@ local function UpdateTooltip()
 		GameTooltip:AddLine(TOKENS.." :", selectioncolor)
 
 		for _, id in pairs(currency) do
-			local name, amount, icon, _, _, totalMax, isDiscovered = GetCurrencyInfo(id)
+			local name, amount, icon, _, _, totalMax = GetCurrencyInfo(id)
 
 			if(name and amount > 0) then
 				icon = ("|T%s:12:12:1:0|t"):format(icon)
@@ -524,7 +524,7 @@ local function UpdateTooltip()
 end
 
 -- mouse over the location panel
-local function LocPanel_OnEnter(self,...)
+local function LocPanel_OnEnter(self)
 	GameTooltip:SetOwner(self, "ANCHOR_BOTTOM", 0, -4)
 	GameTooltip:ClearAllPoints()
 	GameTooltip:SetPoint("BOTTOM", self, "BOTTOM", 0, 0)
@@ -541,7 +541,7 @@ local function LocPanel_OnEnter(self,...)
 end
 
 -- mouse leaving the location panel
-local function LocPanel_OnLeave(self,...)
+local function LocPanel_OnLeave(self)
 	GameTooltip:Hide()
 	if E.db.locplus.mouseover then
 		UIFrameFadeOut(self, 0.2, self:GetAlpha(), E.db.locplus.malpha)
