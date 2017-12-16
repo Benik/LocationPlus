@@ -53,7 +53,7 @@ local left_dtp = CreateFrame('Frame', 'LeftCoordDtPanel', E.UIParent)
 local right_dtp = CreateFrame('Frame', 'RightCoordDtPanel', E.UIParent)
 
 local COORDS_WIDTH = 30 -- Coord panels width
-local classColor = RAID_CLASS_COLORS[E.myclass] -- for text coloring
+local classColor = E.myclass == 'PRIEST' and E.PriestColors or (CUSTOM_CLASS_COLORS and CUSTOM_CLASS_COLORS[E.myclass] or RAID_CLASS_COLORS[E.myclass])
 
 -----------------
 -- Currency Table
