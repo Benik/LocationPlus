@@ -1,6 +1,6 @@
 local E, L, V, P, G = unpack(ElvUI);
 local LP = E:GetModule('LocationPlus')
-local T = LibStub("LibTourist-3.0");
+local T = LibStub('LibTourist-3.0');
 
 local format, tonumber, pairs = string.format, tonumber, pairs
 
@@ -13,7 +13,7 @@ local GameTooltip = _G['GameTooltip']
 local PLAYER, UNKNOWN, TRADE_SKILLS, TOKENS, DUNGEONS = PLAYER, UNKNOWN, TRADE_SKILLS, TOKENS, DUNGEONS
 local PROFESSIONS_FISHING, LEVEL_RANGE, STATUS, HOME, CONTINENT, PVP, RAID = PROFESSIONS_FISHING, LEVEL_RANGE, STATUS, HOME, CONTINENT, PVP, RAID
 
--- GLOBALS: selectioncolor, continent, continentID, 
+-- GLOBALS: selectioncolor, continent, continentID
 
 --------------------
 -- Currency Table --
