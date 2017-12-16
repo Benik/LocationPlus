@@ -415,7 +415,7 @@ local function UpdateTooltip()
 	if E.db.locplus.ttlvl then
 		local checklvl = GetLevelRange(zoneText, true)
 		if checklvl ~= "" then
-			GameTooltip:AddDoubleLine(LEVEL_RANGE.." : ", checklvl, 1, 1, 1, r, g, b)
+			GameTooltip:AddDoubleLine(LEVEL_RANGE.." : ", checklvl, 1, 1, 1)
 		end
 	end
 	
@@ -423,7 +423,7 @@ local function UpdateTooltip()
 	if E.db.locplus.fish then
 		local checkfish = GetFishingLvl(true, true)
 		if checkfish ~= "" then
-			GameTooltip:AddDoubleLine(PROFESSIONS_FISHING.." : ", checkfish, 1, 1, 1, r, g, b)
+			GameTooltip:AddDoubleLine(PROFESSIONS_FISHING.." : ", checkfish, 1, 1, 1)
 		end
 	end
 	
