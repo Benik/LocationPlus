@@ -61,8 +61,6 @@ P['locplus'] = {
 	['LoginMsg'] = true,
 }
 
-local newsign = "|TInterface\\OptionsFrame\\UI-OptionsFrame-NewFeatureIcon:14:14|t"
-
 local FISH_ICON = "|TInterface\\AddOns\\ElvUI_LocPlus\\media\\fish.tga:14:14|t"
 local PET_ICON = "|TInterface\\AddOns\\ElvUI_LocPlus\\media\\pet.tga:14:14|t"
 local LEVEL_ICON = "|TInterface\\AddOns\\ElvUI_LocPlus\\media\\levelup.tga:14:14|t"
@@ -142,7 +140,7 @@ function LP:AddOptions()
 					},
 					hidecoords = {
 						order = 2,
-						name = L["Hide Coords"]..newsign,
+						name = L["Hide Coords"],
 						desc = L["Show/Hide the coord frames"],
 						type = 'toggle',
 						width = "full",	
