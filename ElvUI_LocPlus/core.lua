@@ -472,7 +472,7 @@ local function UpdateTooltip()
 		GameTooltip:AddLine(" ")
 		GameTooltip:AddLine(TOKENS.." :", selectioncolor)
 
-		for i, id in pairs(currency) do
+		for _, id in pairs(currency) do
 			local name, amount, icon, _, _, totalMax, isDiscovered = GetCurrencyInfo(id)
 
 			if(name and amount > 0) then
