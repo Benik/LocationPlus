@@ -2,7 +2,7 @@
 -- ElvUI Location Plus --
 a plugin for ElvUI, that adds player location and coords + 2 Datatexts
 
-- Info, requests, bugs: http://www.tukui.org/addons/index.php?act=view&id=56
+- Info, requests, bugs: https://www.tukui.org/addons.php?id=6
 ----------------------------------------------------------------------------------
 - Credits:
 	-Elv, Blazeflack, for showing me the best way to do this
