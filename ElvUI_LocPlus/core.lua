@@ -46,11 +46,6 @@ local classColor = E.myclass == 'PRIEST' and E.PriestColors or (CUSTOM_CLASS_COL
 local COORDS_WIDTH = 30 -- Coord panels width
 local SPACING = 1 		-- Panel spacing
 
--- Icons on Location Panel
-local FISH_ICON = "|TInterface\\AddOns\\ElvUI_LocPlus\\media\\fish.tga:14:14|t"
-local PET_ICON = "|TInterface\\AddOns\\ElvUI_LocPlus\\media\\pet.tga:14:14|t"
-local LEVEL_ICON = "|TInterface\\AddOns\\ElvUI_LocPlus\\media\\levelup.tga:14:14|t"
-
 local left_dtp = CreateFrame('Frame', 'LeftCoordDtPanel', E.UIParent)
 local right_dtp = CreateFrame('Frame', 'RightCoordDtPanel', E.UIParent)
 
@@ -414,17 +409,17 @@ function LP:UpdateLocation()
 	
 	-- Show Other (Level, Battle Pet Level, Fishing)
 	if E.db.locplus.displayOther == 'RLEVEL' then
-		local displaylvl = GetLevelRange(zoneText) or ""
+		local displaylvl = LP:GetLevelRange(zoneText) or ""
 		if displaylvl ~= "" then
 			displayLine = displayLine..displaylvl
 		end
 	elseif E.db.locplus.displayOther == 'PET' then
-		local displaypet = GetBattlePetLvl(zoneText) or ""
+		local displaypet = LP:GetBattlePetLvl(zoneText) or ""
 		if displaypet ~= "" then
 			displayLine = displayLine..displaypet
 		end
 	elseif E.db.locplus.displayOther == 'PFISH' then
-		local displayfish = GetFishingLvl(true) or ""
+		local displayfish = LP:GetFishingLvl(true) or ""
 		if displayfish ~= "" then
 			displayLine = displayLine..displayfish
 		end

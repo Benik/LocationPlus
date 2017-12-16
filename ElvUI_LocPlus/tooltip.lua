@@ -15,6 +15,11 @@ local PROFESSIONS_FISHING, LEVEL_RANGE, STATUS, HOME, CONTINENT, PVP, RAID = PRO
 
 -- GLOBALS: selectioncolor, continent, continentID
 
+-- Icons on Location Panel
+local FISH_ICON = "|TInterface\\AddOns\\ElvUI_LocPlus\\media\\fish.tga:14:14|t"
+local PET_ICON = "|TInterface\\AddOns\\ElvUI_LocPlus\\media\\pet.tga:14:14|t"
+local LEVEL_ICON = "|TInterface\\AddOns\\ElvUI_LocPlus\\media\\levelup.tga:14:14|t"
+
 --------------------
 -- Currency Table --
 --------------------
@@ -184,7 +189,7 @@ local function GetRecomDungeons(dungeon)
 end
 
 -- Get Fishing Level
-local function GetFishingLvl(minFish, ontt)
+function LP:GetFishingLvl(minFish, ontt)
 	local mapID = GetCurrentMapAreaID()
 	local zoneText = T:GetMapNameByIDAlt(mapID) or UNKNOWN;
 	local uniqueZone = T:GetUniqueZoneNameForLookup(zoneText, continentID)
@@ -221,36 +226,8 @@ local function GetFishingLvl(minFish, ontt)
 	end
 end
 
--- PetBattle Range
-local function GetBattlePetLvl(zoneText, ontt)
-	local mapID = GetCurrentMapAreaID()
-	local zoneText = T:GetMapNameByIDAlt(mapID) or UNKNOWN;
-	local uniqueZone = T:GetUniqueZoneNameForLookup(zoneText, continentID)
-	local low,high = T:GetBattlePetLevel(uniqueZone)
-	local plevel
-	if low ~= nil or high ~= nil then
-		if low ~= high then
-			plevel = format("%d-%d", low, high)
-		else
-			plevel = format("%d", high)
-		end
-
-		if ontt then
-			return plevel
-		else
-			if E.db.locplus.showicon then
-				plevel = format(" (%s) ", plevel)..PET_ICON
-			else
-				plevel = format(" (%s) ", plevel)
-			end
-		end
-	end
-
-	return plevel or ""
-end
-
 -- Zone level range
-local function GetLevelRange(zoneText, ontt)
+function LP:GetLevelRange(zoneText, ontt)
 	local mapID = GetCurrentMapAreaID()
 	local zoneText = T:GetMapNameByIDAlt(mapID) or UNKNOWN;	
 	local low, high = T:GetLevel(zoneText)
@@ -275,6 +252,34 @@ local function GetLevelRange(zoneText, ontt)
 	end
 
 	return dlevel or ""
+end
+
+-- PetBattle Range
+function LP:GetBattlePetLvl(zoneText, ontt)
+	local mapID = GetCurrentMapAreaID()
+	local zoneText = T:GetMapNameByIDAlt(mapID) or UNKNOWN;
+	local uniqueZone = T:GetUniqueZoneNameForLookup(zoneText, continentID)
+	local low,high = T:GetBattlePetLevel(uniqueZone)
+	local plevel
+	if low ~= nil or high ~= nil then
+		if low ~= high then
+			plevel = format("%d-%d", low, high)
+		else
+			plevel = format("%d", high)
+		end
+
+		if ontt then
+			return plevel
+		else
+			if E.db.locplus.showicon then
+				plevel = format(" (%s) ", plevel)..PET_ICON
+			else
+				plevel = format(" (%s) ", plevel)
+			end
+		end
+	end
+
+	return plevel or ""
 end
 
 local capRank = 800
@@ -302,7 +307,7 @@ function LP:UpdateTooltip()
 
     -- Zone level range
 	if E.db.locplus.ttlvl then
-		local checklvl = GetLevelRange(zoneText, true)
+		local checklvl = LP:GetLevelRange(zoneText, true)
 		if checklvl ~= "" then
 			GameTooltip:AddDoubleLine(LEVEL_RANGE.." : ", checklvl, 1, 1, 1)
 		end
@@ -310,7 +315,7 @@ function LP:UpdateTooltip()
 
 	-- Fishing
 	if E.db.locplus.fish then
-		local checkfish = GetFishingLvl(true, true)
+		local checkfish = LP:GetFishingLvl(true, true)
 		if checkfish ~= "" then
 			GameTooltip:AddDoubleLine(PROFESSIONS_FISHING.." : ", checkfish, 1, 1, 1)
 		end
@@ -318,7 +323,7 @@ function LP:UpdateTooltip()
 
 	-- Battle Pet Levels
 	if E.db.locplus.petlevel then
-		local checkbpet = GetBattlePetLvl(zoneText, true)
+		local checkbpet = LP:GetBattlePetLvl(zoneText, true)
 		if checkbpet ~= "" then
 			GameTooltip:AddDoubleLine(L["Battle Pet level"].. " :", checkbpet, 1, 1, 1, selectioncolor)
 		end
