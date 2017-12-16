@@ -18,10 +18,8 @@ local E, L, V, P, G = unpack(ElvUI);
 local LP = E:NewModule('LocationPlus', 'AceTimer-3.0', 'AceEvent-3.0');
 local DT = E:GetModule('DataTexts');
 local LSM = LibStub("LibSharedMedia-3.0");
-local EP = LibStub("LibElvUIPlugin-1.0")
+local EP = LibStub("LibElvUIPlugin-1.0");
 local addon, ns = ...
-
---local T = LibStub("LibTourist-3.0");
 
 local format, tonumber, pairs, print = string.format, tonumber, pairs, print
 
@@ -40,15 +38,21 @@ local SANCTUARY_TERRITORY, ARENA, FRIENDLY, HOSTILE, CONTESTED_TERRITORY, COMBAT
 
 -- GLOBALS: LocationPlusPanel, LeftCoordDtPanel, RightCoordDtPanel, XCoordsPanel, YCoordsPanel, CUSTOM_CLASS_COLORS
 
-local left_dtp = CreateFrame('Frame', 'LeftCoordDtPanel', E.UIParent)
-local right_dtp = CreateFrame('Frame', 'RightCoordDtPanel', E.UIParent)
+LP.version = GetAddOnMetadata("ElvUI_LocPlus", "Version")
+if E.db.locplus == nil then E.db.locplus = {} end
 
-local COORDS_WIDTH = 30 -- Coord panels width
 local classColor = E.myclass == 'PRIEST' and E.PriestColors or (CUSTOM_CLASS_COLORS and CUSTOM_CLASS_COLORS[E.myclass] or RAID_CLASS_COLORS[E.myclass])
 
-LP.version = GetAddOnMetadata("ElvUI_LocPlus", "Version")
+local COORDS_WIDTH = 30 -- Coord panels width
+local SPACING = 1 		-- Panel spacing
 
-if E.db.locplus == nil then E.db.locplus = {} end
+-- Icons on Location Panel
+local FISH_ICON = "|TInterface\\AddOns\\ElvUI_LocPlus\\media\\fish.tga:14:14|t"
+local PET_ICON = "|TInterface\\AddOns\\ElvUI_LocPlus\\media\\pet.tga:14:14|t"
+local LEVEL_ICON = "|TInterface\\AddOns\\ElvUI_LocPlus\\media\\levelup.tga:14:14|t"
+
+local left_dtp = CreateFrame('Frame', 'LeftCoordDtPanel', E.UIParent)
+local right_dtp = CreateFrame('Frame', 'RightCoordDtPanel', E.UIParent)
 
 do
 	DT:RegisterPanel(LeftCoordDtPanel, 1, 'ANCHOR_BOTTOM', 0, -4)
@@ -61,8 +65,6 @@ do
 	P.datatexts.panels.RightCoordDtPanel = 'Time'
 	P.datatexts.panels.LeftCoordDtPanel = 'Durability'
 end
-
-local SPACING = 1
 
 -- Status
 function LP:GetStatus(color)
@@ -103,11 +105,6 @@ function LP:GetStatus(color)
 		return statusText
 	end
 end
-
--- Icons on Location Panel
-local FISH_ICON = "|TInterface\\AddOns\\ElvUI_LocPlus\\media\\fish.tga:14:14|t"
-local PET_ICON = "|TInterface\\AddOns\\ElvUI_LocPlus\\media\\pet.tga:14:14|t"
-local LEVEL_ICON = "|TInterface\\AddOns\\ElvUI_LocPlus\\media\\levelup.tga:14:14|t"
 
 -- mouse over the location panel
 local function LocPanel_OnEnter(self)
@@ -532,7 +529,7 @@ local function CreateDatatextPanels()
 end
 
 -- Update changes
-function LP:LocPlusUpdate()
+function LP:Update()
 	self:TransparentPanels()
 	self:ShadowPanels()
 	self:DTHeight()
@@ -582,7 +579,7 @@ function LP:Initialize()
 	CreateLocationPanel()
 	CreateDatatextPanels()
 	CreateCoordPanels()
-	self:LocPlusUpdate()
+	self:Update()
 	self:TimerUpdate()
 	self:ToggleBlizZoneText()
 	self:ScheduleRepeatingTimer('UpdateLocation', 0.5)
