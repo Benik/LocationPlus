@@ -77,6 +77,7 @@ local currency = {
 	1416,	-- Coins of Air
 	1506,	-- Argus Waystone
 	1508,	-- Veiled Argunite
+	1533,	-- Wakening Essence
 }
 
 -----------------------
