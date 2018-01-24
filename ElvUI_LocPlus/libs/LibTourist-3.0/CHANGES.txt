@@ -1,4 +1,20 @@
 ------------------------------------------------------------------------
+r198 | Odica | 2018-01-21 17:59:41 -0600 (Sun, 21 Jan 2018) | 11 lines
+Changed paths:
+   M /trunk/LibTourist-3.0.lua
+
+- added 8 missing map ID's to lookup table.
+- updated all level ranges for zones (and dungeons/complexes) that now scale to the player's level.
+- API: function GetLegionZoneLevel has been removed, use GetScaledZoneLevel instead.
+- API: added function GetScaledZoneLevel(zone) - returns the player level if player level is  between min and max zone level, otherwise returns min or max zone level.
+- API: function GetLevel: added a third return value. Now returns high, low and scaled level. Returns nil for 'scaled' if not applicable, otherwise uses GetScaledZoneLevel to calculate it.
+- API: function GetLevelColor: For scaled zones the level color is not determined by the zone's minimum and maximum level, but by it's scaled level (calculated by GetScaledZoneLevel).
+- API: IterateRecommendedZones: the list recommended zones is now based on the scaled level of the zones, as calculated by GetScaledZoneLevel.
+- API: function GetLevelString: the format for the level string of a scaling zone is now "<scaled level> (<minimum level>-<maximum level>)".
+
+Note: not all min and max zone levels have been verified, please let me know if values are incorrect.
+
+------------------------------------------------------------------------
 r197 | Odica | 2017-09-05 16:48:06 -0500 (Tue, 05 Sep 2017) | 1 line
 Changed paths:
    M /trunk/LibTourist-3.0.lua
