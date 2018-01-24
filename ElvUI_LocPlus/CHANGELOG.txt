@@ -1,3 +1,10 @@
+[b]2.28[/b]
+*Updated libTourist. Contains the new scaled laveling
+*Added Wakening Essence
+*RightClicking the location panel will open LocationPlus options
+*Added support for !ClassColors addon
+*Files and functions restruction
+
 [b]2.27[/b]
 *LibTourist update
 
