@@ -322,7 +322,7 @@ function LP:HideCoords()
 	LeftCoordDtPanel:ClearAllPoints()
 	RightCoordDtPanel:ClearAllPoints()
 	
-	if E.db.locplus.hidecoords then
+	if (E.db.locplus.hidecoords) or (E.db.locplus.hidecoordsInInstance and IsInInstance()) then
 		XCoordsPanel:Hide()
 		YCoordsPanel:Hide()
 		LeftCoordDtPanel:Point('RIGHT', LocationPlusPanel, 'LEFT', -SPACING, 0)
@@ -426,6 +426,7 @@ function LP:UpdateCoords()
 	if (x == 0 or x == nil) and (y == 0 or y == nil) then
 		XCoordsPanel.Text:SetText("-")
 		YCoordsPanel.Text:SetText("-")
+		
 	else
 		if x < 10 then
 			xt = "0"..x
@@ -526,7 +527,7 @@ end
 function LP:PLAYER_ENTERING_WORLD(...)
 	self:ChangeFont()
 	self:UpdateCoords()
-	self:UnregisterEvent("PLAYER_ENTERING_WORLD")
+	self:HideCoords()
 end
 
 function LP:Initialize()
