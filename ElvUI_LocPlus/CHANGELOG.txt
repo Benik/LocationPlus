@@ -1,3 +1,6 @@
+[b]2.29[/b]
+Added option to hide Coords when entering an instance. They aren't updating anyway. Enabled by default.
+
 [b]2.28[/b]
 *Updated libTourist. Contains the new scaled laveling
 *Added Wakening Essence
