@@ -1,6 +1,6 @@
 local E, L, V, P, G = unpack(ElvUI);
 local LP = E:GetModule('LocationPlus')
-local T = LibStub('LibTourist-3.0');
+--local T = LibStub('LibTourist-3.0');
 
 local format, tonumber, pairs = string.format, tonumber, pairs
 

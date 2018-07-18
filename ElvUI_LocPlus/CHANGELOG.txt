@@ -1,3 +1,10 @@
+[b]2.31[/b]
+Disabled LibTourist
+
+[b]2.30[/b]
+*Fixed Coords and location
+*Disabled tooltip info, till LibTourist gets updated for BfA
+
 [b]2.29[/b]
 Added option to hide Coords when entering an instance. They aren't updating anyway. Enabled by default.
 
