@@ -25,7 +25,9 @@ local format, tonumber, pairs, print = string.format, tonumber, pairs, print
 
 local CreateFrame = CreateFrame
 local ChatEdit_ChooseBoxForSend, ChatEdit_ActivateChat = ChatEdit_ChooseBoxForSend, ChatEdit_ActivateChat
-local GetMinimapZoneText, GetPlayerMapPosition = GetMinimapZoneText, GetPlayerMapPosition
+local C_Map_GetBestMapForUnit = C_Map.GetBestMapForUnit
+local C_Map_GetPlayerMapPosition = C_Map.GetPlayerMapPosition
+local GetMinimapZoneText = GetMinimapZoneText
 local GetRealZoneText, GetSubZoneText = GetRealZoneText, GetSubZoneText
 local GetZonePVPInfo = GetZonePVPInfo
 local IsInInstance, InCombatLockdown = IsInInstance, InCombatLockdown
@@ -93,7 +95,10 @@ end
 
 -- Coords Creation
 local function CreateCoords()
-	local x, y = GetPlayerMapPosition("player")
+	local mapID = C_Map_GetBestMapForUnit("player")
+	local mapPos = mapID and C_Map_GetPlayerMapPosition(mapID, "player")
+	if mapPos then x, y = mapPos:GetXY() end
+
 	local dig
 	
 	if E.db.locplus.dig then
@@ -101,14 +106,10 @@ local function CreateCoords()
 	else
 		dig = 0
 	end
-	
-	if x then
-		x = tonumber(E:Round(100 * x, dig))
-	end
-	if y then
-		y = tonumber(E:Round(100 * y, dig))
-	end
-	
+
+	x = (mapPos and x) and E:Round(100 * x, dig) or 0
+	y = (mapPos and y) and E:Round(100 * y, dig) or 0
+
 	return x, y
 end
 
@@ -367,7 +368,7 @@ function LP:UpdateLocation()
 		displayLine = subZoneText
 	end
 	
-	-- Show Other (Level, Battle Pet Level, Fishing)
+	--[[ Show Other (Level, Battle Pet Level, Fishing)
 	if E.db.locplus.displayOther == 'RLEVEL' then
 		local displaylvl = LP:GetLevelRange(zoneText) or ""
 		if displaylvl ~= "" then
@@ -385,7 +386,7 @@ function LP:UpdateLocation()
 		end
 	else
 		displayLine = displayLine
-	end
+	end]]
 	
 	LocationPlusPanel.Text:SetText(displayLine)
 	
