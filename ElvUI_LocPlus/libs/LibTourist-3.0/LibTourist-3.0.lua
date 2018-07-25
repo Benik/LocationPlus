@@ -26,7 +26,7 @@ if oldLib then
 end
 
 local function trace(msg)
-	DEFAULT_CHAT_FRAME:AddMessage(msg)
+	--DEFAULT_CHAT_FRAME:AddMessage(msg)
 end
 
 -- Localization tables
