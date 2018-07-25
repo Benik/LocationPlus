@@ -1,5 +1,118 @@
 ------------------------------------------------------------------------
-r198 | Odica | 2018-01-21 17:59:41 -0600 (Sun, 21 Jan 2018) | 11 lines
+r199 | Odica | 2018-07-24 09:56:56 +0000 (Tue, 24 Jul 2018) | 107 lines
+Changed paths:
+   M /trunk/LibTourist-3.0.lua
+   M /trunk/LibTourist-3.0.toc
+
+=================
+*** IMPORTANT ***
+=================
+
+Blizzard has completely removed the old World Map API to replace it by the new C_Map API. 
+Besides that, all mapID's have been reassigned.
+
+LibTourist has been adapted to use the new C_Map interface, but there are some limitations.
+
+
+YARDS
+
+The C_Map API does not seem to return any data expressed in yards.
+This causes the following LibTourist API functions to be currently BROKEN:
+
+- GetZoneYardSize
+- GetZoneYardOffset
+- GetYardDistance
+- TransposeZoneCoordinate
+- GetBestZoneCoordinate
+
+These methods are still part of the LibTourist API but return nil values because zone sizes and offsets in yards can no longer be calculated.
+If this can't be replaced by new functionality, the functions will eventually be removed from LibTourist.
+
+
+TEXTURE NAMES
+
+I haven't found the texture name in the C_Map interface yet, so for now the new uiMapArtID is used instead.
+The following LibTourist functions should work, but ONLY if a uiMapArtID is passed as parameter:
+
+- GetZoneMapIDFromTexture
+- GetZoneFromTexture
+- GetEnglishZoneFromTexture
+
+The uiMapArtID can be retrieved using C_Map.GetMapArtID.
+This part of the functionality is still to be revised.
+
+
+ALL OTHER FUNCTIONALITY 
+
+...should be working, though I am currently unable to properly test it.
+In this version, TRACING is turned ON (can be disabled by commenting line 29).
+
+=================
+
+
+
+TOC
+---
+
+TOC version set to 80000.
+
+
+API CHANGES
+-----------
+
+In addition to the API changes mentioned above:
+
+- GetMapContinentsAlt
+now returns the new uiMapID as key in the return collection instead of the continent index that was used for SetMapZoom (which has been removed)
+
+- GetMapZonesAlt
+now returns the new uiMapID as key in the return collection instead of the zone index that was used for SetMapZoom (which has been removed)
+
+- GetMapNameByIDAlt
+now expects a uiMapID as parameter 
+
+
+ADDED
+-----
+
+Continents:
+- Zandalar (Horde)
+- Kul Tiras (Alliance)
+
+Zones:
+- Nazmir
+- Vol'dun
+- Zuldazar
+- Stormsong Valley
+- Drustvar
+- Tiragarde Sound
+- Trueshot Lodge (Hunter class hall, Highmountain) because it is reported by C_Map as a 'zone'
+
+Cities:
+- Dazar'alor (Horde)
+- Boralus (Alliance)
+
+Boats:
+- Dazar'alor - Echo Isles (Horde)
+- Boralus - Stormwind City (Alliance)
+
+Portals:
+- Dazar'alor - Silvermoon City v.v.
+- Dazar'alor - Orgrimmar v.v.
+- Dazar'alor - Thunder Bluff v.v.
+- Boralus - Stormwind City v.v.
+- Boralus - Ironforge v.v.
+- Boralus - The Exodar v.v.
+
+Dungeons:
+- Shrine of the Storm (Stormsong Valley, Kul Tiras)
+- Tol Dagor (Tiragarde Sound, Kul Tiras)
+- The MOTHERLODE!! (Kezan, The Maelstrom)
+
+
+Any feedback, tips or test results are much appreciated, thank you.
+------------------------------------------------------------------------
+r198 | Odica | 2018-01-21 23:59:41 +0000 (Sun, 21 Jan 2018) | 11 lines
 Changed paths:
    M /trunk/LibTourist-3.0.lua
 
@@ -15,26 +128,26 @@ Changed paths:
 Note: not all min and max zone levels have been verified, please let me know if values are incorrect.
 
 ------------------------------------------------------------------------
-r197 | Odica | 2017-09-05 16:48:06 -0500 (Tue, 05 Sep 2017) | 1 line
+r197 | Odica | 2017-09-05 21:48:06 +0000 (Tue, 05 Sep 2017) | 1 line
 Changed paths:
    M /trunk/LibTourist-3.0.lua
 
 - Corrected typo in Antorus, the Burning Throne
 ------------------------------------------------------------------------
-r196 | Odica | 2017-09-05 14:20:20 -0500 (Tue, 05 Sep 2017) | 2 lines
+r196 | Odica | 2017-09-05 19:20:20 +0000 (Tue, 05 Sep 2017) | 2 lines
 Changed paths:
    M /trunk/LibTourist-3.0.lua
 
 - Added raid Antorus, The Burning Throne
 - Removed altGroupSize value for The Emerald Nightmare and The Nighthold
 ------------------------------------------------------------------------
-r195 | Odica | 2017-09-03 13:33:26 -0500 (Sun, 03 Sep 2017) | 1 line
+r195 | Odica | 2017-09-03 18:33:26 +0000 (Sun, 03 Sep 2017) | 1 line
 Changed paths:
    M /trunk/LibTourist-3.0.lua
 
 Fixed a bug caused by unknown player level (probably a timing issue)
 ------------------------------------------------------------------------
-r194 | Odica | 2017-09-02 16:28:45 -0500 (Sat, 02 Sep 2017) | 8 lines
+r194 | Odica | 2017-09-02 21:28:45 +0000 (Sat, 02 Sep 2017) | 8 lines
 Changed paths:
    M /trunk/LibTourist-3.0.lua
    M /trunk/LibTourist-3.0.toc
@@ -48,7 +161,7 @@ Changed paths:
 - added 25 map IDs
 
 ------------------------------------------------------------------------
-r193 | Odica | 2017-04-08 17:25:05 -0500 (Sat, 08 Apr 2017) | 8 lines
+r193 | Odica | 2017-04-08 22:25:05 +0000 (Sat, 08 Apr 2017) | 8 lines
 Changed paths:
    M /trunk/LibTourist-3.0.lua
 

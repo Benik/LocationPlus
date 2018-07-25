@@ -368,7 +368,7 @@ function LP:UpdateLocation()
 		displayLine = subZoneText
 	end
 	
-	--[[ Show Other (Level, Battle Pet Level, Fishing)
+	-- Show Other (Level, Battle Pet Level, Fishing)
 	if E.db.locplus.displayOther == 'RLEVEL' then
 		local displaylvl = LP:GetLevelRange(zoneText) or ""
 		if displaylvl ~= "" then
@@ -386,7 +386,7 @@ function LP:UpdateLocation()
 		end
 	else
 		displayLine = displayLine
-	end]]
+	end
 	
 	LocationPlusPanel.Text:SetText(displayLine)
 	
