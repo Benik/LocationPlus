@@ -1,4 +1,141 @@
 ------------------------------------------------------------------------
+r201 | Odica | 2018-07-28 22:23:28 +0000 (Sat, 28 Jul 2018) | 119 lines
+Changed paths:
+   M /trunk/LibTourist-3.0.lua
+
+- Added a function GetContinentMapID which uses the map hierarchy in C_Map to get the continent uiMapID for any uiMapID. It is called by GetMapNameByIDAlt to get the continent ID for GetUniqueZoneNameForLookup. This way GetMapNameByIDAlt can return a unique localized zone name for all uiMapIDs of a zone (a zone can have multiple uiMapIDs due to phases or floors). 
+- All lookup methods that take a unique localized zone name as input, now also accept uiMapIDs. See API changes below.
+- Fixed a bug in GetLevelString and GetBattlePetLevelString that caused these functions to return the string "nil" in some cases.
+- Fixed IterateBorderZones which unnecessarily used yard data to identify a connection as a zone. This failed because yard data is not available. Now uses Tourist:IsZone.
+- Restored localization for 14 zones which occur in LibTourist but have an areaID instead of a uiMapID.
+- Corrected spelling for Dire Maul East, North and West 
+
+
+API CHANGES
+
+New functions:
+
+- Tourist:GetMapIDLookupTable() - returns the lookup table with all uiMapIDs as key and the english zone name as value
+- Tourist:GetContinentMapID(uiMapID) - returns the uiMapID of the continent for the given uiMapID. Searches up through the C_Map hierarchy until the continent is found.
+- Tourist:IterateArgus() - Iterates through the unique localized names of all zones that have player levels defined and are on the Argus continent.
+- Tourist:IterateZandalar() - Iterates through the unique localized names of all zones that have player levels defined and are on the Zandalar continent.
+- Tourist:IterateKulTiras() - Iterates through the unique localized names of all zones that have player levels defined and are on the Kul'Tiras continent.
+- Tourist:IsInArgus(zone) - Returns true if the zone is on the Argus continent.
+- Tourist:IsInZandalar(zone) - Returns true if the zone is on the Zandalar continent.
+- Tourist:IsInKulTiras(zone) - Returns true if the zone is on the Kul'Tiras continent.
+
+
+Changed functions:
+
+- Tourist:GetMapContinentsAlt - now returns a table with the uiMapID as key and the localized Continent name as value
+- Tourist:GetMapZonesAlt - now returns a table with the uiMapID as key and the localized Zone name as value
+- Tourist:GetMapNameByIDAlt - parameter must be a uiMapID
+- Tourist:GetUniqueZoneNameForLookup - continent ID parameter must be the uiMapID
+- Tourist:GetUniqueEnglishZoneNameForLookup - continent ID parameter must be a uiMapID
+- Tourist:GetTexture - as texture names are no longer used by C_Map, this function now returns the uiMapArtID, but only for the uiMapIDs known in the LibTourist zones collection (use Tourist:GetZoneMapID)
+- Tourist:GetContinent - return value should now be localized
+
+
+Important change for all lookup functions:
+
+All lookup functions that previously required a unique localized zone name, instance name or complex name as provided by LibTourist, now also accept uiMapID as input. If an ID is passed the lookup functions use GetMapNameByIDAlt to convert the uiMapID to the zone name. 
+
+The following functions can now take a uiMapID as parameter:
+
+DoesZoneHaveComplexes
+DoesZoneHaveInstances
+GetBattlePetLevel
+GetBattlePetLevelColor
+GetBattlePetLevelString
+GetComplex
+GetComplexZone
+GetContinent
+GetEntrancePortalLocation
+GetFactionColor
+GetFishingLevel
+GetInstanceAltGroupSize
+GetInstanceGroupMaxSize
+GetInstanceGroupMinSize
+GetInstanceGroupSize
+GetInstanceGroupSizeString
+GetInstanceZone
+GetLevel
+GetLevelColor
+GetLevelString
+GetScaledZoneLevel
+GetTexture
+GetType
+IsAlliance
+IsArena
+IsBattleground
+IsCity
+IsComplex
+IsContested
+IsContinent
+IsFriendly
+IsHorde
+IsHostile
+IsInArgus
+IsInBrokenIsles
+IsInDraenor
+IsInEasternKingdoms
+IsInKalimdor
+IsInKulTiras
+IsInNorthrend
+IsInOutland
+IsInPandaria
+IsInstance
+IsInTheMaelstrom
+IsInZandalar
+IsPvPZone
+IsSanctuary
+IsTransport
+IsZone
+IsZoneOrInstance
+IterateBorderZones
+IteratePath
+IterateZoneComplexes
+IterateZoneInstances
+
+NOTE: Not all functions have been tested with uiMapIDs. Please report unexpected results; try to use a unique localized name instead.
+
+
+Broken functions:
+
+The following functions are still present but will return nil values.
+They will be removed eventually if no way can be found to retrieve the required data.
+
+- Tourist:GetZoneYardSize
+- Tourist:GetZoneYardOffset
+- Tourist:GetYardDistance
+- Tourist:TransposeZoneCoordinate
+
+
+Deprecated functions:
+
+The following functions will be REMOVED from the API in the next version.
+
+- Tourist:GetBestZoneCoordinate - use C_Map.GetBestMapForUnit("player") instead
+- Tourist:GetMapAreaIDByContinentZone - obsolete, zoneIndex is no longer in use
+- Tourist:GetZoneMapIDFromTexture - obsolete, texture name is no longer in use
+- Tourist:GetZoneFromTexture - obsolete, texture name is no longer in use
+- Tourist:GetEnglishZoneFromTexture - obsolete, texture name is no longer in use
+
+
+------------------------------------------------------------------------
+r200 | Odica | 2018-07-26 21:58:34 +0000 (Thu, 26 Jul 2018) | 8 lines
+Changed paths:
+   M /trunk/LibTourist-3.0.lua
+
+Important update: Replaced old continent IDs with new uiMapIDs to make functions
+- GetUniqueZoneNameForLookup
+- GetUniqueEnglishZoneNameForLookup
+- GetMapNameByIDAlt
+work properly again.
+You need these to get a unique localized zone name for the Lookup functions of LibTourist.
+Note: these methods require the new C_Map uiMapIDs, which can be retrieved through the C_Map interface or by calling GetMapContinentsAlt or GetMapZonesAlt of the LibTourist API.
+
+------------------------------------------------------------------------
 r199 | Odica | 2018-07-24 09:56:56 +0000 (Tue, 24 Jul 2018) | 107 lines
 Changed paths:
    M /trunk/LibTourist-3.0.lua

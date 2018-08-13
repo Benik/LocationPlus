@@ -5,5 +5,4 @@
 ## Author: Odica
 ## X-Category: Library
 
-LibStub\LibStub.lua
 lib.xml

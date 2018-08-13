@@ -1,6 +1,6 @@
 --[[
 Name: LibTourist-3.0
-Revision: $Rev: 199 $
+Revision: $Rev: 204 $
 Author(s): Odica (maintainer), originally created by ckknight and Arrowmaster
 Documentation: https://www.wowace.com/projects/libtourist-3-0/pages/api-reference
 SVN: svn://svn.wowace.com/wow/libtourist-3-0/mainline/trunk
@@ -9,10 +9,10 @@ License: MIT
 ]]
 
 local MAJOR_VERSION = "LibTourist-3.0"
-local MINOR_VERSION = 90000 + tonumber(("$Revision: 199 $"):match("(%d+)"))
+local MINOR_VERSION = 90000 + tonumber(("$Revision: 204 $"):match("(%d+)"))
 
 if not LibStub then error(MAJOR_VERSION .. " requires LibStub") end
-
+local C_Map = C_Map
 local Tourist, oldLib = LibStub:NewLibrary(MAJOR_VERSION, MINOR_VERSION)
 if not Tourist then
 	return
@@ -25,20 +25,19 @@ if oldLib then
 	end
 end
 
+local HBD = LibStub("HereBeDragons-2.0")
+
 local function trace(msg)
-	--DEFAULT_CHAT_FRAME:AddMessage(msg)
+--	DEFAULT_CHAT_FRAME:AddMessage(msg)
 end
+
+--trace("|r|cffff4422! -- Tourist:|r Warning: This is an alpha version with limited functionality." )		
 
 -- Localization tables
 local BZ = {}
 local BZR = {}
 
-
-trace("|r|cffff4422! -- Tourist:|r Warning: This is an alpha version with limited functionality." )			
-
-
 local playerLevel = UnitLevel("player")
---trace("INIT: Player Level = "..tostring(playerLevel))
 
 local isAlliance, isHorde, isNeutral
 do
@@ -67,7 +66,6 @@ local X_Y_ZEPPELIN = "%s - %s Zeppelin"
 local X_Y_BOAT = "%s - %s Boat"
 local X_Y_PORTAL = "%s - %s Portal"
 local X_Y_TELEPORT = "%s - %s Teleport"
-
 
 if GetLocale() == "zhCN" then
 	X_Y_ZEPPELIN = "%s - %s 飞艇"
@@ -121,19 +119,19 @@ local entrancePortals_zone = {}
 local entrancePortals_x = {}
 local entrancePortals_y = {}
 
-local zoneIDtoContinentID = {}
-local continentZoneToMapID = {}
-
+local zoneMapIDtoContinentMapID = {}
 local zoneMapIDs = {}
-local zoneMapIDs_rev = {}
+local mapZonesByContinentID = {}
 
 local COSMIC_MAP_ID = 946
+local THE_MAELSTROM_MAP_ID = 948
+local DRAENOR_MAP_ID = 572
+local BROKEN_ISLES_MAP_ID = 619
 
 -- HELPER AND LOOKUP FUNCTIONS -------------------------------------------------------------
 
 local function PLAYER_LEVEL_UP(self, level)
 	playerLevel = UnitLevel("player")
-	--trace("Player Level = "..tostring(playerLevel))
 	
 	for k in pairs(recZones) do
 		recZones[k] = nil
@@ -173,11 +171,9 @@ local function PLAYER_LEVEL_UP(self, level)
 end
 
 
-
-
-
 -- Public alternative for GetMapContinents, removes the map IDs that were added to its output in WoW 6.0
 -- Note: GetMapContinents has been removed entirely in 8.0
+-- 8.0.1: returns uiMapID as key
 function Tourist:GetMapContinentsAlt()
 	local continents = C_Map.GetMapChildrenInfo(COSMIC_MAP_ID, Enum.UIMapType.Continent, true)
 	local retValue = {}
@@ -186,21 +182,6 @@ function Tourist:GetMapContinentsAlt()
 		retValue[continentInfo.mapID] = continentInfo.name
 	end
 	return retValue
-	
---	local temp = { GetMapContinents() }
---	if tonumber(temp[1]) then
---		-- The first value is an ID instead of a name -> WoW 6.0 or later
---		local continents = {}
---		local index = 0
---		for i = 2, #temp, 2 do
---			index = index + 1
---			continents[index] = temp[i]
---		end
---		return continents
---	else
---		-- Backward compatibility for pre-WoW 6.0
---		return temp
---	end
 end
 
 -- Public Alternative for GetMapZones because GetMapZones does NOT return all zones (as of 6.0.2), 
@@ -208,9 +189,10 @@ end
 -- Note: GetMapZones has been removed entirely in 8.0, just as SetMapZoom
 -- NOTE: This method does not convert duplicate zone names for lookup in LibTourist,
 -- use GetUniqueZoneNameForLookup for that.
-local mapZonesByContinentID = {}
+-- 8.0.1: returns uiMapID as key
 function Tourist:GetMapZonesAlt(continentID)
 	if mapZonesByContinentID[continentID] then
+		-- Get from cache
 		return mapZonesByContinentID[continentID]
 	else	
 		local mapZones = {}
@@ -226,79 +208,77 @@ function Tourist:GetMapZonesAlt(continentID)
 		mapZonesByContinentID[continentID] = mapZones		
 		
 		return mapZones
-		
---[[		
-		local zones = {}
-		SetMapZoom(continentID)
-		local continentAreaID = GetCurrentMapAreaID()
-		for i=1, 100, 1 do 
-			SetMapZoom(continentID, i) 
-			local zoneAreaID = GetCurrentMapAreaID() 
-			if zoneAreaID == continentAreaID then 
-				-- If the index gets out of bounds, the continent map is returned -> exit the loop
-				break 
-			end 
-			-- Get the localized zone name and store it
---			zones[i] = GetMapNameByID(zoneAreaID)  -- 8.0: GetMapNameByID removed
-			zones[i] = C_Map.GetMapInfo(zoneAreaID).name
-		end
-		-- Cache
-		mapZonesByContinentID[continentID] = zones
-		return zones
-]]--
 	end
 end
 
---[[
--- Local version of GetMapZonesAlt, used during initialisation of LibTourist
-local function GetMapZonesAltLocal(continentID)
-	local zones = {}
-	SetMapZoom(continentID)
-	local continentAreaID = GetCurrentMapAreaID()
-	for i=1, 100, 1 do 
-		SetMapZoom(continentID, i) 
-		local zoneAreaID = GetCurrentMapAreaID() 
-		if zoneAreaID == continentAreaID then 
-			-- If the index is out of bounds, the continent map is returned -> exit the loop
-			break 
-		end 
-		-- Add area IDs to lookup tables
-		zoneIDtoContinentID[zoneAreaID] = continentID
-		if not continentZoneToMapID[continentID] then
-			continentZoneToMapID[continentID] = {}
-		end
-		continentZoneToMapID[continentID][i] = zoneAreaID
-		-- Get the localized zone name and store it
-		--zones[i] = GetMapNameByID(zoneAreaID)  -- 8.0: GetMapNameByID removed
-		zones[i] = C_Map.GetMapInfo(zoneAreaID).name
+-- Public alternative for GetMapNameByID (which was removed in 8.0.1), 
+-- returns a unique localized zone name to be used to lookup data in LibTourist
+function Tourist:GetMapNameByIDAlt(uiMapID)
+	if tonumber(uiMapID) == nil then
+		return nil
 	end
-	
-	-- Cache (for GetMapZonesAlt)
-	mapZonesByContinentID[continentID] = zones
-	return zones	
-end
-]]--
 
-
--- Public alternative for GetMapNameByID, returns a unique localized zone name
--- to be used to lookup data in LibTourist
-function Tourist:GetMapNameByIDAlt(zoneAreaID)
-	--local zoneName = GetMapNameByID(zoneAreaID)  -- 8.0: GetMapNameByID removed
-	local zoneName = C_Map.GetMapInfo(zoneAreaID).name
-	local continentID = zoneIDtoContinentID[zoneAreaID]
-	return Tourist:GetUniqueZoneNameForLookup(zoneName, continentID)
+	local mapInfo = C_Map.GetMapInfo(uiMapID)
+	if mapInfo then
+		local zoneName = C_Map.GetMapInfo(uiMapID).name
+		local continentMapID = Tourist:GetContinentMapID(uiMapID)
+		--trace("ContinentMap ID for "..tostring(zoneName).." ("..tostring(uiMapID)..") is "..tostring(continentMapID))
+		return Tourist:GetUniqueZoneNameForLookup(zoneName, continentMapID)
+	else
+		return nil
+	end
 end 
 
+-- Returns the uiMapID of the Continent for the given uiMapID
+function Tourist:GetContinentMapID(uiMapID)
+	-- First, check the cache, built during initialisation based on the zones returned by GetMapZonesAlt
+	local continentMapID = zoneMapIDtoContinentMapID[uiMapID]
+	if continentMapID then
+		-- Done
+		return continentMapID
+	end
+	
+	-- Not in cache, look for the continent, searching up through the map hierarchy.
+	-- Add the results to the cache to speed up future queries.
+	local mapInfo = C_Map.GetMapInfo(uiMapID)
+	if not mapInfo or mapInfo.mapType == 0 or mapInfo.mapType == 1 then
+		-- No data or Cosmic map or World map
+		zoneMapIDtoContinentMapID[uiMapID] = nil
+		return nil
+	end
+	
+	if mapInfo.mapType == 2 then
+		-- Map is a Continent map
+		zoneMapIDtoContinentMapID[uiMapID] = mapInfo.mapID
+		return mapInfo.mapID
+	end
+	
+	local parentMapInfo = C_Map.GetMapInfo(mapInfo.parentMapID)
+	if not parentMapInfo then
+		-- No parent -> no continent ID
+		zoneMapIDtoContinentMapID[uiMapID] = nil
+		return nil
+	else
+		if parentMapInfo.mapType == 2 then
+			-- Found the continent
+			zoneMapIDtoContinentMapID[uiMapID] = parentMapInfo.mapID
+			return parentMapInfo.mapID
+		else
+			-- Parent is not the Continent -> Search up one level
+			return Tourist:GetContinentMapID(parentMapInfo.mapID)
+		end
+	end
+end
 
 -- Returns a unique localized zone name to be used to lookup data in LibTourist,
 -- based on a localized or English zone name
-function Tourist:GetUniqueZoneNameForLookup(zoneName, continentID)
-	if continentID == 5 then
+function Tourist:GetUniqueZoneNameForLookup(zoneName, continentMapID)
+	if continentMapID == THE_MAELSTROM_MAP_ID then  -- The Maelstrom
 		if zoneName == BZ["The Maelstrom"] or zoneName == "The Maelstrom" then
 			zoneName = BZ["The Maelstrom"].." (zone)"
 		end
 	end
-	if continentID == 7 then
+	if continentMapID == DRAENOR_MAP_ID then  -- Draenor
 		if zoneName == BZ["Nagrand"] or zoneName == "Nagrand"  then
 			zoneName = BZ["Nagrand"].." ("..BZ["Draenor"]..")"
 		end
@@ -309,7 +289,7 @@ function Tourist:GetUniqueZoneNameForLookup(zoneName, continentID)
 			zoneName = BZ["Hellfire Citadel"].." ("..BZ["Draenor"]..")"
 		end
 	end
-	if continentID == 8 then
+	if continentMapID == BROKEN_ISLES_MAP_ID then  -- Broken Isles
 		if zoneName == BZ["Dalaran"] or zoneName == "Dalaran"  then
 			zoneName = BZ["Dalaran"].." ("..BZ["Broken Isles"]..")"
 		end
@@ -322,13 +302,13 @@ end
 
 -- Returns a unique English zone name to be used to lookup data in LibTourist,
 -- based on a localized or English zone name
-function Tourist:GetUniqueEnglishZoneNameForLookup(zoneName, continentID)
-	if continentID == 5 then
+function Tourist:GetUniqueEnglishZoneNameForLookup(zoneName, continentMapID)
+	if continentMapID == THE_MAELSTROM_MAP_ID then  -- The Maelstrom
 		if zoneName == BZ["The Maelstrom"] or zoneName == "The Maelstrom" then
 			zoneName = "The Maelstrom (zone)"
 		end
 	end
-	if continentID == 7 then
+	if continentMapID == DRAENOR_MAP_ID then -- Draenor
 		if zoneName == BZ["Nagrand"] or zoneName == "Nagrand" then
 			zoneName = "Nagrand (Draenor)"
 		end
@@ -339,7 +319,7 @@ function Tourist:GetUniqueEnglishZoneNameForLookup(zoneName, continentID)
 			zoneName = "Hellfire Citadel (Draenor)"
 		end
 	end
-	if continentID == 8 then
+	if continentMapID == BROKEN_ISLES_MAP_ID then  -- Broken Isles
 		if zoneName == BZ["Dalaran"] or zoneName == "Dalaran" then
 			zoneName = "Dalaran (Broken Isles)"
 		end	
@@ -351,30 +331,24 @@ function Tourist:GetUniqueEnglishZoneNameForLookup(zoneName, continentID)
 end
 
 -- Minimum fishing skill to fish these zones junk-free (Draenor: to catch Enormous Fish only)
+-- 8.0.1: SUSPENDED until it is clear how the fishing skills currently work, if a minimum skill is still required 
+-- and how it should be calculated. There is no WoW API for this.
 function Tourist:GetFishingLevel(zone)
-	return fishing[zone]
+	return 0
+--	zone = Tourist:GetMapNameByIDAlt(zone) or zone
+--	return fishing[zone]
 end
 
+-- Returns the minimum and maximum battle pet levels for the given zone, if the zone is known 
+-- and contains battle pets (otherwise returns nil)
 function Tourist:GetBattlePetLevel(zone)
+	zone = Tourist:GetMapNameByIDAlt(zone) or zone
 	return battlepet_lows[zone], battlepet_highs[zone]
 end
 
--- function has been replaced by GetScaledZoneLevel
--- WoW Legions: most zones scale to the player's level between 100 and 110
---function Tourist:GetLegionZoneLevel()
---	local playerLvl = playerLevel
---
---	if playerLvl <= 100 then 
---		return 100
---	elseif playerLvl >= 110 then
---		return 110
---	else
---		return playerLvl
---	end
---end
-
 -- WoW patch 7.3.5: most zones now scale - within their level range - to the player's level
 function Tourist:GetScaledZoneLevel(zone)
+	zone = Tourist:GetMapNameByIDAlt(zone) or zone
 	local playerLvl = playerLevel
 
 	if playerLvl <= lows[zone] then 
@@ -386,6 +360,11 @@ function Tourist:GetScaledZoneLevel(zone)
 	end
 end
 
+
+-- Formats the minimum and maximum player level for the given zone as "[min]-[max]". 
+-- Returns one number if min and max are equal. 
+-- Returns an empty string if no player levels are applicable (like in Cities).
+-- If zone is a zone or an instance, the string will be formatted like "[scaled] ([min]-[max])", i.e. "47 (40-60)".
 function Tourist:GetLevelString(zone)
 	local lo, hi, scaled = Tourist:GetLevel(zone)
 	
@@ -404,10 +383,13 @@ function Tourist:GetLevelString(zone)
 			end
 		end
 	else
-		return tostring(lo) or tostring(hi) or ""
+		return tostring(lo or hi or "")
 	end
 end
 
+
+-- Formats the minimum and maximum battle pet level for the given zone as "min-max". 
+-- Returns one number if min and max are equal. Returns an empty string if no battle pet levels are available.
 function Tourist:GetBattlePetLevelString(zone)
 	local lo, hi = Tourist:GetBattlePetLevel(zone)
 	if lo and hi then
@@ -417,11 +399,15 @@ function Tourist:GetBattlePetLevelString(zone)
 			return tostring(lo).."-"..tostring(hi)
 		end
 	else
-		return tostring(lo) or tostring(hi) or ""
+		return tostring(lo or hi or "")
 	end
 end
 
+-- Returns the minimum and maximum level for the given zone, instance or battleground.
+-- If zone is a zone or an instance, a third value is returned: the scaled zone level. 
+-- This is the level 'presented' to the player when inside the zone. It's calculated by GetScaledZoneLevel.
 function Tourist:GetLevel(zone)
+	zone = Tourist:GetMapNameByIDAlt(zone) or zone
 
 	if types[zone] == "Battleground" then
 		-- Note: Not all BG's start at level 10, but all BG's support players up to MAX_PLAYER_LEVEL.
@@ -436,6 +422,10 @@ function Tourist:GetLevel(zone)
 		-- Find the most suitable bracket
 		if playerLvl >= MAX_PLAYER_LEVEL then
 			return MAX_PLAYER_LEVEL, MAX_PLAYER_LEVEL, nil
+		elseif playerLvl >= 115 then
+			return 115, 119, nil
+		elseif playerLvl >= 110 then
+			return 110, 114, nil
 		elseif playerLvl >= 105 then
 			return 105, 109, nil
 		elseif playerLvl >= 100 then
@@ -488,14 +478,23 @@ function Tourist:GetLevel(zone)
 	end
 end
 
+-- Returns an r, g and b value representing a color ranging from grey (too low) via
+-- green, yellow and orange to red (too high), depending on the player's battle pet level 
+-- within the battle pet level range of the given zone.
 function Tourist:GetBattlePetLevelColor(zone, petLevel)
+	zone = Tourist:GetMapNameByIDAlt(zone) or zone
 	local low, high = self:GetBattlePetLevel(zone)
 	
 	return Tourist:CalculateLevelColor(low, high, petLevel)
 end
 
-
+-- Returns an r, g and b value representing a color ranging from grey (too low) via 
+-- green, yellow and orange to red (too high), by calling CalculateLevelColor with 
+-- the min and max level of the given zone and the current player level.
+-- Note: if zone is a zone or an instance, the zone's scaled level (calculated 
+-- by GetScaledZoneLevel) is used instead of it's minimum and maximum level. 
 function Tourist:GetLevelColor(zone)
+	zone = Tourist:GetMapNameByIDAlt(zone) or zone
 	local low, high, scaled = self:GetLevel(zone)
 
 	if types[zone] == "Battleground" then
@@ -512,7 +511,9 @@ function Tourist:GetLevelColor(zone)
 	end
 end
 	
-	
+-- Returns an r, g and b value representing a color ranging from grey (too low) via 
+-- green, yellow and orange to red (too high) depending on the player level within 
+-- the given range. Returns white if no level is applicable, like in cities.	
 function Tourist:CalculateLevelColor(low, high, currentLevel)
 	local midBracket = (low + high) / 2
 
@@ -567,7 +568,10 @@ function Tourist:CalculateLevelColor(low, high, currentLevel)
 	end
 end
 
+-- Returns an r, g and b value representing a color, depending on the given zone and the current character's faction.
 function Tourist:GetFactionColor(zone)
+	zone = Tourist:GetMapNameByIDAlt(zone) or zone
+
 	if factions[zone] == "Sanctuary" then
 		-- Blue
 		return 0.41, 0.8, 0.94
@@ -586,328 +590,65 @@ function Tourist:GetFactionColor(zone)
 	end
 end
 
+-- Returns the width and height of a zone map in game yards. The height is always 2/3 of the width.
 function Tourist:GetZoneYardSize(zone)
---  Out of order -----
-	if 1==1 then return nil, nil end
---  ------------------	
+	zone = Tourist:GetMapNameByIDAlt(zone) or zone
 	return yardWidths[zone], yardHeights[zone]
 end
 
-function Tourist:GetZoneYardOffset(zone)
---  Out of order -----
-	if 1==1 then return nil, nil end
---  ------------------	
-	return yardXOffsets[zone], yardYOffsets[zone]
-end
-
-
--- This function is used to calculate the distance in yards between two sets of coordinates
--- Zone can be a continent or Azeroth
+-- Calculates a distance in game yards between point A and point B. 
+-- Points A and B can be in different zones but must be on the same continent.
 function Tourist:GetYardDistance(zone1, x1, y1, zone2, x2, y2)
---  Out of order -----
-	if 1==1 then return nil end
---  ------------------	
-
-
-	local zone1_continent = continents[zone1]
-	local zone2_continent = continents[zone2]
-	
-	if not zone1_continent or not zone2_continent then
-		-- Unknown zone
-		return nil
+	if tonumber(zone1) == nil then	
+		-- Not a uiMapID, translate zone name to map ID
+		zone1 = Tourist:GetZoneMapID(zone1)
 	end
-	if (zone1_continent == Outland) ~= (zone2_continent == Outland) then
-		-- Cannot calculate distances from or to outside Outland
-		return nil
+	if tonumber(zone2) == nil then	
+		-- Not a uiMapID, translate zone name to map ID
+		zone2 = Tourist:GetZoneMapID(zone2)
 	end
-	if (zone1_continent == The_Maelstrom or zone2_continent == The_Maelstrom) and (zone1 ~= zone2) then
-		-- Cannot calculate distances from or to outside The Maelstrom
-		-- In addition, in The Maelstrom only distances within a single zone can be calculated
-		-- as the zones are not geographically related to each other
-		return nil
+	if zone1 and zone2 then
+		return HBD:GetZoneDistance(zone1, x1, y1, zone2, x2, y2)
+	else
+		return nil, nil, nil
 	end
-	if (zone1_continent == Draenor) ~= (zone2_continent == Draenor) then
-		-- Cannot calculate distances from or to outside Draenor
-		return nil
-	end
-	
-	-- Get the zone sizes in yards
-	local zone1_yardWidth = yardWidths[zone1]
-	local zone1_yardHeight = yardHeights[zone1]
-	local zone2_yardWidth = yardWidths[zone2]
-	local zone2_yardHeight = yardHeights[zone2]
-	if not zone1_yardWidth or not zone2_yardWidth or zone1_yardWidth == 0 or zone2_yardWidth == 0 then
-		-- Need zone sizes to continue
-		return nil
-	end
-
-	-- Convert position coordinates (a value between 0 and 1) to yards, measured from the top and the left of the map
-	local x1_yard = zone1_yardWidth * x1
-	local y1_yard = zone1_yardHeight * y1
-	local x2_yard = zone2_yardWidth * x2
-	local y2_yard = zone2_yardHeight * y2
-
-	if zone1 ~= zone2 then
-		-- The two locations are not within the same zone. Get the zone offsets (their position at the continent map), which
-		-- are also measured from the top and the left of the map
-		local zone1_yardXOffset = yardXOffsets[zone1]
-		local zone1_yardYOffset = yardYOffsets[zone1]
-		local zone2_yardXOffset = yardXOffsets[zone2]
-		local zone2_yardYOffset = yardYOffsets[zone2]	
-	
-		-- Don't apply zone offsets if a zone is a continent (this includes Azeroth)
-		if zone1 == zone1_continent then
-			zone1_yardXOffset = 0
-			zone1_yardYOffset = 0
-		end
-		if zone2 == zone2_continent then
-			zone2_yardXOffset = 0
-			zone2_yardYOffset = 0
-		end
-	
-		if not zone1_yardXOffset or not zone1_yardYOffset or not zone2_yardXOffset or not zone2_yardYOffset then
-			-- Need all offsets to continue
-			return nil
-		end
-
-		-- Calculate the positions on the continent map, in yards
-		x1_yard = x1_yard + zone1_yardXOffset
-		y1_yard = y1_yard + zone1_yardYOffset
-
-		x2_yard = x2_yard + zone2_yardXOffset
-		y2_yard = y2_yard + zone2_yardYOffset
-
-		if zone1_continent ~= zone2_continent then
-			-- The two locations are not on the same continent
-			-- Possible continents here are the Azeroth continents, except The Maelstrom.
-			local cont1_scale = continentScales[zone1_continent]
-			local cont1_XOffset = yardXOffsets[zone1_continent]
-			local cont1_YOffset = yardYOffsets[zone1_continent]
-			local cont2_scale = continentScales[zone2_continent]
-			local cont2_XOffset = yardXOffsets[zone2_continent]
-			local cont2_YOffset = yardYOffsets[zone2_continent]
-			
-			-- Calculate x and y on the Azeroth map, expressed in Azeroth yards
-			if zone1 ~= Azeroth then
-				x1_yard = (x1_yard * cont1_scale) + cont1_XOffset
-				y1_yard = (y1_yard * cont1_scale) + cont1_YOffset
-			end
-			if zone2 ~= Azeroth then
-				x2_yard = (x2_yard * cont2_scale) + cont2_XOffset
-				y2_yard = (y2_yard * cont2_scale) + cont2_YOffset
-			end
-			
-			-- Calculate distance, in Azeroth yards
-			local x_diff = x1_yard - x2_yard
-			local y_diff = y1_yard - y2_yard
-			local distAz = x_diff*x_diff + y_diff*y_diff
-			
-			if zone1 ~= Azeroth then
-				-- Correct the distance for the source continent scale
-				return (distAz^0.5) / cont1_scale
-			else
-				return (distAz^0.5)
-			end
-		end
-	end
-
-	-- x and y for both locations are now at the same map level (a zone or a continent) -> calculate distance
-	local x_diff = x1_yard - x2_yard
-	local y_diff = y1_yard - y2_yard
-	local dist_2 = x_diff*x_diff + y_diff*y_diff
-	return dist_2^0.5
 end
 
--- This function is used to calculate the coordinates of a location in zone1, on the map of zone2.
--- Zone can be a continent or Azeroth
+-- This function is used to calculate the coordinates of a location in zone1, on the map of zone2. 
+-- The zones can be continents (including Azeroth). 
+-- The return value can be outside the 0 to 1 range.
 function Tourist:TransposeZoneCoordinate(x, y, zone1, zone2)
---  Out of order -----
-	if 1==1 then return nil, nil end
---  ------------------	
-
---	trace("TZC: z1 = "..tostring(zone1)..", z2 = "..tostring(zone2))
-
-	if zone1 == zone2 then
-		-- Nothing to do
-		return x, y
+	if tonumber(zone1) == nil then	
+		-- Not a uiMapID, translate zone name to map ID
+		zone1 = Tourist:GetZoneMapID(zone1)
+	end
+	if tonumber(zone2) == nil then	
+		-- Not a uiMapID, translate zone name to map ID
+		zone2 = Tourist:GetZoneMapID(zone2)
 	end
 
-	local zone1_continent = continents[zone1]
-	local zone2_continent = continents[zone2]
-	if not zone1_continent or not zone2_continent then
-		-- Unknown zone
-		return nil
-	end
-	if (zone1_continent == Outland) ~= (zone2_continent == Outland) then
-		-- Cannot transpose from or to outside Outland
-		return nil
-	end
-	if (zone1_continent == The_Maelstrom or zone2_continent == The_Maelstrom) then
-		-- Cannot transpose from, to or within The Maelstrom
-		return nil
-	end
-	if (zone1_continent == Draenor) ~= (zone2_continent == Draenor) then
-		-- Cannot transpose from or to outside Draenor
-		return nil
-	end
-	
-	-- Get the zone sizes in yards
-	local zone1_yardWidth = yardWidths[zone1]
-	local zone1_yardHeight = yardHeights[zone1]
-	local zone2_yardWidth = yardWidths[zone2]
-	local zone2_yardHeight = yardHeights[zone2]
-	if not zone1_yardWidth or not zone2_yardWidth or zone1_yardWidth == 0 or zone2_yardWidth == 0 then
-		-- Need zone sizes to continue
-		return nil
-	end
-	
-	-- Get zone offsets
-	local zone1_yardXOffset = yardXOffsets[zone1]
-	local zone1_yardYOffset = yardYOffsets[zone1]
-	local zone2_yardXOffset = yardXOffsets[zone2]
-	local zone2_yardYOffset = yardYOffsets[zone2]	
-	if not zone1_yardXOffset or not zone1_yardYOffset or not zone2_yardXOffset or not zone2_yardYOffset then
-		-- Need all offsets to continue
-		return nil
-	end
-	
-	-- Don't apply zone offsets if a zone is a continent (this includes Azeroth)
-	if zone1 == zone1_continent then
-		zone1_yardXOffset = 0
-		zone1_yardYOffset = 0
-	end
-	if zone2 == zone2_continent then
-		zone2_yardXOffset = 0
-		zone2_yardYOffset = 0
-	end
-
-	-- Convert source coordinates (a value between 0 and 1) to yards, measured from the top and the left of the map
-	local x_yard = zone1_yardWidth * x
-	local y_yard = zone1_yardHeight * y
-
-	-- Calculate the positions on the continent map, in yards
-	x_yard = x_yard + zone1_yardXOffset
-	y_yard = y_yard + zone1_yardYOffset
-
-	if zone1_continent ~= zone2_continent then
-		-- Target zone is not on the same continent
-		-- Possible continents here are the Azeroth continents, except The Maelstrom.
-		local cont1_scale = continentScales[zone1_continent]
-		local cont1_XOffset = yardXOffsets[zone1_continent]
-		local cont1_YOffset = yardYOffsets[zone1_continent]
-		local cont2_scale = continentScales[zone2_continent]
-		local cont2_XOffset = yardXOffsets[zone2_continent]
-		local cont2_YOffset = yardYOffsets[zone2_continent]
-
-		if zone1 ~= Azeroth then
-			-- Translate the coordinate from the source continent to Azeroth
-			x_yard = (x_yard * cont1_scale) + cont1_XOffset
-			y_yard = (y_yard * cont1_scale) + cont1_YOffset
-		end
-			
-		if zone2 ~= Azeroth then
-			-- Translate the coordinate from Azeroth to the target continent
-			x_yard = (x_yard - cont2_XOffset) / cont2_scale
-			y_yard = (y_yard - cont2_YOffset) / cont2_scale
-		end
-	end
-
-	-- 'Move' (transpose) the coordinates to the target zone
-	x_yard = x_yard - zone2_yardXOffset
-	y_yard = y_yard - zone2_yardYOffset
-
-	-- Convert yards back to coordinates
-	x = x_yard / zone2_yardWidth
-	y = y_yard / zone2_yardHeight
-
-	return x, y
+	return HBD:TranslateZoneCoordinates(x, y, zone1, zone2, true)  -- True: allow < 0 and > 1
 end
-
-local zonesToIterate = setmetatable({}, {__index = function(self, key)
-	local t = {}
-	self[key] = t
-	for k,v in pairs(continents) do
-		if v == key and v ~= k and yardXOffsets[k] then
-			t[#t+1] = k
-		end
-	end
-	return t
-end})
-
 
 -- This function is used to find the actual zone a player is in, including coordinates for that zone, if the current map 
 -- is a map that contains the player position, but is not the map of the zone where the player really is.
--- x, y = player position on current map
--- zone = the zone of the current map
-function Tourist:GetBestZoneCoordinate(x, y, zone)
---  Out of order -----
-	if 1==1 then return nil, nil, nil end
---  ------------------	
-
-	-- This only works properly if we have a player position and the current map zone is not a continent or so
-	if not x or not y or not zone or x ==0 or y == 0 or Tourist:IsContinent(zone) then
-		return x, y, zone
-	end
-
-	-- Get current map zone data
-	local zone_continent = continents[zone]
-	local zone_yardXOffset = yardXOffsets[zone]
-	local zone_yardYOffset = yardYOffsets[zone]
-	local zone_yardWidth = yardWidths[zone]
-	local zone_yardHeight = yardHeights[zone]
-	if not zone_yardXOffset or not zone_yardYOffset or not zone_yardWidth or not zone_yardHeight then
-		-- Need all offsets to continue
-		return x, y, zone
-	end
-
-	-- Convert coordinates to offsets in yards (within the zone)
-	local x_yard = zone_yardWidth * x
-	local y_yard = zone_yardHeight * y
-
-	-- Translate the location to a location on the continent map
-	x_yard = x_yard + zone_yardXOffset
-	y_yard = y_yard + zone_yardYOffset
+-- Return values:
+-- x, y = player position on the most suitable map
+-- zone = the unique localized zone name of the most suitable map 
+-- uiMapID = ID of the most suitable map 
+function Tourist:GetBestZoneCoordinate()
+	local uiMapID = C_Map.GetBestMapForUnit("player")
 	
-	local best_zone, best_x, best_y, best_value
-
-	-- Loop through all zones on the continent...
-	for _,z in ipairs(zonesToIterate[zone_continent]) do
-		local z_yardXOffset = yardXOffsets[z]
-		local z_yardYOffset = yardYOffsets[z]
-		local z_yardWidth = yardWidths[z]
-		local z_yardHeight = yardHeights[z]
-
-		-- Translate the coordinates to the zone
-		local x_yd = x_yard - z_yardXOffset
-		local y_yd = y_yard - z_yardYOffset
-
-		if x_yd >= 0 and y_yd >= 0 and x_yd <= z_yardWidth and y_yd <= z_yardHeight then
-			-- Coordinates are within the probed zone
-			if types[z] == "City" then
-				-- City has no adjacent zones -> done
-				return x_yd/z_yardWidth, y_yd/z_yardHeight, z
-			end
-			-- Calculate the midpoint of the zone map
-			local x_tmp = x_yd - z_yardWidth / 2
-			local y_tmp = y_yd - z_yardHeight / 2
-			-- Calculate the distance (sort of, no need to sqrt)
-			local value = x_tmp*x_tmp + y_tmp*y_tmp
-			if not best_value or value < best_value then
-				-- Lowest distance wins (= closest to map center)
-				best_zone = z
-				best_value = value
-				best_x = x_yd/z_yardWidth
-				best_y = y_yd/z_yardHeight
-			end
+	if uiMapID then
+		local zone = Tourist:GetMapNameByIDAlt(uiMapID)
+		local pos = C_Map.GetPlayerMapPosition(uiMapID, "player")
+		if pos then 
+			return pos.x, pos.y, zone, uiMapID
+		else
+			return nil, nil, zone, uiMapID
 		end
 	end
-	
-	if not best_zone then
-		-- No best zone found -> best map is the continent map
-		return x_yard / yardWidths[zone_continent], y_yard / yardHeights[zone_continent], zone_continent
-	end
-	
-	return best_x, best_y, best_zone
+	return nil, nil, nil, nil 
 end
 
 
@@ -975,7 +716,9 @@ local function myiter(t)
 		t.n = nil
 	end
 end
+
 function Tourist:IterateZoneInstances(zone)
+	zone = Tourist:GetMapNameByIDAlt(zone) or zone
 	local inst = instances[zone]
 
 	if not inst then
@@ -996,6 +739,7 @@ function Tourist:IterateZoneInstances(zone)
 end
 
 function Tourist:IterateZoneComplexes(zone)
+	zone = Tourist:GetMapNameByIDAlt(zone) or zone
 	local compl = zoneComplexes[zone]
 
 	if not compl then
@@ -1016,6 +760,7 @@ function Tourist:IterateZoneComplexes(zone)
 end
 
 function Tourist:GetInstanceZone(instance)
+	instance = Tourist:GetMapNameByIDAlt(instance) or instance
 	for k, v in pairs(instances) do
 		if v then
 			if type(v) == "string" then
@@ -1034,6 +779,7 @@ function Tourist:GetInstanceZone(instance)
 end
 
 function Tourist:GetComplexZone(complex)
+	complex = Tourist:GetMapNameByIDAlt(complex) or complex
 	for k, v in pairs(zoneComplexes) do
 		if v then
 			if type(v) == "string" then
@@ -1052,10 +798,12 @@ function Tourist:GetComplexZone(complex)
 end
 
 function Tourist:DoesZoneHaveInstances(zone)
+	zone = Tourist:GetMapNameByIDAlt(zone) or zone
 	return not not instances[zone]
 end
 
 function Tourist:DoesZoneHaveComplexes(zone)
+	zone = Tourist:GetMapNameByIDAlt(zone) or zone
 	return not not zoneComplexes[zone]
 end
 
@@ -1069,7 +817,7 @@ local function initZonesInstances()
 			end
 		end
 	end
-	initZonesInstances = nil
+	initZonesInstances = nil  -- Set function to nil so initialisation is done only once (and just in time)
 end
 
 function Tourist:IterateZonesAndInstances()
@@ -1342,6 +1090,49 @@ function Tourist:IterateBrokenIsles()
 end
 
 
+local function argusIter(_, position)
+	local k = next(zonesInstances, position)
+	while k ~= nil and continents[k] ~= Argus do
+		k = next(zonesInstances, k)
+	end
+	return k
+end
+function Tourist:IterateArgus()
+	if initZonesInstances then
+		initZonesInstances()
+	end
+	return argusIter, nil, nil
+end
+
+local function zandalarIter(_, position)
+	local k = next(zonesInstances, position)
+	while k ~= nil and continents[k] ~= Zandalar do
+		k = next(zonesInstances, k)
+	end
+	return k
+end
+function Tourist:IterateZandalar()
+	if initZonesInstances then
+		initZonesInstances()
+	end
+	return zandalarIter, nil, nil
+end
+
+local function kultirasIter(_, position)
+	local k = next(zonesInstances, position)
+	while k ~= nil and continents[k] ~= Kul_Tiras do
+		k = next(zonesInstances, k)
+	end
+	return k
+end
+function Tourist:IterateKulTiras()
+	if initZonesInstances then
+		initZonesInstances()
+	end
+	return kultirasIter, nil, nil
+end
+
+
 function Tourist:IterateRecommendedZones()
 	return retNormal, recZones, nil
 end
@@ -1355,68 +1146,82 @@ function Tourist:HasRecommendedInstances()
 end
 
 function Tourist:IsInstance(zone)
+	zone = Tourist:GetMapNameByIDAlt(zone) or zone
 	local t = types[zone]
 	return t == "Instance" or t == "Battleground" or t == "Arena"
 end
 
 function Tourist:IsZone(zone)
+	zone = Tourist:GetMapNameByIDAlt(zone) or zone
 	local t = types[zone]
 	return t and t ~= "Instance" and t ~= "Battleground" and t ~= "Transport" and t ~= "Arena" and t ~= "Complex"
 end
 
 function Tourist:IsContinent(zone)
+	zone = Tourist:GetMapNameByIDAlt(zone) or zone
 	local t = types[zone]
 	return t == "Continent"
 end
 
 function Tourist:GetComplex(zone)
+	zone = Tourist:GetMapNameByIDAlt(zone) or zone
 	return complexOfInstance[zone]
 end
 
 function Tourist:GetType(zone)
+	zone = Tourist:GetMapNameByIDAlt(zone) or zone
 	return types[zone] or "Zone"
 end
 
 function Tourist:IsZoneOrInstance(zone)
+	zone = Tourist:GetMapNameByIDAlt(zone) or zone
 	local t = types[zone]
 	return t and t ~= "Transport"
 end
 
 function Tourist:IsTransport(zone)
+	zone = Tourist:GetMapNameByIDAlt(zone) or zone
 	local t = types[zone]
 	return t == "Transport"
 end
 
 function Tourist:IsComplex(zone)
+	zone = Tourist:GetMapNameByIDAlt(zone) or zone
 	local t = types[zone]
 	return t == "Complex"
 end
 
 function Tourist:IsBattleground(zone)
+	zone = Tourist:GetMapNameByIDAlt(zone) or zone
 	local t = types[zone]
 	return t == "Battleground"
 end
 
 function Tourist:IsArena(zone)
+	zone = Tourist:GetMapNameByIDAlt(zone) or zone
 	local t = types[zone]
 	return t == "Arena"
 end
 
 function Tourist:IsPvPZone(zone)
+	zone = Tourist:GetMapNameByIDAlt(zone) or zone
 	local t = types[zone]
 	return t == "PvP Zone"
 end
 
 function Tourist:IsCity(zone)
+	zone = Tourist:GetMapNameByIDAlt(zone) or zone
 	local t = types[zone]
 	return t == "City"
 end
 
 function Tourist:IsAlliance(zone)
+	zone = Tourist:GetMapNameByIDAlt(zone) or zone
 	return factions[zone] == "Alliance"
 end
 
 function Tourist:IsHorde(zone)
+	zone = Tourist:GetMapNameByIDAlt(zone) or zone
 	return factions[zone] == "Horde"
 end
 
@@ -1429,62 +1234,92 @@ else
 end
 
 function Tourist:IsSanctuary(zone)
+	zone = Tourist:GetMapNameByIDAlt(zone) or zone
 	return factions[zone] == "Sanctuary"
 end
 
 function Tourist:IsContested(zone)
+	zone = Tourist:GetMapNameByIDAlt(zone) or zone
 	return not factions[zone]
 end
 
 function Tourist:GetContinent(zone)
-	return continents[zone] or UNKNOWN
+	zone = Tourist:GetMapNameByIDAlt(zone) or zone
+	return BZ[continents[zone]] or UNKNOWN
 end
 
 function Tourist:IsInKalimdor(zone)
+	zone = Tourist:GetMapNameByIDAlt(zone) or zone
 	return continents[zone] == Kalimdor
 end
 
 function Tourist:IsInEasternKingdoms(zone)
+	zone = Tourist:GetMapNameByIDAlt(zone) or zone
 	return continents[zone] == Eastern_Kingdoms
 end
 
 function Tourist:IsInOutland(zone)
+	zone = Tourist:GetMapNameByIDAlt(zone) or zone
 	return continents[zone] == Outland
 end
 
 function Tourist:IsInNorthrend(zone)
+	zone = Tourist:GetMapNameByIDAlt(zone) or zone
 	return continents[zone] == Northrend
 end
 
 function Tourist:IsInTheMaelstrom(zone)
+	zone = Tourist:GetMapNameByIDAlt(zone) or zone
 	return continents[zone] == The_Maelstrom
 end
 
 function Tourist:IsInPandaria(zone)
+	zone = Tourist:GetMapNameByIDAlt(zone) or zone
 	return continents[zone] == Pandaria
 end
 
 function Tourist:IsInDraenor(zone)
+	zone = Tourist:GetMapNameByIDAlt(zone) or zone
 	return continents[zone] == Draenor
 end
 
 function Tourist:IsInBrokenIsles(zone)
+	zone = Tourist:GetMapNameByIDAlt(zone) or zone
 	return continents[zone] == Broken_Isles
 end
 
+function Tourist:IsInArgus(zone)
+	zone = Tourist:GetMapNameByIDAlt(zone) or zone
+	return continents[zone] == Argus
+end
+
+function Tourist:IsInZandalar(zone)
+	zone = Tourist:GetMapNameByIDAlt(zone) or zone
+	return continents[zone] == Zandalar
+end
+
+function Tourist:IsInKulTiras(zone)
+	zone = Tourist:GetMapNameByIDAlt(zone) or zone
+	return continents[zone] == Kul_Tiras
+end
+
 function Tourist:GetInstanceGroupSize(instance)
+	instance = Tourist:GetMapNameByIDAlt(instance) or instance
 	return groupSizes[instance] or groupMaxSizes[instance] or 0
 end
 
 function Tourist:GetInstanceGroupMinSize(instance)
+	instance = Tourist:GetMapNameByIDAlt(instance) or instance
 	return groupMinSizes[instance] or groupSizes[instance] or 0
 end
 
 function Tourist:GetInstanceGroupMaxSize(instance)
+	instance = Tourist:GetMapNameByIDAlt(instance) or instance
 	return groupMaxSizes[instance] or groupSizes[instance] or 0
 end
 
 function Tourist:GetInstanceGroupSizeString(instance, includeAltSize)
+	instance = Tourist:GetMapNameByIDAlt(instance) or instance
 	local retValue
 	if groupSizes[instance] then
 		-- Fixed size
@@ -1509,10 +1344,12 @@ function Tourist:GetInstanceGroupSizeString(instance, includeAltSize)
 end
 
 function Tourist:GetInstanceAltGroupSize(instance)
+	instance = Tourist:GetMapNameByIDAlt(instance) or instance
 	return groupAltSizes[instance] or 0
 end
 
 function Tourist:GetTexture(zone)
+	zone = Tourist:GetMapNameByIDAlt(zone) or zone
 	return textures[zone]
 end
 
@@ -1520,114 +1357,12 @@ function Tourist:GetZoneMapID(zone)
 	return zoneMapIDs[zone]
 end
 
--- Returns the MapAreaID for a given continent ID and zone Index (the index of the zone within the continent)
-function Tourist:GetMapAreaIDByContinentZone(continentID, zoneIndex)
-	if continentID and continentZoneToMapID[continentID] then
-		return continentZoneToMapID[continentID][zoneIndex]
-	else
-		return nil
-	end
-end
-
--- Returns the MapAreaID of a zone based on the texture name
-function Tourist:GetZoneMapIDFromTexture(texture)
-	if not texture then
-		return -1
-	end
-	local zone = textures_rev[texture]
-	if zone then
-		return zoneMapIDs[zone]
-	else
-		-- Might be phased terrain, look for "_terrain<number>" postfix
-		local pos1 = string.find(texture, "_terrain")
-		if pos1 then
-			-- Remove the postfix from the texture name and try again
-			texture = string.sub(texture, 0, pos1 - 1)
-			zone = textures_rev[texture]
-			if zone then
-				return zoneMapIDs[zone]
-			end
-		end
-		-- Might be tiered terrain (garrison), look for "_tier<number>" postfix
-		local pos2 = string.find(texture, "_tier")
-		if pos2 then
-			-- Remove the postfix from the texture name and try again
-			texture = string.sub(texture, 0, pos2 - 1)
-			zone = textures_rev[texture]
-			if zone then
-				return zoneMapIDs[zone]
-			end
-		end
-	end
-	return nil
-end
-
-function Tourist:GetZoneFromTexture(texture)
-	if not texture then
-		return "Azeroth"
-	end
-	local zone = textures_rev[texture]
-	if zone then
-		return zone
-	else
-		-- Might be phased terrain, look for "_terrain<number>" postfix
-		local pos1 = string.find(texture, "_terrain")
-		if pos1 then
-			-- Remove the postfix from the texture name and try again
-			texture = string.sub(texture, 0, pos1 - 1)
-			zone = textures_rev[texture]
-			if zone then
-				return zone
-			end
-		end
-		-- Might be tiered terrain (garrison), look for "_tier<number>" postfix
-		local pos2 = string.find(texture, "_tier")
-		if pos2 then
-			-- Remove the postfix from the texture name and try again
-			texture = string.sub(texture, 0, pos2 - 1)
-			zone = textures_rev[texture]
-			if zone then
-				return zone
-			end
-		end
-	end
-	return nil
-end
-
-function Tourist:GetEnglishZoneFromTexture(texture)
-	if not texture then
-		return "Azeroth"
-	end
-	local zone = textures_rev[texture]
-	if zone then
-		return BZR[zone]
-	else
-		-- Might be phased terrain, look for "_terrain<number>" postfix
-		local pos1 = string.find(texture, "_terrain")
-		if pos1 then
-			-- Remove the postfix from the texture name
-			texture = string.sub(texture, 0, pos1 - 1)
-			zone = textures_rev[texture]
-			if zone then
-				return BZR[zone]
-			end
-		end
-		-- Might be tiered terrain (garrison), look for "_tier<number>" postfix
-		local pos2 = string.find(texture, "_tier")
-		if pos2 then
-			-- Remove the postfix from the texture name and try again
-			texture = string.sub(texture, 0, pos2 - 1)
-			zone = textures_rev[texture]
-			if zone then
-				return BZR[zone]
-			end
-		end
-	end
-	return nil
-end
-
 function Tourist:GetEntrancePortalLocation(instance)
-	return entrancePortals_zone[instance], entrancePortals_x[instance], entrancePortals_y[instance]
+	instance = Tourist:GetMapNameByIDAlt(instance) or instance
+	local x, y = entrancePortals_x[instance], entrancePortals_y[instance]
+	if x then x = x/100 end
+	if y then y = y/100 end
+	return entrancePortals_zone[instance], x, y
 end
 
 local inf = math.huge
@@ -1673,7 +1408,17 @@ setmetatable(cost, {
 	end
 })
 
+-- This function tries to calculate the most optimal path between alpha and bravo 
+-- by foot or ground mount, that is, without using a flying mount or a taxi service. 
+-- The return value is an iteration that gives a travel advice in the form of a list 
+-- of zones and transports to follow in order to get from alpha to bravo. 
+-- The function tries to avoid hostile zones by calculating a "price" for each possible 
+-- route. The price calculation takes zone level, faction and type into account.
+-- See metatable above for the 'pricing' mechanism.
 function Tourist:IteratePath(alpha, bravo)
+	alpha = Tourist:GetMapNameByIDAlt(alpha) or alpha
+	bravo = Tourist:GetMapNameByIDAlt(bravo) or bravo
+
 	if paths[alpha] == nil or paths[bravo] == nil then
 		return retNil
 	end
@@ -1756,43 +1501,42 @@ function Tourist:IteratePath(alpha, bravo)
 	return iterator, S
 end
 
-local function retWithOffset(t, key)
+
+local function retIsZone(t, key)
 	while true do
 		key = next(t, key)
 		if not key then
 			return nil
 		end
-		if yardYOffsets[key] then
+		if Tourist:IsZone(key) then
 			return key
 		end
 	end
 end
 
+-- This returns an iteration of zone connections (paths).
+-- The second parameter determines whether other connections like transports and portals should be included
 function Tourist:IterateBorderZones(zone, zonesOnly)
+	zone = Tourist:GetMapNameByIDAlt(zone) or zone
 	local path = paths[zone]
+	
 	if not path then
 		return retNil
 	elseif type(path) == "table" then
-		return zonesOnly and retWithOffset or retNormal, path
+		return zonesOnly and retIsZone or retNormal, path
 	else
-		if zonesOnly and not yardYOffsets[path] then
+		if zonesOnly and not Tourist:IsZone(path) then
 			return retNil
 		end
 		return retOne, path
 	end
 end
 
-function Tourist:GetLookupTable()
-	return BZ
-end
-
-function Tourist:GetReverseLookupTable()
-	return BZR
-end
 
 --------------------------------------------------------------------------------------------------------
 --                                            Localization                                            --
 --------------------------------------------------------------------------------------------------------
+
 local MapIdLookupTable = {
     [1] = "Durotar",
     [2] = "Burning Blade Coven",
@@ -2824,263 +2568,44 @@ local MapIdLookupTable = {
     [1198] = "Stormsong Valley",
 }
 
+
+-- These zones are known in LibTourist's zones collection but are not returned by C_Map.GetMapInfo.
+-- The IDs are the areaIDs as used by C_Map.GetAreaInfo.
 local zoneTranslation = {
-	enUS = {
-		-- These zones are known in LibTourist's zones collection but are not returned by C_Map.GetMapInfo.
-		-- TODO: check if these are now returned by C_Map.GetAreaInfo. Remove from LibTourist? Fix localizations?
-		-- Note: The number at the end of each line is the old ID (pre-BFA)
-		[9901] = "Amani Pass",  -- 3508
-		[9902] = "The Dark Portal",  -- 72
-		[9903] = "The Ring of Valor",  -- 4406
-		[9904] = "Dire Maul (East)",  -- 5914
-		[9905] = "Dire Maul (North)",  -- 5913
-		[9906] = "Dire Maul (West)",  -- 5915
-		[9907] = "Coilfang Reservoir",  -- 3905
-		[9908] = "Ring of Observance", -- 3893
-		[9909] = "Nagrand Arena",  -- 559
-		[9910] = "Blade's Edge Arena",  -- 562
-		[9911] = "Dalaran Arena",  -- 4378
-		[9912] = "Coldarra",  -- 4024
-		[9913] = "The Frozen Sea",  -- 3979
-		[9914] = "The Tiger's Peak",  -- 6732
-	},
-	deDE = {
-		[9901] = "Amani Pass",  -- 3508
-		[9902] = "The Dark Portal",  -- 72
-		[9903] = "The Ring of Valor",  -- 4406
-		[9904] = "Dire Maul (East)",  -- 5914
-		[9905] = "Dire Maul (North)",  -- 5913
-		[9906] = "Dire Maul (West)",  -- 5915
-		[9907] = "Coilfang Reservoir",  -- 3905
-		[9908] = "Ring of Observance", -- 3893
-		[9909] = "Nagrand Arena",  -- 559
-		[9910] = "Blade's Edge Arena",  -- 562
-		[9911] = "Dalaran Arena",  -- 4378
-		[9912] = "Coldarra",  -- 4024
-		[9913] = "The Frozen Sea",  -- 3979
-		[9914] = "The Tiger's Peak",  -- 6732
-	},
-	esES = {
-		[9901] = "Amani Pass",  -- 3508
-		[9902] = "The Dark Portal",  -- 72
-		[9903] = "The Ring of Valor",  -- 4406
-		[9904] = "Dire Maul (East)",  -- 5914
-		[9905] = "Dire Maul (North)",  -- 5913
-		[9906] = "Dire Maul (West)",  -- 5915
-		[9907] = "Coilfang Reservoir",  -- 3905
-		[9908] = "Ring of Observance", -- 3893
-		[9909] = "Nagrand Arena",  -- 559
-		[9910] = "Blade's Edge Arena",  -- 562
-		[9911] = "Dalaran Arena",  -- 4378
-		[9912] = "Coldarra",  -- 4024
-		[9913] = "The Frozen Sea",  -- 3979
-		[9914] = "The Tiger's Peak",  -- 6732
-	},
-	esMX = {
-		[9901] = "Amani Pass",  -- 3508
-		[9902] = "The Dark Portal",  -- 72
-		[9903] = "The Ring of Valor",  -- 4406
-		[9904] = "Dire Maul (East)",  -- 5914
-		[9905] = "Dire Maul (North)",  -- 5913
-		[9906] = "Dire Maul (West)",  -- 5915
-		[9907] = "Coilfang Reservoir",  -- 3905
-		[9908] = "Ring of Observance", -- 3893
-		[9909] = "Nagrand Arena",  -- 559
-		[9910] = "Blade's Edge Arena",  -- 562
-		[9911] = "Dalaran Arena",  -- 4378
-		[9912] = "Coldarra",  -- 4024
-		[9913] = "The Frozen Sea",  -- 3979
-		[9914] = "The Tiger's Peak",  -- 6732
-	},
-	frFR = {
-		[9901] = "Amani Pass",  -- 3508
-		[9902] = "The Dark Portal",  -- 72
-		[9903] = "The Ring of Valor",  -- 4406
-		[9904] = "Dire Maul (East)",  -- 5914
-		[9905] = "Dire Maul (North)",  -- 5913
-		[9906] = "Dire Maul (West)",  -- 5915
-		[9907] = "Coilfang Reservoir",  -- 3905
-		[9908] = "Ring of Observance", -- 3893
-		[9909] = "Nagrand Arena",  -- 559
-		[9910] = "Blade's Edge Arena",  -- 562
-		[9911] = "Dalaran Arena",  -- 4378
-		[9912] = "Coldarra",  -- 4024
-		[9913] = "The Frozen Sea",  -- 3979
-		[9914] = "The Tiger's Peak",  -- 6732
-	},
-	itIT = {
-		[9901] = "Amani Pass",  -- 3508
-		[9902] = "The Dark Portal",  -- 72
-		[9903] = "The Ring of Valor",  -- 4406
-		[9904] = "Dire Maul (East)",  -- 5914
-		[9905] = "Dire Maul (North)",  -- 5913
-		[9906] = "Dire Maul (West)",  -- 5915
-		[9907] = "Coilfang Reservoir",  -- 3905
-		[9908] = "Ring of Observance", -- 3893
-		[9909] = "Nagrand Arena",  -- 559
-		[9910] = "Blade's Edge Arena",  -- 562
-		[9911] = "Dalaran Arena",  -- 4378
-		[9912] = "Coldarra",  -- 4024
-		[9913] = "The Frozen Sea",  -- 3979
-		[9914] = "The Tiger's Peak",  -- 6732
-	},
-	koKR = {
-		[9901] = "Amani Pass",  -- 3508
-		[9902] = "The Dark Portal",  -- 72
-		[9903] = "The Ring of Valor",  -- 4406
-		[9904] = "Dire Maul (East)",  -- 5914
-		[9905] = "Dire Maul (North)",  -- 5913
-		[9906] = "Dire Maul (West)",  -- 5915
-		[9907] = "Coilfang Reservoir",  -- 3905
-		[9908] = "Ring of Observance", -- 3893
-		[9909] = "Nagrand Arena",  -- 559
-		[9910] = "Blade's Edge Arena",  -- 562
-		[9911] = "Dalaran Arena",  -- 4378
-		[9912] = "Coldarra",  -- 4024
-		[9913] = "The Frozen Sea",  -- 3979
-		[9914] = "The Tiger's Peak",  -- 6732
-	},
-	ptBR = {
-		[9901] = "Amani Pass",  -- 3508
-		[9902] = "The Dark Portal",  -- 72
-		[9903] = "The Ring of Valor",  -- 4406
-		[9904] = "Dire Maul (East)",  -- 5914
-		[9905] = "Dire Maul (North)",  -- 5913
-		[9906] = "Dire Maul (West)",  -- 5915
-		[9907] = "Coilfang Reservoir",  -- 3905
-		[9908] = "Ring of Observance", -- 3893
-		[9909] = "Nagrand Arena",  -- 559
-		[9910] = "Blade's Edge Arena",  -- 562
-		[9911] = "Dalaran Arena",  -- 4378
-		[9912] = "Coldarra",  -- 4024
-		[9913] = "The Frozen Sea",  -- 3979
-		[9914] = "The Tiger's Peak",  -- 6732
-	},
-	ruRU = {
-		[9901] = "Amani Pass",  -- 3508
-		[9902] = "The Dark Portal",  -- 72
-		[9903] = "The Ring of Valor",  -- 4406
-		[9904] = "Dire Maul (East)",  -- 5914
-		[9905] = "Dire Maul (North)",  -- 5913
-		[9906] = "Dire Maul (West)",  -- 5915
-		[9907] = "Coilfang Reservoir",  -- 3905
-		[9908] = "Ring of Observance", -- 3893
-		[9909] = "Nagrand Arena",  -- 559
-		[9910] = "Blade's Edge Arena",  -- 562
-		[9911] = "Dalaran Arena",  -- 4378
-		[9912] = "Coldarra",  -- 4024
-		[9913] = "The Frozen Sea",  -- 3979
-		[9914] = "The Tiger's Peak",  -- 6732
-	},
-	zhCN = {
-		[9901] = "Amani Pass",  -- 3508
-		[9902] = "The Dark Portal",  -- 72
-		[9903] = "The Ring of Valor",  -- 4406
-		[9904] = "Dire Maul (East)",  -- 5914
-		[9905] = "Dire Maul (North)",  -- 5913
-		[9906] = "Dire Maul (West)",  -- 5915
-		[9907] = "Coilfang Reservoir",  -- 3905
-		[9908] = "Ring of Observance", -- 3893
-		[9909] = "Nagrand Arena",  -- 559
-		[9910] = "Blade's Edge Arena",  -- 562
-		[9911] = "Dalaran Arena",  -- 4378
-		[9912] = "Coldarra",  -- 4024
-		[9913] = "The Frozen Sea",  -- 3979
-		[9914] = "The Tiger's Peak",  -- 6732
-	},
-	zhTW = {
-		[9901] = "Amani Pass",  -- 3508
-		[9902] = "The Dark Portal",  -- 72
-		[9903] = "The Ring of Valor",  -- 4406
-		[9904] = "Dire Maul (East)",  -- 5914
-		[9905] = "Dire Maul (North)",  -- 5913
-		[9906] = "Dire Maul (West)",  -- 5915
-		[9907] = "Coilfang Reservoir",  -- 3905
-		[9908] = "Ring of Observance", -- 3893
-		[9909] = "Nagrand Arena",  -- 559
-		[9910] = "Blade's Edge Arena",  -- 562
-		[9911] = "Dalaran Arena",  -- 4378
-		[9912] = "Coldarra",  -- 4024
-		[9913] = "The Frozen Sea",  -- 3979
-		[9914] = "The Tiger's Peak",  -- 6732
-	},
-}
-
-
-
-
-
-
-
-
---[[
-local zoneTranslation = {
-	enUS = {
+	enUS = {		
 		-- Complexes
-		[1941] = "Caverns of Time",
-		[25] = "Blackrock Mountain",
 		[4406] = "The Ring of Valor",
-		[3545] = "Hellfire Citadel",
 		[3905] = "Coilfang Reservoir",
 		[3893] = "Ring of Observance",
-		[3842] = "Tempest Keep",
 		[4024] = "Coldarra",
-		[5695] = "Ahn'Qiraj: The Fallen Kingdom",
-
-		-- Continents
-		[0] = "Eastern Kingdoms",
-		[1] = "Kalimdor",
-		[530] = "Outland",
-		[571] = "Northrend",
-		[5416] = "The Maelstrom",
-		[870] = "Pandaria",
-		["Azeroth"] = "Azeroth",
 
 		-- Transports
 		[72] = "The Dark Portal",
-		[2257] = "Deeprun Tram",
 
 		-- Dungeons
-		[5914] = "Dire Maul (East)",
-		[5913] = "Dire Maul (North)",
-		[5915] = "Dire Maul (West)",
+		[5914] = "Dire Maul - East",
+		[5913] = "Dire Maul - North",
+		[5915] = "Dire Maul - West",
 
 		-- Arenas
-		[559] = "Nagrand Arena",
-		[562] = "Blade's Edge Arena",
-		[572] = "Ruins of Lordaeron",
+		[3698] = "Nagrand Arena",   -- was 559
+		[3702] = "Blade's Edge Arena",  -- was 562
 		[4378] = "Dalaran Arena",
 		[6732] = "The Tiger's Peak",
 
 		-- Other
-		[4298] = "Plaguelands: The Scarlet Enclave",
 		[3508] = "Amani Pass",
 		[3979] = "The Frozen Sea",
 	},
 	deDE = {
 		-- Complexes
-		[1941] = "Höhlen der Zeit",
-		[25] = "Der Schwarzfels",
 		[4406] = "Der Ring der Ehre",
-		[3545] = "Höllenfeuerzitadelle",
 		[3905] = "Der Echsenkessel",
 		[3893] = "Ring der Beobachtung",
-		[3842] = "Festung der Stürme",
 		[4024] = "Kaltarra",
-		[5695] = "Ahn'Qiraj: Das Gefallene Königreich",
-
-		-- Continents
-		[0] = "Östliche Königreiche",
-		[1] = "Kalimdor",
-		[530] = "Scherbenwelt",
-		[571] = "Nordend",
-		[5416] = "Der Mahlstrom",
-		[870] = "Pandaria",
-		["Azeroth"] = "Azeroth",
 
 		-- Transports
 		[72] = "Das Dunkle Portal",
-		[2257] = "Die Tiefenbahn",
 
 		-- Dungeons
 		[5914] = "Düsterbruch - Ost",
@@ -3088,41 +2613,24 @@ local zoneTranslation = {
 		[5915] = "Düsterbruch - West",
 
 		-- Arenas
-		[559] = "Arena von Nagrand",
-		[562] = "Arena des Schergrats",
-		[572] = "Ruinen von Lordaeron",
+		[3698] = "Arena von Nagrand",
+		[3702] = "Arena des Schergrats",
 		[4378] = "Arena von Dalaran",
 		[6732] = "Der Tigergipfel", 
 
 		-- Other
-		[4298] = "Pestländer: Die Scharlachrote Enklave",
 		[3508] = "Amanipass",
 		[3979] = "Die Gefrorene See",
 	},
 	esES = {
 		-- Complexes
-		[1941] = "Cavernas del Tiempo",
-		[25] = "Montaña Roca Negra",
 		[4406] = "El Círculo del Valor",
-		[3545] = "Ciudadela del Fuego Infernal",
 		[3905] = "Reserva Colmillo Torcido",
 		[3893] = "Círculo de la Observancia",
-		[3842] = "El Castillo de la Tempestad",
 		[4024] = "Gelidar",
-		[5695] = "Ahn'Qiraj: El Reino Caído",
-
-		-- Continents
-		[0] = "Reinos del Este",
-		[1] = "Kalimdor",
-		[530] = "Terrallende",
-		[571] = "Rasganorte",
-		[5416] = "La Vorágine",
-		[870] = "Pandaria",
-		["Azeroth"] = "Azeroth",
 
 		-- Transports
 		[72] = "El Portal Oscuro",
-		[2257] = "Tranvía Subterráneo",
 
 		-- Dungeons
 		[5914] = "La Masacre: Este",
@@ -3130,41 +2638,24 @@ local zoneTranslation = {
 		[5915] = "La Masacre: Oeste",
 
 		-- Arenas
-		[559] = "Arena de Nagrand",
-		[562] = "Arena Filospada",
-		[572] = "Ruinas de Lordaeron",
+		[3698] = "Arena de Nagrand",
+		[3702] = "Arena Filospada",
 		[4378] = "Arena de Dalaran",
 		[6732] = "La Cima del Tigre",
 
 		-- Other
-		[4298] = "Tierras de la Peste: El Enclave Escarlata",
 		[3508] = "Paso de Amani",
 		[3979] = "El Mar Gélido",
 	},
 	esMX = {
 		-- Complexes
-		[1941] = "Cavernas del Tiempo",
-		[25] = "Montaña Roca Negra",
 		[4406] = "El Círculo del Valor",
-		[3545] = "Ciudadela del Fuego Infernal",
 		[3905] = "Reserva Colmillo Torcido",
 		[3893] = "Círculo de la Observancia",
-		[3842] = "El Castillo de la Tempestad",
 		[4024] = "Gelidar",
-		[5695] = "Ahn'Qiraj: El Reino Caído",
-
-		-- Continents
-		[0] = "Reinos del Este",
-		[1] = "Kalimdor",
-		[530] = "Terrallende",
-		[571] = "Rasganorte",
-		[5416] = "La Vorágine",
-		[870] = "Pandaria",
-		["Azeroth"] = "Azeroth",
 
 		-- Transports
 		[72] = "El Portal Oscuro",
-		[2257] = "Tranvía Subterráneo",
 
 		-- Dungeons
 		[5914] = "La Masacre: Este",
@@ -3172,41 +2663,24 @@ local zoneTranslation = {
 		[5915] = "La Masacre: Oeste",
 
 		-- Arenas
-		[559] = "Arena de Nagrand",
-		[562] = "Arena Filospada",
-		[572] = "Ruinas de Lordaeron",
+		[3698] = "Arena de Nagrand",
+		[3702] = "Arena Filospada",
 		[4378] = "Arena de Dalaran",
 		[6732] = "La Cima del Tigre",
 
 		-- Other
-		[4298] = "Tierras de la Peste: El Enclave Escarlata",
 		[3508] = "Paso de Amani",
 		[3979] = "El Mar Gélido",
 	},
 	frFR = {
 		-- Complexes
-		[1941] = "Grottes du Temps",
-		[25] = "Mont Rochenoire",
 		[4406] = "L’arène des Valeureux",
-		[3545] = "Citadelle des Flammes infernales",
 		[3905] = "Réservoir de Glissecroc",
 		[3893] = "Cercle d’observance",
-		[3842] = "Donjon de la Tempête",
 		[4024] = "Frimarra",
-		[5695] = "Ahn’Qiraj : le royaume Déchu",
-
-		-- Continents
-		[0] = "Royaumes de l'est",
-		[1] = "Kalimdor",
-		[530] = "Outreterre",
-		[571] = "Norfendre",
-		[5416] = "Le Maelström",
-		[870] = "Pandarie",
-		["Azeroth"] = "Azeroth",
 
 		-- Transports
 		[72] = "La porte des Ténèbres",
-		[2257] = "Tram des profondeurs",
 
 		-- Dungeons
 		[5914] = "Haches-Tripes - Est",
@@ -3214,41 +2688,24 @@ local zoneTranslation = {
 		[5915] = "Haches-Tripes - Ouest",
 
 		-- Arenas
-		[559] = "Arène de Nagrand",
-		[562] = "Arène des Tranchantes",
-		[572] = "Ruines de Lordaeron",
+		[3698] = "Arène de Nagrand",
+		[3702] = "Arène des Tranchantes",
 		[4378] = "Arène de Dalaran",
 		[6732] = "Le croc du Tigre",
 
 		-- Other
-		[4298] = "Maleterres : l’enclave Écarlate",
 		[3508] = "Passage des Amani",
 		[3979] = "La mer Gelée",
 	},
 	itIT = {
 		-- Complexes
-		[1941] = "Caverne del Tempo",
-		[25] = "Massiccio Roccianera",
 		[4406] = "Arena del Valore",
-		[3545] = "Cittadella del Fuoco Infernale",
 		[3905] = "Bacino degli Spiraguzza",
 		[3893] = "Anello dell'Osservanza",
-		[3842] = "Forte Tempesta",
 		[4024] = "Ibernia",
-		[5695] = "Ahn'Qiraj: il Regno Perduto",
-
-		-- Continents
-		[0] = "Regni Orientali",
-		[1] = "Kalimdor",
-		[530] = "Terre Esterne",
-		[571] = "Nordania",
-		[5416] = "Maelstrom",
-		[870] = "Pandaria",
-		["Azeroth"] = "Azeroth",
 
 		-- Transports
 		[72] = "Portale Oscuro",
-		[2257] = "Tram degli Abissi",
 
 		-- Dungeons
 		[5914] = "Maglio Infausto - Est",
@@ -3256,41 +2713,24 @@ local zoneTranslation = {
 		[5915] = "Maglio Infausto - Ovest",
 
 		-- Arenas
-		[559] = "Arena di Nagrand",
-		[562] = "Arena di Spinaguzza",
-		[572] = "Rovine di Lordaeron",
+		[3698] = "Arena di Nagrand",
+		[3702] = "Arena di Spinaguzza",
 		[4378] = "Arena di Dalaran",
 		[6732] = "Picco della Tigre",
 
 		-- Other
-		[4298] = "Terre Infette: l'Enclave Scarlatta",
 		[3508] = "Passo degli Amani",
 		[3979] = "Mare Ghiacciato",
 	},
 	koKR = {
 		-- Complexes
-		[1941] = "시간의 동굴",
-		[25] = "검은바위 산",
 		[4406] = "용맹의 투기장",
-		[3545] = "지옥불 성채",
 		[3905] = "갈퀴송곳니 저수지",
 		[3893] = "규율의 광장",
-		[3842] = "폭풍우 요새",
 		[4024] = "콜다라",
-		[5695] = "안퀴라즈: 무너진 왕국",
-
-		-- Continents
-		[0] = "동부 왕국",
-		[1] = "칼림도어",
-		[530] = "아웃랜드",
-		[571] = "노스렌드",
-		[5416] = "혼돈의 소용돌이",
-		[870] = "판다리아",
-		["Azeroth"] = "아제로스",
 
 		-- Transports
 		[72] = "어둠의 문",
-		[2257] = "깊은굴 지하철",
 
 		-- Dungeons
 		[5914] = "혈투의 전장 - 동쪽",
@@ -3298,41 +2738,24 @@ local zoneTranslation = {
 		[5915] = "혈투의 전장 - 서쪽",
 
 		-- Arenas
-		[559] = "나그란드 투기장",
-		[562] = "칼날 산맥 투기장",
-		[572] = "로데론의 폐허",
+		[3698] = "나그란드 투기장",
+		[3702] = "칼날 산맥 투기장",
 		[4378] = "달라란 투기장",
 		[6732] = "범의 봉우리",
 
 		-- Other
-		[4298] = "동부 역병지대: 붉은십자군 초소",
 		[3508] = "아마니 고개",
 		[3979] = "얼어붙은 바다",
 	},
 	ptBR = {
 		-- Complexes
-		[1941] = "Cavernas do Tempo",
-		[25] = "Montanha Rocha Negra",
 		[4406] = "Ringue dos Valorosos",
-		[3545] = "Cidadela Fogo do Inferno",
 		[3905] = "Reservatório Presacurva",
 		[3893] = "Círculo da Obediência",
-		[3842] = "Bastilha da Tormenta",
 		[4024] = "Gelarra",
-		[5695] = "Ahn'Qiraj: O Reino Derrotado",
-
-		-- Continents
-		[0] = "Reinos do Leste",
-		[1] = "Kalimdor",
-		[530] = "Terralém",
-		[571] = "Nortúndria",
-		[5416] = "Voragem",
-		[870] = "Pandária",
-		["Azeroth"] = "Azeroth",
 
 		-- Transports
 		[72] = "Portal Negro",
-		[2257] = "Metrô Correfundo",
 
 		-- Dungeons
 		[5914] = "Gládio Cruel – Leste",
@@ -3340,41 +2763,24 @@ local zoneTranslation = {
 		[5915] = "Gládio Cruel – Oeste",
 
 		-- Arenas
-		[559] = "Arena de Nagrand",
-		[562] = "Arena da Lâmina Afiada",
-		[572] = "Ruínas de Lordaeron",
+		[3698] = "Arena de Nagrand",
+		[3702] = "Arena da Lâmina Afiada",
 		[4378] = "Arena de Dalaran",
 		[6732] = "O Pico do Tigre",
 		
 		-- Other
-		[4298] = "Terras Pestilentas: Enclave Escarlate",
 		[3508] = "Desfiladeiro Amani",
 		[3979] = "Mar Congelado",
 	},
 	ruRU = {
 		-- Complexes
-		[1941] = "Пещеры Времени",
-		[25] = "Черная гора",
 		[4406] = "Арена Доблести",
-		[3545] = "Цитадель Адского Пламени",
 		[3905] = "Резервуар Кривого Клыка",
 		[3893] = "Ритуальный Круг",
-		[3842] = "Крепость Бурь",
 		[4024] = "Хладарра",
-		[5695] = "Ан'Кираж: Павшее Королевство",
-
-		-- Continents
-		[0] = "Восточные королевства",
-		[1] = "Калимдор",
-		[530] = "Запределье",
-		[571] = "Нордскол",
-		[5416] = "Водоворот",
-		[870] = "Пандария",
-		["Azeroth"] = "Азерот",
 
 		-- Transports
 		[72] = "Темный портал",
-		[2257] = "Подземный поезд",
 
 		-- Dungeons
 		[5914] = "Забытый город – восток",
@@ -3382,41 +2788,24 @@ local zoneTranslation = {
 		[5915] = "Забытый город – запад",
 
 		-- Arenas
-		[559] = "Арена Награнда",
-		[562] = "Арена Острогорья",
-		[572] = "Руины Лордерона",
+		[3698] = "Арена Награнда",
+		[3702] = "Арена Острогорья",
 		[4378] = "Арена Даларана",
 		[6732] = "Пик Тигра",
 		
 		-- Other
-		[4298] = "Чумные земли: Анклав Алого ордена",
 		[3508] = "Перевал Амани",
 		[3979] = "Ледяное море",
 	},
 	zhCN = {
 		-- Complexes
-		[1941] = "时光之穴",
-		[25] = "黑石山",
 		[4406] = "勇气竞技场",
-		[3545] = "地狱火堡垒",
 		[3905] = "盘牙水库",
 		[3893] = "仪式广场",
-		[3842] = "风暴要塞",
 		[4024] = "考达拉",
-		[5695] = "安其拉：堕落王国",
-
-		-- Continents
-		[0] = "东部王国",
-		[1] = "卡利姆多",
-		[530] = "外域",
-		[571] = "诺森德",
-		[5416] = "大漩涡",
-		[870] = "潘达利亚",
-		["Azeroth"] = "艾泽拉斯",
 
 		-- Transports
 		[72] = "黑暗之门",
-		[2257] = "矿道地铁",
 
 		-- Dungeons
 		[5914] = "厄运之槌 - 东",
@@ -3424,41 +2813,24 @@ local zoneTranslation = {
 		[5915] = "厄运之槌 - 西",
 
 		-- Arenas
-		[559] = "纳格兰竞技场",
-		[562] = "刀锋山竞技场",
-		[572] = "洛丹伦废墟",
+		[3698] = "纳格兰竞技场",
+		[3702] = "刀锋山竞技场",
 		[4378] = "达拉然竞技场",
 		[6732] = "虎踞峰",
 		
 		-- Other
-		[4298] = "东瘟疫之地：血色领地",
 		[3508] = "阿曼尼小径",
 		[3979] = "冰冻之海",
 	},
 	zhTW = {
 		-- Complexes
-		[1941] = "時光之穴",
-		[25] = "黑石山",
 		[4406] = "勇武競技場",
-		[3545] = "地獄火堡壘",
 		[3905] = "盤牙蓄湖",
 		[3893] = "儀式競技場",
-		[3842] = "風暴要塞",
 		[4024] = "凜懼島",
-		[5695] = "安其拉: 沒落的王朝",
-
-		-- Continents
-		[0] = "東部王國",
-		[1] = "卡林多",
-		[530] = "外域",
-		[571] = "北裂境",
-		[5416] = "大漩渦",
-		[870] = "潘達利亞",
-		["Azeroth"] = "艾澤拉斯",
 
 		-- Transports
 		[72] = "黑暗之門",
-		[2257] = "礦道地鐵",
 
 		-- Dungeons
 		[5914] = "厄運之槌 - 東方",
@@ -3466,20 +2838,16 @@ local zoneTranslation = {
 		[5915] = "厄運之槌 - 西方",
 
 		-- Arenas
-		[559] = "納葛蘭競技場",
-		[562] = "劍刃競技場",
-		[572] = "羅德隆廢墟",
+		[3698] = "納葛蘭競技場",
+		[3702] = "劍刃競技場",
 		[4378] = "達拉然競技場",
 		[6732] = "猛虎峰",
 		
 		-- Other
-		[4298] = "東瘟疫之地:血色領區",
 		[3508] = "阿曼尼小徑",
 		[3979] = "冰凍之海",
 	},
 }
-]]--
-
 
 local function CreateLocalizedZoneNameLookups()
 	local uiMapID
@@ -3510,27 +2878,6 @@ local function CreateLocalizedZoneNameLookups()
 			end
 		end
 	end
-	
---[[	
-	for mapID, englishName in pairs(MapIdLookupTable) do
-		-- Get localized map name
-		--localizedZoneName = GetMapNameByID(mapID)  -- 8.0: GetMapNameByID removed
-		zoneInfo = C_Map.GetMapInfo(mapID)
-		if zoneInfo then
-			localizedZoneName = zoneInfo.name
-			-- Add combination of English and localized name to lookup tables
-			if not BZ[englishName] then
-				BZ[englishName] = localizedZoneName
-			end
-			if not BZR[localizedZoneName] then
-				BZR[localizedZoneName] = englishName
-			end
-			--trace(tostring(mapID)..": "..tostring(localizedZoneName))
-		else
-			trace("! ----- No map name for ID "..tostring(mapID).." ("..tostring(englishName)..")")
-		end
-	end
-	]]--
 
 	-- Load from zoneTranslation
 	local GAME_LOCALE = GetLocale()
@@ -3546,28 +2893,49 @@ local function CreateLocalizedZoneNameLookups()
 end
 
 local function AddDuplicatesToLocalizedLookup()
-	BZ[Tourist:GetUniqueEnglishZoneNameForLookup("The Maelstrom", 5)] = Tourist:GetUniqueZoneNameForLookup("The Maelstrom", 5)
-	BZR[Tourist:GetUniqueZoneNameForLookup("The Maelstrom", 5)] = Tourist:GetUniqueEnglishZoneNameForLookup("The Maelstrom", 5)
+	BZ[Tourist:GetUniqueEnglishZoneNameForLookup("The Maelstrom", THE_MAELSTROM_MAP_ID)] = Tourist:GetUniqueZoneNameForLookup("The Maelstrom", THE_MAELSTROM_MAP_ID)
+	BZR[Tourist:GetUniqueZoneNameForLookup("The Maelstrom", THE_MAELSTROM_MAP_ID)] = Tourist:GetUniqueEnglishZoneNameForLookup("The Maelstrom", THE_MAELSTROM_MAP_ID)
 	
-	BZ[Tourist:GetUniqueEnglishZoneNameForLookup("Nagrand", 7)] = Tourist:GetUniqueZoneNameForLookup("Nagrand", 7)
-	BZR[Tourist:GetUniqueZoneNameForLookup("Nagrand", 7)] = Tourist:GetUniqueEnglishZoneNameForLookup("Nagrand", 7)
+	BZ[Tourist:GetUniqueEnglishZoneNameForLookup("Nagrand", DRAENOR_MAP_ID)] = Tourist:GetUniqueZoneNameForLookup("Nagrand", DRAENOR_MAP_ID)
+	BZR[Tourist:GetUniqueZoneNameForLookup("Nagrand", DRAENOR_MAP_ID)] = Tourist:GetUniqueEnglishZoneNameForLookup("Nagrand", DRAENOR_MAP_ID)
 
-	BZ[Tourist:GetUniqueEnglishZoneNameForLookup("Shadowmoon Valley", 7)] = Tourist:GetUniqueZoneNameForLookup("Shadowmoon Valley", 7)
-	BZR[Tourist:GetUniqueZoneNameForLookup("Shadowmoon Valley", 7)] = Tourist:GetUniqueEnglishZoneNameForLookup("Shadowmoon Valley", 7)
+	BZ[Tourist:GetUniqueEnglishZoneNameForLookup("Shadowmoon Valley", DRAENOR_MAP_ID)] = Tourist:GetUniqueZoneNameForLookup("Shadowmoon Valley", DRAENOR_MAP_ID)
+	BZR[Tourist:GetUniqueZoneNameForLookup("Shadowmoon Valley", DRAENOR_MAP_ID)] = Tourist:GetUniqueEnglishZoneNameForLookup("Shadowmoon Valley", DRAENOR_MAP_ID)
 	
-	BZ[Tourist:GetUniqueEnglishZoneNameForLookup("Hellfire Citadel", 7)] = Tourist:GetUniqueZoneNameForLookup("Hellfire Citadel", 7)
-	BZR[Tourist:GetUniqueZoneNameForLookup("Hellfire Citadel", 7)] = Tourist:GetUniqueEnglishZoneNameForLookup("Hellfire Citadel", 7)
+	BZ[Tourist:GetUniqueEnglishZoneNameForLookup("Hellfire Citadel", DRAENOR_MAP_ID)] = Tourist:GetUniqueZoneNameForLookup("Hellfire Citadel", DRAENOR_MAP_ID)
+	BZR[Tourist:GetUniqueZoneNameForLookup("Hellfire Citadel", DRAENOR_MAP_ID)] = Tourist:GetUniqueEnglishZoneNameForLookup("Hellfire Citadel", DRAENOR_MAP_ID)
 	
-	BZ[Tourist:GetUniqueEnglishZoneNameForLookup("Dalaran", 8)] = Tourist:GetUniqueZoneNameForLookup("Dalaran", 8)
-	BZR[Tourist:GetUniqueZoneNameForLookup("Dalaran", 8)] = Tourist:GetUniqueEnglishZoneNameForLookup("Dalaran", 8)
+	BZ[Tourist:GetUniqueEnglishZoneNameForLookup("Dalaran", BROKEN_ISLES_MAP_ID)] = Tourist:GetUniqueZoneNameForLookup("Dalaran", BROKEN_ISLES_MAP_ID)
+	BZR[Tourist:GetUniqueZoneNameForLookup("Dalaran", BROKEN_ISLES_MAP_ID)] = Tourist:GetUniqueEnglishZoneNameForLookup("Dalaran", BROKEN_ISLES_MAP_ID)
 	
-	BZ[Tourist:GetUniqueEnglishZoneNameForLookup("The Violet Hold", 8)] = Tourist:GetUniqueZoneNameForLookup("The Violet Hold", 8)
-	BZR[Tourist:GetUniqueZoneNameForLookup("The Violet Hold", 8)] = Tourist:GetUniqueEnglishZoneNameForLookup("The Violet Hold", 8)
+	BZ[Tourist:GetUniqueEnglishZoneNameForLookup("The Violet Hold", BROKEN_ISLES_MAP_ID)] = Tourist:GetUniqueZoneNameForLookup("The Violet Hold", BROKEN_ISLES_MAP_ID)
+	BZR[Tourist:GetUniqueZoneNameForLookup("The Violet Hold", BROKEN_ISLES_MAP_ID)] = Tourist:GetUniqueEnglishZoneNameForLookup("The Violet Hold", BROKEN_ISLES_MAP_ID)
+end
+
+
+
+-- This function replaces the abandoned LibBabble-Zone library and returns a lookup table 
+-- containing all zone names (including continents, instances etcetera) where the English 
+-- zone name is the key and the localized zone name is the value.
+function Tourist:GetLookupTable()
+	return BZ
+end
+
+-- This function replaces the abandoned LibBabble-Zone library and returns a lookup table 
+-- containing all zone names (including continents, instances etcetera) where the localized 
+-- zone name is the key and the English zone name is the value.
+function Tourist:GetReverseLookupTable()
+	return BZR
+end
+
+-- Returns the lookup table with all uiMapIDs as key and the English zone name as value.
+function Tourist:GetMapIDLookupTable()
+	return MapIdLookupTable
 end
 
 
 --------------------------------------------------------------------------------------------------------
---                                            BZ table                                             --
+--                                            Main code                                               --
 --------------------------------------------------------------------------------------------------------
 
 do
@@ -3600,7 +2968,6 @@ do
 	transports["TELDRASSIL_STORMWIND_BOAT"] = string.format(X_Y_BOAT, BZ["Teldrassil"], BZ["Stormwind City"])
 	transports["STORMWIND_TIRAGARDESOUND_BOAT"] = string.format(X_Y_BOAT, BZ["Stormwind City"], BZ["Tiragarde Sound"])
 	transports["ECHOISLES_ZULDAZAR_BOAT"] = string.format(X_Y_BOAT, BZ["Echo Isles"], BZ["Zuldazar"])
-	
 	
 	-- Zeppelins
 	transports["ORGRIMMAR_BOREANTUNDRA_ZEPPELIN"] = string.format(X_Y_ZEPPELIN, BZ["Orgrimmar"], BZ["Borean Tundra"])
@@ -3700,14 +3067,12 @@ do
 	transports["WARSPEAR_ORGRIMMAR_PORTAL"] = string.format(X_Y_PORTAL, BZ["Warspear"], BZ["Orgrimmar"])
 	transports["WARSPEAR_THUNDERBLUFF_PORTAL"] = string.format(X_Y_PORTAL, BZ["Warspear"], BZ["Thunder Bluff"])
 	transports["WARSPEAR_UNDERCITY_PORTAL"] = string.format(X_Y_PORTAL, BZ["Warspear"], BZ["Undercity"])
-
 	transports["STORMWIND_TIRAGARDESOUND_PORTAL"] = string.format(X_Y_PORTAL, BZ["Stormwind City"], BZ["Tiragarde Sound"])
 	transports["TIRAGARDESOUND_STORMWIND_PORTAL"] = string.format(X_Y_PORTAL, BZ["Tiragarde Sound"], BZ["Stormwind City"])
 	transports["EXODAR_TIRAGARDESOUND_PORTAL"] = string.format(X_Y_PORTAL, BZ["The Exodar"], BZ["Tiragarde Sound"])
 	transports["TIRAGARDESOUND_EXODAR_PORTAL"] = string.format(X_Y_PORTAL, BZ["Tiragarde Sound"], BZ["The Exodar"])
 	transports["IRONFORGE_TIRAGARDESOUND_PORTAL"] = string.format(X_Y_PORTAL, BZ["Ironforge"], BZ["Tiragarde Sound"])
-	transports["TIRAGARDESOUND_IRONFORGE_PORTAL"] = string.format(X_Y_PORTAL, BZ["Tiragarde Sound"], BZ["Ironforge"])
-	
+	transports["TIRAGARDESOUND_IRONFORGE_PORTAL"] = string.format(X_Y_PORTAL, BZ["Tiragarde Sound"], BZ["Ironforge"])	
 	transports["SILVERMOON_ZULDAZAR_PORTAL"] = string.format(X_Y_PORTAL, BZ["Silvermoon City"], BZ["Zuldazar"])
 	transports["ZULDAZAR_SILVERMOON_PORTAL"] = string.format(X_Y_PORTAL, BZ["Zuldazar"], BZ["Silvermoon City"])
 	transports["ORGRIMMAR_ZULDAZAR_PORTAL"] = string.format(X_Y_PORTAL, BZ["Orgrimmar"], BZ["Zuldazar"])
@@ -4860,8 +4225,6 @@ do
 		fishing_min = 25,
 	}	
 	
-	
-	
 	zones[BZ["Dun Morogh"]] = {
 		low = 1,
 		high = 20,
@@ -5821,9 +5184,9 @@ do
 		high = 60,
 		continent = Kalimdor,
 		instances = {
-			[BZ["Dire Maul (East)"]] = true,
-			[BZ["Dire Maul (North)"]] = true,
-			[BZ["Dire Maul (West)"]] = true,
+			[BZ["Dire Maul - East"]] = true,
+			[BZ["Dire Maul - North"]] = true,
+			[BZ["Dire Maul - West"]] = true,
 		},
 		paths = {
 			[BZ["Thousand Needles"]] = true,
@@ -6658,6 +6021,8 @@ do
 			[BZ["Mogu'shan Palace"]] = true,
 			[BZ["Kun-Lai Summit"]] = true,
 			[BZ["Siege of Orgrimmar"]] = true,
+			[BZ["Shrine of Two Moons"]] = true,
+			[BZ["Shrine of Seven Stars"]] = true,
 		},
 		fishing_min = 825,
 		battlepet_low = 23,
@@ -7338,7 +6703,7 @@ do
 	}
 	
 	-- a.k.a. Warpwood Quarter
-	zones[BZ["Dire Maul (East)"]] = {
+	zones[BZ["Dire Maul - East"]] = {
 		low = 36,
 		high = 60,
 		continent = Kalimdor,
@@ -7350,7 +6715,7 @@ do
 	}	
 	
 	-- a.k.a. Capital Gardens
-	zones[BZ["Dire Maul (West)"]] = {
+	zones[BZ["Dire Maul - West"]] = {
 		low = 39,
 		high = 60,
 		continent = Kalimdor,
@@ -7362,7 +6727,7 @@ do
 	}
 
 	-- a.k.a. Gordok Commons
-	zones[BZ["Dire Maul (North)"]] = {
+	zones[BZ["Dire Maul - North"]] = {
 		low = 42,
 		high = 60,
 		continent = Kalimdor,
@@ -8822,15 +8187,15 @@ do
 		high = 60,
 		continent = Kalimdor,
 		instances = {
-			[BZ["Dire Maul (East)"]] = true,
-			[BZ["Dire Maul (North)"]] = true,
-			[BZ["Dire Maul (West)"]] = true,
+			[BZ["Dire Maul - East"]] = true,
+			[BZ["Dire Maul - North"]] = true,
+			[BZ["Dire Maul - West"]] = true,
 		},
 		paths = {
 			[BZ["Feralas"]] = true,
-			[BZ["Dire Maul (East)"]] = true,
-			[BZ["Dire Maul (North)"]] = true,
-			[BZ["Dire Maul (West)"]] = true,
+			[BZ["Dire Maul - East"]] = true,
+			[BZ["Dire Maul - North"]] = true,
+			[BZ["Dire Maul - West"]] = true,
 		},
 		type = "Complex",
 	}	
@@ -9004,11 +8369,6 @@ do
 		-- type = "Complex",
 	-- }
 
-
-	
-	
-	
-	
 	
 	
 --------------------------------------------------------------------------------------------------------
@@ -9021,34 +8381,22 @@ do
 
 	for continentMapID, continentName in pairs(continentNames) do
 		--trace("Processing Continent "..tostring(continentMapID)..": "..continentName.."...")
-
-		--SetMapZoom(continentMapID)
 		
 		if zones[continentName] then
-			-- Get map texture name			
-			zones[continentName].texture = C_Map.GetMapArtID(continentMapID) --GetMapInfo()
-			-- Get MapID
-			zones[continentName].zoneMapID = continentMapID --GetCurrentMapAreaID()
-
-			--trace("Texture for Continent "..continentName..": '"..tostring(zones[continentName].texture).."'")
-
---[[			
-			TODO: Find a way to get size in yards
-
-			local _, cLeft, cTop, cRight, cBottom = GetCurrentMapZone()
-			-- Calculate size in yards
-			zones[continentName].yards = cLeft - cRight
-			
-			-- Calculate x-axis shift and y-axis shift, which indicate how many yards the X and Y axis of the continent map are shifted
-			-- from the midpoint of the map. These shift values are the difference between the zone offsets returned by UpdateMapHighLight and the 
-			-- offsets calculated using data provided by GetCurrentMapZone.
-			-- Note: For The Maelstrom continent, no such data is available at all. The four zones of this "continent" are 
-			-- geographically not related to each other, so there are no zone offsets and there's no continent shift or size.
-			zones[continentName].x_shift = (cLeft + cRight) / 2
-			zones[continentName].y_shift = (cTop + cBottom) / 2
-					
-			trace("Tourist: Continent size in yards for "..tostring(continentName).." ("..tostring(continentMapID).."): "..tostring(round(zones[continentName].yards, 2)))
-]]--	
+			-- Set MapID
+			zones[continentName].zoneMapID = continentMapID
+			-- Get map art ID			
+			zones[continentName].texture = C_Map.GetMapArtID(continentMapID)
+			-- Get map size in yards
+			local cWidth = HBD:GetZoneSize(continentMapID)
+			if not cWidth then
+				trace("|r|cffff4422! -- Tourist:|r No size data for "..tostring(continentName))
+			end
+			if cWidth == 0 then
+				trace("|r|cffff4422! -- Tourist:|r Size is zero for "..tostring(continentName))
+			end
+			zones[continentName].yards = cWidth or 0
+			--trace("Tourist: Continent size in yards for "..tostring(continentName).." ("..tostring(continentMapID).."): "..tostring(round(zones[continentName].yards, 2)))
 		else
 			-- Unknown Continent
 			trace("|r|cffff4422! -- Tourist:|r TODO: Add Continent '"..tostring(continentName).."' ("..tostring(continentMapID)..")")		
@@ -9056,62 +8404,22 @@ do
 		
 		counter = counter + 1
 	end
-	trace( "Tourist: Processed "..tostring(counter).." continents" )
-	
-	
-	
-	-- --------------------------------------------------------------------------------------------------------------------------
-	-- Set the continent offsets and scale for the continents on the Azeroth map, except The Maelstrom.
-	-- The offsets are expressed in Azeroth yards (that is, without the scale correction used for the continent maps)
-	-- and have been calculated as follows.
-	-- I've used a player position because it is displayed at both the continent map and the Azeroth map.
-	-- Using the player coordinates (which are a percentage of the map size) and the continent and Azeroth map sizes:
-	
-	-- a = playerXContinent * continentWidth * continentScale (= player X offset on the continent map, expressed in Azeroth yards)
-	-- b = playerXAzeroth * azerothWidth (= player X offset on the Azeroth map)
-	-- continentXOffset = b - a
-
-	-- c = playerYContinent * continentHeight * continentScale (= player Y offset on the continent map, expressed in Azeroth yards)
-	-- d = playerYAzeroth * azerothHeight (= player Y offset on the Azeroth map)
-	-- continentYOffset = d - c
-
-	-- The scales are 'borrowed' from Astrolabe ;-)
-	
-	zones[BZ["Kalimdor"]].x_offset = -4023.28
-	zones[BZ["Kalimdor"]].y_offset = 3243.71
-	zones[BZ["Kalimdor"]].scale = 0.5609
-	
-	zones[BZ["Eastern Kingdoms"]].x_offset = 16095.36
-	zones[BZ["Eastern Kingdoms"]].y_offset = 2945.14
-	zones[BZ["Eastern Kingdoms"]].scale = 0.5630
-	
-	zones[BZ["Northrend"]].x_offset = 12223.65
-	zones[BZ["Northrend"]].y_offset = 520.24
-	zones[BZ["Northrend"]].scale = 0.5949
-	
-	zones[BZ["Pandaria"]].x_offset = 12223.65
-	zones[BZ["Pandaria"]].y_offset = 520.24
-	zones[BZ["Pandaria"]].scale = 0.6514
-	
-	zones[BZ["Broken Isles"]].x_offset = 16297
-	zones[BZ["Broken Isles"]].y_offset = 8225.3
-	zones[BZ["Broken Isles"]].scale = 0.4469
-	
-	-- --------------------------------------------------------------------------------------------------------------------------
-
+	trace("Tourist: Processed "..tostring(counter).." continents")
 	
 	trace("Tourist: Initializing zones...")
 	local doneZones = {}
 	local mapZones = {}
 	local uniqueZoneName
 	local minLvl, maxLvl, minPetLvl, maxPetLvl
+	local counter2 = 0
+	counter = 0
 	
 	for continentMapID, continentName in pairs(continentNames) do	
 		mapZones = Tourist:GetMapZonesAlt(continentMapID)
 		counter = 0
 		for zoneMapID, zoneName in pairs(mapZones) do
 			-- Add mapIDs to lookup table
-			zoneIDtoContinentID[zoneMapID] = continentMapID
+			zoneMapIDtoContinentMapID[zoneMapID] = continentMapID
 
 			-- Check for duplicate on continent name + zone name
 			if not doneZones[continentName.."."..zoneName] then
@@ -9119,114 +8427,43 @@ do
 				if zones[uniqueZoneName] then
 					-- Set zone mapID
 					zones[uniqueZoneName].zoneMapID = zoneMapID
-					-- Get zone texture ID (?)
+					-- Get zone texture ID
 					zones[uniqueZoneName].texture = C_Map.GetMapArtID(continentMapID)
-				
-					-- New: get zone player and battle pet levels
+					-- Get zone player and battle pet levels
 					minLvl, maxLvl, minPetLvl, maxPetLvl = C_Map.GetMapLevels(zoneMapID)
-					if minLvL and minLvL > 0 then  zones[uniqueZoneName].low = minLvl end
+					if minLvL and minLvL > 0 then zones[uniqueZoneName].low = minLvl end
 					if maxLvl and maxLvl > 0 then zones[uniqueZoneName].high = maxLvl end
 					if minPetLvl and minPetLvl > 0 then zones[uniqueZoneName].battlepet_low = minPetLvl end
 					if maxPetLvl and maxPetLvl > 0 then zones[uniqueZoneName].battlepet_high = maxPetLvl end
-					
-					-- TODO: Find a way to get size in yards?					
+					-- Get map size
+					local zWidth = HBD:GetZoneSize(zoneMapID)
+					if not zWidth then
+						trace("|r|cffff4422! -- Tourist:|r No size data for "..tostring(zoneName).." ("..tostring(continentName)..")" )
+					end
+					if zWidth == 0 then
+						trace("|r|cffff4422! -- Tourist:|r Size is zero for "..tostring(zoneName).." ("..tostring(continentName)..")" )
+					end
+					if zWidth ~= 0 or not zones[uniqueZoneName].yards then
+						-- Make sure the size is always set (even if it's 0) but don't overwrite any hardcoded values if the size is 0
+						zones[uniqueZoneName].yards = zWidth
+					end
 				else
 					trace("|r|cffff4422! -- Tourist:|r TODO: Add zone "..tostring(zoneName).." (to "..tostring(continentName)..")" )			
 				end
 				
 				doneZones[continentName.."."..zoneName] = true
 			else
-				--trace("|r|cffff4422! -- Tourist:|r Duplicate zone: "..tostring(zoneName).." [ID "..tostring(zoneMapID).."] (at "..tostring(continentName)..")" )
+				trace("|r|cffff4422! -- Tourist:|r Duplicate zone: "..tostring(zoneName).." [ID "..tostring(zoneMapID).."] (at "..tostring(continentName)..")" )
 			end
 			counter = counter + 1
 		end -- zone loop
 		
-		trace( "Tourist: Processed "..tostring(counter).." zones for "..continentName )
-
+		trace( "Tourist: Processed "..tostring(counter).." zones for "..continentName.." (ID = "..tostring(continentMapID)..")" )
+		counter2 = counter2 + counter
 	end -- continent loop
 
-	-- OLD CODE for the loop above:
+	trace("Tourist: Processed "..tostring(counter2).." zones")
 	
---	for continentID, continentName in pairs(continentNames) do
---		-- Get continent width and height
---		local cWidth = zones[continentName] and zones[continentName].yards or 0
---		local cHeight = 2/3 * cWidth
-
-		-- Build a collection of the indices of the zones within the continent
-		-- to be able to lookup a zone index for SetMapZoom()
---		local zoneNames = GetMapZonesAltLocal(continentID)
---		local zoneIndices = {}
---		for index = 1, #zoneNames do
---			zoneIndices[zoneNames[index]] = index
---		end
-		
---		for i = 1, #zoneNames do		
-			-- The zones Frostfire Ridge, Highmountain and Val'sharah appear twice in the collection of zones of their continent
-			-- so we need to be able to skip duplicates, even within a Continent
---			if not doneZones[continentName.."."..zoneNames[i]] then
---				local zoneName = Tourist:GetUniqueZoneNameForLookup(zoneNames[i], continentID)
---				local zoneIndex = zoneIndices[zoneNames[i]]
---				if zones[zoneName] then
-					-- Get zone map data
-					
-					--SetMapZoom(continentID, zoneIndex)
---[[					
-					-- TODO: Find a way to get size in yards
-					local z, zLeft, zTop, zRight, zBot = GetCurrentMapZone()
-				
-					-- Calculate zone size
-					local sizeInYards = 0
-					if zLeft and zRight then
-						sizeInYards = zLeft - zRight
-					end
-					if sizeInYards ~= 0 or not zones[zoneName].yards then
-						-- Make sure the size is always set (even if it's 0) but don't overwrite any hardcoded values if the size is 0
-						zones[zoneName].yards = sizeInYards
-					end
-					if zones[zoneName].yards == 0 then 
-						trace("|r|cffff4422! -- Tourist:|r Size for "..zoneName.." = 0 yards")
-						-- Skip offset calculation as we obviously got no data from GetCurrentMapZone
-					else 
-					
-						-- TODO: local zLeft, zRight, zTop, zBot = C_Map.GetMapRectOnMap(zoneID, continentID) ?
-				
-					
-						if cWidth ~= 0 then
-							-- Calculate zone offsets if the size of the continent is known (The Maelstrom has no continent size).
-							-- LibTourist uses positive x and y axis with the source located at the top left corner of the map.
-							-- GetCurrentMapZone uses a source *somewhere* in the middle of the map, and the x axis is 
-							-- reversed so it's positive to the LEFT.
-							-- First assume the source is exactly in the middle of the map...
-							local zXOffset = (cWidth * 0.5) - zLeft
-							local zYOffset = (cHeight * 0.5) - zTop
-							-- ...then correct the offsets for continent map axis shifts
-							zXOffset = zXOffset + zones[continentName].x_shift
-							zYOffset = zYOffset + zones[continentName].y_shift
-							zones[zoneName].x_offset = zXOffset
-							zones[zoneName].y_offset = zYOffset
-						end
-					end
-]]--								
-					-- Get zone texture filename
---					zones[zoneName].texture = C_Map.GetMapArtID(continentMapID) --GetMapInfo()
-					-- Get zone mapID
---					zones[zoneName].zoneMapID = GetCurrentMapAreaID()
---				else
---					trace("|r|cffff4422! -- Tourist:|r TODO: Add zone "..tostring(zoneName))
---				end
-				
---				doneZones[continentName.."."..zoneNames[i]] = true
---			else
---				trace("|r|cffff4422! -- Tourist:|r Duplicate zone: "..tostring(continentName).."["..tostring(i).."]: "..tostring(zoneNames[i]) )
---			end
-
---		end -- zones loop
---		trace( "Tourist: Processed "..tostring(#zoneNames).." zones for "..continentName )
-		
---	end -- continents loop
-
-	--SetMapToCurrentZone()  -- Obsolete in 8.0
-
 	trace("Tourist: Filling lookup tables...")
 	
 	-- Fill the lookup tables
@@ -9242,10 +8479,8 @@ do
 		groupMaxSizes[k] = v.groupMaxSize
 		groupAltSizes[k] = v.altGroupSize
 		factions[k] = v.faction
-		yardWidths[k] = nil  -- v.yards
-		yardHeights[k] = nil -- v.yards and v.yards * 2/3 or nil
-		yardXOffsets[k] = nil -- v.x_offset
-		yardYOffsets[k] = nil -- v.y_offset
+		yardWidths[k] = v.yards
+		yardHeights[k] = v.yards and v.yards * 2/3 or nil
 		fishing[k] = v.fishing_min
 		battlepet_lows[k] = v.battlepet_low
 		battlepet_highs[k] = v.battlepet_high
@@ -9256,16 +8491,10 @@ do
 			textures_rev[v.texture] = k
 		end
 		zoneMapIDs[k] = v.zoneMapID
-		if v.zoneMapID then
-			zoneMapIDs_rev[v.zoneMapID] = k
-		end
 		if v.entrancePortal then
 			entrancePortals_zone[k] = v.entrancePortal[1]
 			entrancePortals_x[k] = v.entrancePortal[2]
 			entrancePortals_y[k] = v.entrancePortal[3]
-		end
-		if v.scale then
-			continentScales[k] = v.scale
 		end
 	end
 	zones = nil
