@@ -1,3 +1,6 @@
+[b]2.33[/b]
+Updated Tokens for BfA and fixed the Professions cap
+
 [b]2.32[/b]
 Updated and re enabled LibTourist
 
