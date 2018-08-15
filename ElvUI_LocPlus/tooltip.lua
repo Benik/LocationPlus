@@ -336,7 +336,6 @@ end
 function LP:UpdateTooltip()
 	local mapID = C_Map_GetBestMapForUnit("player")
 	local zoneText = T:GetMapNameByIDAlt(mapID) or UNKNOWN;
-	local zoneText = GetRealZoneText() or UNKNOWN;
 	local curPos = (zoneText.." ") or "";
 
 	GameTooltip:ClearLines()
