@@ -1,3 +1,6 @@
+[b]2.34[/b]
+Removed an old function that may caused troubles
+
 [b]2.33[/b]
 Updated Tokens for BfA and fixed the Professions cap
 
