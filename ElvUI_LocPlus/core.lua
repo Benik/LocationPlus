@@ -97,7 +97,11 @@ end
 local function CreateCoords()
 	local mapID = C_Map_GetBestMapForUnit("player")
 	local mapPos = mapID and C_Map_GetPlayerMapPosition(mapID, "player")
-	if mapPos then x, y = mapPos:GetXY() end
+	local x, y = 0, 0
+
+	if mapPos then
+		x, y = mapPos:GetXY()
+	end
 
 	local dig
 	
