@@ -104,8 +104,8 @@ local function GetDungeonCoords(zone)
 	if z == nil then
 		dcoords = ""
 	elseif E.db.locplus.ttcoords then
-		x = tonumber(E:Round(x, 0))
-		y = tonumber(E:Round(y, 0))		
+		x = tonumber(E:Round(x*100, 0))
+		y = tonumber(E:Round(y*100, 0))		
 		dcoords = format(" |cffffffff(%d, %d)|r", x, y)
 	else 
 		dcoords = ""
