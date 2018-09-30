@@ -1,3 +1,7 @@
+[b]2.35[/b]
+LibTourist update
+Minor fixes
+
 [b]2.34[/b]
 Removed an old function that may caused troubles
 
