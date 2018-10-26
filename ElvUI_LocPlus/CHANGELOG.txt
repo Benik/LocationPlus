@@ -1,3 +1,7 @@
+[b]2.36[/b]
+LibTourist update to v213
+Fixed the dungeon entrance coords in the tooltip
+
 [b]2.35[/b]
 LibTourist update
 Minor fixes
