@@ -1,6 +1,6 @@
 --[[
 Name: LibTourist-3.0
-Revision: $Rev: 211 $
+Revision: $Rev: 213 $
 Author(s): Odica (maintainer), originally created by ckknight and Arrowmaster
 Documentation: https://www.wowace.com/projects/libtourist-3-0/pages/api-reference
 SVN: svn://svn.wowace.com/wow/libtourist-3-0/mainline/trunk
@@ -9,7 +9,7 @@ License: MIT
 ]]
 
 local MAJOR_VERSION = "LibTourist-3.0"
-local MINOR_VERSION = 90000 + tonumber(("$Revision: 211 $"):match("(%d+)"))
+local MINOR_VERSION = 90000 + tonumber(("$Revision: 213 $"):match("(%d+)"))
 
 if not LibStub then error(MAJOR_VERSION .. " requires LibStub") end
 local C_Map = C_Map
@@ -29,7 +29,7 @@ local HBD = LibStub("HereBeDragons-2.0")
 function Tourist:GetHBD() return HBD end
 
 local function trace(msg)
---	DEFAULT_CHAT_FRAME:AddMessage(msg)
+	--DEFAULT_CHAT_FRAME:AddMessage(msg)
 end
 
 --trace("|r|cffff4422! -- Tourist:|r Warning: This is an alpha version with limited functionality." )		
@@ -107,6 +107,7 @@ local highs = setmetatable({}, getmetatable(lows))
 local continents = {}
 local instances = {}
 local paths = {}
+local flightnodes = {}
 local types = {}
 local groupSizes = {}
 local groupMinSizes = {}
@@ -134,1446 +135,14 @@ local zoneMapIDtoContinentMapID = {}
 local zoneMapIDs = {}
 local mapZonesByContinentID = {}
 
+local FlightnodeLookupTable = {}
+local gatheringFlightnodes = false
+local flightnodeDataGathered = false
+
 local COSMIC_MAP_ID = 946
 local THE_MAELSTROM_MAP_ID = 948
 local DRAENOR_MAP_ID = 572
 local BROKEN_ISLES_MAP_ID = 619
-
--- HELPER AND LOOKUP FUNCTIONS -------------------------------------------------------------
-
-local function PLAYER_LEVEL_UP(self, level)
-	playerLevel = UnitLevel("player")
-	
-	for k in pairs(recZones) do
-		recZones[k] = nil
-	end
-	for k in pairs(recInstances) do
-		recInstances[k] = nil
-	end
-	for k in pairs(cost) do
-		cost[k] = nil
-	end
-
-	for zone in pairs(lows) do
-		if not self:IsHostile(zone) then
-			local low, high, scaled = self:GetLevel(zone)
-			if scaled then
-				low = scaled
-				high = scaled
-			end
-			
-			local zoneType = self:GetType(zone)
-			if zoneType == "Zone" or zoneType == "PvP Zone" and low and high then
-				if low <= playerLevel and playerLevel <= high then
-					recZones[zone] = true
-				end
-			elseif zoneType == "Battleground" and low and high then
-				local playerLevel = playerLevel
-				if low <= playerLevel and playerLevel <= high then
-					recInstances[zone] = true
-				end
-			elseif zoneType == "Instance" and low and high then
-				if low <= playerLevel and playerLevel <= high then
-					recInstances[zone] = true
-				end
-			end
-		end
-	end
-end
-
-
--- Public alternative for GetMapContinents, removes the map IDs that were added to its output in WoW 6.0
--- Note: GetMapContinents has been removed entirely in 8.0
--- 8.0.1: returns uiMapID as key
-function Tourist:GetMapContinentsAlt()
-	local continents = C_Map.GetMapChildrenInfo(COSMIC_MAP_ID, Enum.UIMapType.Continent, true)
-	local retValue = {}
-	for i, continentInfo in ipairs(continents) do
-		--trace("Continent "..tostring(i)..": "..continentInfo.mapID..": ".. continentInfo.name)
-		retValue[continentInfo.mapID] = continentInfo.name
-	end
-	return retValue
-end
-
--- Public Alternative for GetMapZones because GetMapZones does NOT return all zones (as of 6.0.2), 
--- making its output useless as input for for SetMapZoom. 
--- Note: GetMapZones has been removed entirely in 8.0, just as SetMapZoom
--- NOTE: This method does not convert duplicate zone names for lookup in LibTourist,
--- use GetUniqueZoneNameForLookup for that.
--- 8.0.1: returns uiMapID as key
-function Tourist:GetMapZonesAlt(continentID)
-	if mapZonesByContinentID[continentID] then
-		-- Get from cache
-		return mapZonesByContinentID[continentID]
-	else	
-		local mapZones = {}
-		local mapChildrenInfo = { C_Map.GetMapChildrenInfo(continentID, Enum.UIMapType.Zone, true) }
-		for key, zones in pairs(mapChildrenInfo) do  -- don't know what this extra table is for
-			for zoneIndex, zone in pairs(zones) do
-				-- Get the localized zone name
-				mapZones[zone.mapID] = zone.name
-			end
-		end
-
-		-- Add to cache
-		mapZonesByContinentID[continentID] = mapZones		
-		
-		return mapZones
-	end
-end
-
--- Public alternative for GetMapNameByID (which was removed in 8.0.1), 
--- returns a unique localized zone name to be used to lookup data in LibTourist
-function Tourist:GetMapNameByIDAlt(uiMapID)
-	if tonumber(uiMapID) == nil then
-		return nil
-	end
-
-	local mapInfo = C_Map.GetMapInfo(uiMapID)
-	if mapInfo then
-		local zoneName = C_Map.GetMapInfo(uiMapID).name
-		local continentMapID = Tourist:GetContinentMapID(uiMapID)
-		--trace("ContinentMap ID for "..tostring(zoneName).." ("..tostring(uiMapID)..") is "..tostring(continentMapID))
-		if uiMapID == THE_MAELSTROM_MAP_ID then
-			-- Exception for The Maelstrom continent because GetUniqueZoneNameForLookup excpects the zone mane and not the continent name
-			return zoneName
-		else
-			return Tourist:GetUniqueZoneNameForLookup(zoneName, continentMapID)
-		end
-	else
-		return nil
-	end
-end 
-
--- Returns the uiMapID of the Continent for the given uiMapID
-function Tourist:GetContinentMapID(uiMapID)
-	-- First, check the cache, built during initialisation based on the zones returned by GetMapZonesAlt
-	local continentMapID = zoneMapIDtoContinentMapID[uiMapID]
-	if continentMapID then
-		-- Done
-		return continentMapID
-	end
-	
-	-- Not in cache, look for the continent, searching up through the map hierarchy.
-	-- Add the results to the cache to speed up future queries.
-	local mapInfo = C_Map.GetMapInfo(uiMapID)
-	if not mapInfo or mapInfo.mapType == 0 or mapInfo.mapType == 1 then
-		-- No data or Cosmic map or World map
-		zoneMapIDtoContinentMapID[uiMapID] = nil
-		return nil
-	end
-	
-	if mapInfo.mapType == 2 then
-		-- Map is a Continent map
-		zoneMapIDtoContinentMapID[uiMapID] = mapInfo.mapID
-		return mapInfo.mapID
-	end
-	
-	local parentMapInfo = C_Map.GetMapInfo(mapInfo.parentMapID)
-	if not parentMapInfo then
-		-- No parent -> no continent ID
-		zoneMapIDtoContinentMapID[uiMapID] = nil
-		return nil
-	else
-		if parentMapInfo.mapType == 2 then
-			-- Found the continent
-			zoneMapIDtoContinentMapID[uiMapID] = parentMapInfo.mapID
-			return parentMapInfo.mapID
-		else
-			-- Parent is not the Continent -> Search up one level
-			return Tourist:GetContinentMapID(parentMapInfo.mapID)
-		end
-	end
-end
-
--- Returns a unique localized zone name to be used to lookup data in LibTourist,
--- based on a localized or English zone name
-function Tourist:GetUniqueZoneNameForLookup(zoneName, continentMapID)
-	if continentMapID == THE_MAELSTROM_MAP_ID then  -- The Maelstrom
-		if zoneName == BZ["The Maelstrom"] or zoneName == "The Maelstrom" then
-			zoneName = BZ["The Maelstrom"].." (zone)"
-		end
-	end
-	if continentMapID == DRAENOR_MAP_ID then  -- Draenor
-		if zoneName == BZ["Nagrand"] or zoneName == "Nagrand"  then
-			zoneName = BZ["Nagrand"].." ("..BZ["Draenor"]..")"
-		end
-		if zoneName == BZ["Shadowmoon Valley"] or zoneName == "Shadowmoon Valley"  then
-			zoneName = BZ["Shadowmoon Valley"].." ("..BZ["Draenor"]..")"
-		end
-		if zoneName == BZ["Hellfire Citadel"] or zoneName == "Hellfire Citadel"  then
-			zoneName = BZ["Hellfire Citadel"].." ("..BZ["Draenor"]..")"
-		end
-	end
-	if continentMapID == BROKEN_ISLES_MAP_ID then  -- Broken Isles
-		if zoneName == BZ["Dalaran"] or zoneName == "Dalaran"  then
-			zoneName = BZ["Dalaran"].." ("..BZ["Broken Isles"]..")"
-		end
-		if zoneName == BZ["The Violet Hold"] or zoneName == "The Violet Hold"  then
-			zoneName = BZ["The Violet Hold"].." ("..BZ["Broken Isles"]..")"
-		end
-	end
-	return zoneName
-end
-
--- Returns a unique English zone name to be used to lookup data in LibTourist,
--- based on a localized or English zone name
-function Tourist:GetUniqueEnglishZoneNameForLookup(zoneName, continentMapID)
-	if continentMapID == THE_MAELSTROM_MAP_ID then  -- The Maelstrom
-		if zoneName == BZ["The Maelstrom"] or zoneName == "The Maelstrom" then
-			zoneName = "The Maelstrom (zone)"
-		end
-	end
-	if continentMapID == DRAENOR_MAP_ID then -- Draenor
-		if zoneName == BZ["Nagrand"] or zoneName == "Nagrand" then
-			zoneName = "Nagrand (Draenor)"
-		end
-		if zoneName == BZ["Shadowmoon Valley"] or zoneName == "Shadowmoon Valley" then
-			zoneName = "Shadowmoon Valley (Draenor)"
-		end
-		if zoneName == BZ["Hellfire Citadel"] or zoneName == "Hellfire Citadel" then
-			zoneName = "Hellfire Citadel (Draenor)"
-		end
-	end
-	if continentMapID == BROKEN_ISLES_MAP_ID then  -- Broken Isles
-		if zoneName == BZ["Dalaran"] or zoneName == "Dalaran" then
-			zoneName = "Dalaran (Broken Isles)"
-		end	
-		if zoneName == BZ["The Violet Hold"] or zoneName == "The Violet Hold"  then
-			zoneName = "The Violet Hold (Broken Isles)"
-		end
-	end
-	return zoneName
-end
-
--- Minimum fishing skill to fish these zones junk-free (Draenor: to catch Enormous Fish only)
--- 8.0.1: SUSPENDED until it is clear how the fishing skills currently work, if a minimum skill is still required 
--- and how it should be calculated. There is no WoW API for this.
-function Tourist:GetFishingLevel(zone)
-	return 0
---	zone = Tourist:GetMapNameByIDAlt(zone) or zone
---	return fishing[zone]
-end
-
--- Returns the minimum and maximum battle pet levels for the given zone, if the zone is known 
--- and contains battle pets (otherwise returns nil)
-function Tourist:GetBattlePetLevel(zone)
-	zone = Tourist:GetMapNameByIDAlt(zone) or zone
-	return battlepet_lows[zone], battlepet_highs[zone]
-end
-
--- WoW patch 7.3.5: most zones now scale - within their level range - to the player's level
-function Tourist:GetScaledZoneLevel(zone)
-	zone = Tourist:GetMapNameByIDAlt(zone) or zone
-	local playerLvl = playerLevel
-
-	if playerLvl <= lows[zone] then 
-		return lows[zone]
-	elseif playerLvl >= highs[zone] then
-		return highs[zone]
-	else
-		return playerLvl
-	end
-end
-
-
--- Formats the minimum and maximum player level for the given zone as "[min]-[max]". 
--- Returns one number if min and max are equal. 
--- Returns an empty string if no player levels are applicable (like in Cities).
--- If zone is a zone or an instance, the string will be formatted like "[scaled] ([min]-[max])", i.e. "47 (40-60)".
-function Tourist:GetLevelString(zone)
-	local lo, hi, scaled = Tourist:GetLevel(zone)
-	
-	if lo and hi then
-		if scaled then
-			if lo == hi then
-				return tostring(scaled).." ("..tostring(lo)..")"
-			else
-				return tostring(scaled).." ("..tostring(lo).."-"..tostring(hi)..")"
-			end
-		else	
-			if lo == hi then
-				return tostring(lo)
-			else
-				return tostring(lo).."-"..tostring(hi)
-			end
-		end
-	else
-		return tostring(lo or hi or "")
-	end
-end
-
-
--- Formats the minimum and maximum battle pet level for the given zone as "min-max". 
--- Returns one number if min and max are equal. Returns an empty string if no battle pet levels are available.
-function Tourist:GetBattlePetLevelString(zone)
-	local lo, hi = Tourist:GetBattlePetLevel(zone)
-	if lo and hi then
-		if lo == hi then
-			return tostring(lo)
-		else
-			return tostring(lo).."-"..tostring(hi)
-		end
-	else
-		return tostring(lo or hi or "")
-	end
-end
-
--- Returns the minimum and maximum level for the given zone, instance or battleground.
--- If zone is a zone or an instance, a third value is returned: the scaled zone level. 
--- This is the level 'presented' to the player when inside the zone. It's calculated by GetScaledZoneLevel.
-function Tourist:GetLevel(zone)
-	zone = Tourist:GetMapNameByIDAlt(zone) or zone
-
-	if types[zone] == "Battleground" then
-		-- Note: Not all BG's start at level 10, but all BG's support players up to MAX_PLAYER_LEVEL.
-
-		local playerLvl = playerLevel
-		if playerLvl <= lows[zone] then
-			-- Player is too low level to enter the BG -> return the lowest available bracket
-			-- by assuming the player is at the min level required for the BG.
-			playerLvl = lows[zone]
-		end
-
-		-- Find the most suitable bracket
-		if playerLvl >= MAX_PLAYER_LEVEL then
-			return MAX_PLAYER_LEVEL, MAX_PLAYER_LEVEL, nil
-		elseif playerLvl >= 115 then
-			return 115, 119, nil
-		elseif playerLvl >= 110 then
-			return 110, 114, nil
-		elseif playerLvl >= 105 then
-			return 105, 109, nil
-		elseif playerLvl >= 100 then
-			return 100, 104, nil			
-		elseif playerLvl >= 95 then
-			return 95, 99, nil
-		elseif playerLvl >= 90 then
-			return 90, 94, nil
-		elseif playerLvl >= 85 then
-			return 85, 89, nil
-		elseif playerLvl >= 80 then
-			return 80, 84, nil
-		elseif playerLvl >= 75 then
-			return 75, 79, nil
-		elseif playerLvl >= 70 then
-			return 70, 74, nil
-		elseif playerLvl >= 65 then
-			return 65, 69, nil
-		elseif playerLvl >= 60 then
-			return 60, 64, nil
-		elseif playerLvl >= 55 then
-			return 55, 59, nil
-		elseif playerLvl >= 50 then
-			return 50, 54, nil
-		elseif playerLvl >= 45 then
-			return 45, 49, nil
-		elseif playerLvl >= 40 then
-			return 40, 44, nil
-		elseif playerLvl >= 35 then
-			return 35, 39, nil
-		elseif playerLvl >= 30 then
-			return 30, 34, nil
-		elseif playerLvl >= 25 then
-			return 25, 29, nil
-		elseif playerLvl >= 20 then
-			return 20, 24, nil
-		elseif playerLvl >= 15 then
-			return 15, 19, nil
-		else
-			return 10, 14, nil
-		end
-	else
-		if types[zone] ~= "Arena" and types[zone] ~= "Complex" and types[zone] ~= "City" and types[zone] ~= "Continent" then
-			-- Zones and Instances (scaling):
-			local scaled = Tourist:GetScaledZoneLevel(zone)
-			if scaled == lows[zone] and scaled == highs[zone] then scaled = nil end -- nothing to scale in a one-level bracket (like Suramar)
-			return lows[zone], highs[zone], scaled
-		else
-			-- Other zones
-			return lows[zone], highs[zone], nil
-		end
-	end
-end
-
--- Returns an r, g and b value representing a color ranging from grey (too low) via
--- green, yellow and orange to red (too high), depending on the player's battle pet level 
--- within the battle pet level range of the given zone.
-function Tourist:GetBattlePetLevelColor(zone, petLevel)
-	zone = Tourist:GetMapNameByIDAlt(zone) or zone
-	local low, high = self:GetBattlePetLevel(zone)
-	
-	return Tourist:CalculateLevelColor(low, high, petLevel)
-end
-
--- Returns an r, g and b value representing a color ranging from grey (too low) via 
--- green, yellow and orange to red (too high), by calling CalculateLevelColor with 
--- the min and max level of the given zone and the current player level.
--- Note: if zone is a zone or an instance, the zone's scaled level (calculated 
--- by GetScaledZoneLevel) is used instead of it's minimum and maximum level. 
-function Tourist:GetLevelColor(zone)
-	zone = Tourist:GetMapNameByIDAlt(zone) or zone
-	local low, high, scaled = self:GetLevel(zone)
-
-	if types[zone] == "Battleground" then
-		if playerLevel < low then
-			-- player cannot enter the lowest bracket of the BG -> red
-			return 1, 0, 0
-		end
-	end
-	
-	if scaled then
-		return Tourist:CalculateLevelColor(scaled, scaled, playerLevel)
-	else
-		return Tourist:CalculateLevelColor(low, high, playerLevel)
-	end
-end
-	
--- Returns an r, g and b value representing a color ranging from grey (too low) via 
--- green, yellow and orange to red (too high) depending on the player level within 
--- the given range. Returns white if no level is applicable, like in cities.	
-function Tourist:CalculateLevelColor(low, high, currentLevel)
-	local midBracket = (low + high) / 2
-
-	if low <= 0 and high <= 0 then
-		-- City or level unknown -> White
-		return 1, 1, 1
-	elseif currentLevel == low and currentLevel == high then
-		-- Exact match, one-level bracket -> Yellow
-		return 1, 1, 0
-	elseif currentLevel <= low - 3 then
-		-- Player is three or more levels short of Low -> Red
-		return 1, 0, 0
-	elseif currentLevel < low then
-		-- Player is two or less levels short of Low -> sliding scale between Red and Orange
-		-- Green component goes from 0 to 0.5
-		local greenComponent = (currentLevel - low + 3) / 6
-		return 1, greenComponent, 0
-	elseif currentLevel == low then
-		-- Player is at low, at least two-level bracket -> Orange
-		return 1, 0.5, 0
-	elseif currentLevel < midBracket then
-		-- Player is between low and the middle of the bracket -> sliding scale between Orange and Yellow
-		-- Green component goes from 0.5 to 1
-		local halfBracketSize = (high - low) / 2
-		local posInBracketHalf = currentLevel - low
-		local greenComponent = 0.5 + (posInBracketHalf / halfBracketSize) * 0.5
-		return 1, greenComponent, 0
-	elseif currentLevel == midBracket then
-		-- Player is at the middle of the bracket -> Yellow
-		return 1, 1, 0
-	elseif currentLevel < high then
-		-- Player is between the middle of the bracket and High -> sliding scale between Yellow and Green
-		-- Red component goes from 1 to 0
-		local halfBracketSize = (high - low) / 2
-		local posInBracketHalf = currentLevel - midBracket
-		local redComponent = 1 - (posInBracketHalf / halfBracketSize)
-		return redComponent, 1, 0
-	elseif currentLevel == high then
-		-- Player is at High, at least two-level bracket -> Green
-		return 0, 1, 0
-	elseif currentLevel < high + 3 then
-		-- Player is up to three levels above High -> sliding scale between Green and Gray
-		-- Red and Blue components go from 0 to 0.5
-		-- Green component goes from 1 to 0.5
-		local pos = (currentLevel - high) / 3
-		local redAndBlueComponent = pos * 0.5
-		local greenComponent = 1 - redAndBlueComponent
-		return redAndBlueComponent, greenComponent, redAndBlueComponent
-	else
-		-- Player is at High + 3 or above -> Gray
-		return 0.5, 0.5, 0.5
-	end
-end
-
--- Returns an r, g and b value representing a color, depending on the given zone and the current character's faction.
-function Tourist:GetFactionColor(zone)
-	zone = Tourist:GetMapNameByIDAlt(zone) or zone
-
-	if factions[zone] == "Sanctuary" then
-		-- Blue
-		return 0.41, 0.8, 0.94
-	elseif self:IsPvPZone(zone) then
-		-- Orange
-		return 1, 0.7, 0
-	elseif factions[zone] == (isHorde and "Alliance" or "Horde") then
-		-- Red
-		return 1, 0, 0
-	elseif factions[zone] == (isHorde and "Horde" or "Alliance") then
-		-- Green
-		return 0, 1, 0
-	else
-		-- Yellow
-		return 1, 1, 0
-	end
-end
-
--- Returns the width and height of a zone map in game yards. The height is always 2/3 of the width.
-function Tourist:GetZoneYardSize(zone)
-	zone = Tourist:GetMapNameByIDAlt(zone) or zone
-	return yardWidths[zone], yardHeights[zone]
-end
-
--- Calculates a distance in game yards between point A and point B. 
--- Points A and B can be in different zones but must be on the same continent.
-function Tourist:GetYardDistance(zone1, x1, y1, zone2, x2, y2)
-	if tonumber(zone1) == nil then	
-		-- Not a uiMapID, translate zone name to map ID
-		zone1 = Tourist:GetZoneMapID(zone1)
-	end
-	if tonumber(zone2) == nil then	
-		-- Not a uiMapID, translate zone name to map ID
-		zone2 = Tourist:GetZoneMapID(zone2)
-	end
-	if zone1 and zone2 then
-		return HBD:GetZoneDistance(zone1, x1, y1, zone2, x2, y2)
-	else
-		return nil, nil, nil
-	end
-end
-
--- This function is used to calculate the coordinates of a location in zone1, on the map of zone2. 
--- The zones can be continents (including Azeroth). 
--- The return value can be outside the 0 to 1 range.
-function Tourist:TransposeZoneCoordinate(x, y, zone1, zone2)
-	if tonumber(zone1) == nil then	
-		-- Not a uiMapID, translate zone name to map ID
-		zone1 = Tourist:GetZoneMapID(zone1)
-	end
-	if tonumber(zone2) == nil then	
-		-- Not a uiMapID, translate zone name to map ID
-		zone2 = Tourist:GetZoneMapID(zone2)
-	end
-
-	return HBD:TranslateZoneCoordinates(x, y, zone1, zone2, true)  -- True: allow < 0 and > 1
-end
-
--- This function is used to find the actual zone a player is in, including coordinates for that zone, if the current map 
--- is a map that contains the player position, but is not the map of the zone where the player really is.
--- Return values:
--- x, y = player position on the most suitable map
--- zone = the unique localized zone name of the most suitable map 
--- uiMapID = ID of the most suitable map 
-function Tourist:GetBestZoneCoordinate()
-	local uiMapID = C_Map.GetBestMapForUnit("player")
-	
-	if uiMapID then
-		local zone = Tourist:GetMapNameByIDAlt(uiMapID)
-		local pos = C_Map.GetPlayerMapPosition(uiMapID, "player")
-		if pos then 
-			return pos.x, pos.y, zone, uiMapID
-		else
-			return nil, nil, zone, uiMapID
-		end
-	end
-	return nil, nil, nil, nil 
-end
-
-
-local function GetBFAInstanceLow(instanceLow, instanceFaction)
-	if (isHorde and instanceFaction == "Horde") or (isHorde == false and instanceFaction == "Alliance") then
-		return instanceLow
-	else
-		-- 'Hostile' instances can be accessed at max BfA level (120)
-		return 120
-	end
-end
-
-local function GetSiegeOfBoralusEntrance()
-	if isHorde then
-		return { BZ["Tiragarde Sound"], 88.3, 51.0 }
-	else
-		return { BZ["Tiragarde Sound"], 72.5, 23.6 }
-	end
-end
-
-local function GetTheMotherlodeEntrance()
-	if isHorde then
-		return { BZ["Zuldazar"], 56.1, 59.9 }
-	else
-		return { BZ["Zuldazar"], 39.3, 71.4 }
-	end
-end
-
-local function retNil() 
-	return nil 
-end
-	
-local function retOne(object, state)
-	if state == object then
-		return nil
-	else
-		return object
-	end
-end
-
-local function retNormal(t, position)
-	return (next(t, position))
-end
-
-local function round(num, digits)
-	-- banker's rounding
-	local mantissa = 10^digits
-	local norm = num*mantissa
-	norm = norm + 0.5
-	local norm_f = math.floor(norm)
-	if norm == norm_f and (norm_f % 2) ~= 0 then
-		return (norm_f-1)/mantissa
-	end
-	return norm_f/mantissa
-end
-
-local function mysort(a,b)
-	if not lows[a] then
-		return false
-	elseif not lows[b] then
-		return true
-	else
-		local aval, bval = groupSizes[a] or groupMaxSizes[a], groupSizes[b] or groupMaxSizes[b]
-		if aval and bval then
-			if aval ~= bval then
-				return aval < bval
-			end
-		end
-		aval, bval = lows[a], lows[b]
-		if aval ~= bval then
-			return aval < bval
-		end
-		aval, bval = highs[a], highs[b]
-		if aval ~= bval then
-			return aval < bval
-		end
-		return a < b
-	end
-end
-local t = {}
-local function myiter(t)
-	local n = t.n
-	n = n + 1
-	local v = t[n]
-	if v then
-		t[n] = nil
-		t.n = n
-		return v
-	else
-		t.n = nil
-	end
-end
-
-function Tourist:IterateZoneInstances(zone)
-	zone = Tourist:GetMapNameByIDAlt(zone) or zone
-	local inst = instances[zone]
-
-	if not inst then
-		return retNil
-	elseif type(inst) == "table" then
-		for k in pairs(t) do
-			t[k] = nil
-		end
-		for k in pairs(inst) do
-			t[#t+1] = k
-		end
-		table.sort(t, mysort)
-		t.n = 0
-		return myiter, t, nil
-	else
-		return retOne, inst, nil
-	end
-end
-
-function Tourist:IterateZoneComplexes(zone)
-	zone = Tourist:GetMapNameByIDAlt(zone) or zone
-	local compl = zoneComplexes[zone]
-
-	if not compl then
-		return retNil
-	elseif type(compl) == "table" then
-		for k in pairs(t) do
-			t[k] = nil
-		end
-		for k in pairs(compl) do
-			t[#t+1] = k
-		end
-		table.sort(t, mysort)
-		t.n = 0
-		return myiter, t, nil
-	else
-		return retOne, compl, nil
-	end
-end
-
-function Tourist:GetInstanceZone(instance)
-	instance = Tourist:GetMapNameByIDAlt(instance) or instance
-	for k, v in pairs(instances) do
-		if v then
-			if type(v) == "string" then
-				if v == instance then
-					return k
-				end
-			else -- table
-				for l in pairs(v) do
-					if l == instance then
-						return k
-					end
-				end
-			end
-		end
-	end
-end
-
-function Tourist:GetComplexZone(complex)
-	complex = Tourist:GetMapNameByIDAlt(complex) or complex
-	for k, v in pairs(zoneComplexes) do
-		if v then
-			if type(v) == "string" then
-				if v == complex then
-					return k
-				end
-			else -- table
-				for l in pairs(v) do
-					if l == complex then
-						return k
-					end
-				end
-			end
-		end
-	end
-end
-
-function Tourist:DoesZoneHaveInstances(zone)
-	zone = Tourist:GetMapNameByIDAlt(zone) or zone
-	return not not instances[zone]
-end
-
-function Tourist:DoesZoneHaveComplexes(zone)
-	zone = Tourist:GetMapNameByIDAlt(zone) or zone
-	return not not zoneComplexes[zone]
-end
-
-local zonesInstances
-local function initZonesInstances()
-	if not zonesInstances then
-		zonesInstances = {}
-		for zone, v in pairs(lows) do
-			if types[zone] ~= "Transport" then
-				zonesInstances[zone] = true
-			end
-		end
-	end
-	initZonesInstances = nil  -- Set function to nil so initialisation is done only once (and just in time)
-end
-
-function Tourist:IterateZonesAndInstances()
-	if initZonesInstances then
-		initZonesInstances()
-	end
-	return retNormal, zonesInstances, nil
-end
-
-local function zoneIter(_, position)
-	local k = next(zonesInstances, position)
-	while k ~= nil and (types[k] == "Instance" or types[k] == "Battleground" or types[k] == "Arena" or types[k] == "Complex") do
-		k = next(zonesInstances, k)
-	end
-	return k
-end
-function Tourist:IterateZones()
-	if initZonesInstances then
-		initZonesInstances()
-	end
-	return zoneIter, nil, nil
-end
-
-local function instanceIter(_, position)
-	local k = next(zonesInstances, position)
-	while k ~= nil and (types[k] ~= "Instance" and types[k] ~= "Battleground" and types[k] ~= "Arena") do
-		k = next(zonesInstances, k)
-	end
-	return k
-end
-function Tourist:IterateInstances()
-	if initZonesInstances then
-		initZonesInstances()
-	end
-	return instanceIter, nil, nil
-end
-
-local function bgIter(_, position)
-	local k = next(zonesInstances, position)
-	while k ~= nil and types[k] ~= "Battleground" do
-		k = next(zonesInstances, k)
-	end
-	return k
-end
-function Tourist:IterateBattlegrounds()
-	if initZonesInstances then
-		initZonesInstances()
-	end
-	return bgIter, nil, nil
-end
-
-local function arIter(_, position)
-	local k = next(zonesInstances, position)
-	while k ~= nil and types[k] ~= "Arena" do
-		k = next(zonesInstances, k)
-	end
-	return k
-end
-function Tourist:IterateArenas()
-	if initZonesInstances then
-		initZonesInstances()
-	end
-	return arIter, nil, nil
-end
-
-local function compIter(_, position)
-	local k = next(zonesInstances, position)
-	while k ~= nil and types[k] ~= "Complex" do
-		k = next(zonesInstances, k)
-	end
-	return k
-end
-function Tourist:IterateComplexes()
-	if initZonesInstances then
-		initZonesInstances()
-	end
-	return compIter, nil, nil
-end
-
-local function pvpIter(_, position)
-	local k = next(zonesInstances, position)
-	while k ~= nil and types[k] ~= "PvP Zone" do
-		k = next(zonesInstances, k)
-	end
-	return k
-end
-function Tourist:IteratePvPZones()
-	if initZonesInstances then
-		initZonesInstances()
-	end
-	return pvpIter, nil, nil
-end
-
-local function allianceIter(_, position)
-	local k = next(zonesInstances, position)
-	while k ~= nil and factions[k] ~= "Alliance" do
-		k = next(zonesInstances, k)
-	end
-	return k
-end
-function Tourist:IterateAlliance()
-	if initZonesInstances then
-		initZonesInstances()
-	end
-	return allianceIter, nil, nil
-end
-
-local function hordeIter(_, position)
-	local k = next(zonesInstances, position)
-	while k ~= nil and factions[k] ~= "Horde" do
-		k = next(zonesInstances, k)
-	end
-	return k
-end
-function Tourist:IterateHorde()
-	if initZonesInstances then
-		initZonesInstances()
-	end
-	return hordeIter, nil, nil
-end
-
-if isHorde then
-	Tourist.IterateFriendly = Tourist.IterateHorde
-	Tourist.IterateHostile = Tourist.IterateAlliance
-else
-	Tourist.IterateFriendly = Tourist.IterateAlliance
-	Tourist.IterateHostile = Tourist.IterateHorde
-end
-
-local function sanctIter(_, position)
-	local k = next(zonesInstances, position)
-	while k ~= nil and factions[k] ~= "Sanctuary" do
-		k = next(zonesInstances, k)
-	end
-	return k
-end
-function Tourist:IterateSanctuaries()
-	if initZonesInstances then
-		initZonesInstances()
-	end
-	return sanctIter, nil, nil
-end
-
-local function contestedIter(_, position)
-	local k = next(zonesInstances, position)
-	while k ~= nil and factions[k] do
-		k = next(zonesInstances, k)
-	end
-	return k
-end
-function Tourist:IterateContested()
-	if initZonesInstances then
-		initZonesInstances()
-	end
-	return contestedIter, nil, nil
-end
-
-local function kalimdorIter(_, position)
-	local k = next(zonesInstances, position)
-	while k ~= nil and continents[k] ~= Kalimdor do
-		k = next(zonesInstances, k)
-	end
-	return k
-end
-function Tourist:IterateKalimdor()
-	if initZonesInstances then
-		initZonesInstances()
-	end
-	return kalimdorIter, nil, nil
-end
-
-local function easternKingdomsIter(_, position)
-	local k = next(zonesInstances, position)
-	while k ~= nil and continents[k] ~= Eastern_Kingdoms do
-		k = next(zonesInstances, k)
-	end
-	return k
-end
-function Tourist:IterateEasternKingdoms()
-	if initZonesInstances then
-		initZonesInstances()
-	end
-	return easternKingdomsIter, nil, nil
-end
-
-local function outlandIter(_, position)
-	local k = next(zonesInstances, position)
-	while k ~= nil and continents[k] ~= Outland do
-		k = next(zonesInstances, k)
-	end
-	return k
-end
-function Tourist:IterateOutland()
-	if initZonesInstances then
-		initZonesInstances()
-	end
-	return outlandIter, nil, nil
-end
-
-local function northrendIter(_, position)
-	local k = next(zonesInstances, position)
-	while k ~= nil and continents[k] ~= Northrend do
-		k = next(zonesInstances, k)
-	end
-	return k
-end
-function Tourist:IterateNorthrend()
-	if initZonesInstances then
-		initZonesInstances()
-	end
-	return northrendIter, nil, nil
-end
-
-local function theMaelstromIter(_, position)
-	local k = next(zonesInstances, position)
-	while k ~= nil and continents[k] ~= The_Maelstrom do
-		k = next(zonesInstances, k)
-	end
-	return k
-end
-function Tourist:IterateTheMaelstrom()
-	if initZonesInstances then
-		initZonesInstances()
-	end
-	return theMaelstromIter, nil, nil
-end
-
-local function pandariaIter(_, position)
-	local k = next(zonesInstances, position)
-	while k ~= nil and continents[k] ~= Pandaria do
-		k = next(zonesInstances, k)
-	end
-	return k
-end
-function Tourist:IteratePandaria()
-	if initZonesInstances then
-		initZonesInstances()
-	end
-	return pandariaIter, nil, nil
-end
-
-
-local function draenorIter(_, position)
-	local k = next(zonesInstances, position)
-	while k ~= nil and continents[k] ~= Draenor do
-		k = next(zonesInstances, k)
-	end
-	return k
-end
-function Tourist:IterateDraenor()
-	if initZonesInstances then
-		initZonesInstances()
-	end
-	return draenorIter, nil, nil
-end
-
-
-local function brokenislesIter(_, position)
-	local k = next(zonesInstances, position)
-	while k ~= nil and continents[k] ~= Broken_Isles do
-		k = next(zonesInstances, k)
-	end
-	return k
-end
-function Tourist:IterateBrokenIsles()
-	if initZonesInstances then
-		initZonesInstances()
-	end
-	return brokenislesIter, nil, nil
-end
-
-
-local function argusIter(_, position)
-	local k = next(zonesInstances, position)
-	while k ~= nil and continents[k] ~= Argus do
-		k = next(zonesInstances, k)
-	end
-	return k
-end
-function Tourist:IterateArgus()
-	if initZonesInstances then
-		initZonesInstances()
-	end
-	return argusIter, nil, nil
-end
-
-local function zandalarIter(_, position)
-	local k = next(zonesInstances, position)
-	while k ~= nil and continents[k] ~= Zandalar do
-		k = next(zonesInstances, k)
-	end
-	return k
-end
-function Tourist:IterateZandalar()
-	if initZonesInstances then
-		initZonesInstances()
-	end
-	return zandalarIter, nil, nil
-end
-
-local function kultirasIter(_, position)
-	local k = next(zonesInstances, position)
-	while k ~= nil and continents[k] ~= Kul_Tiras do
-		k = next(zonesInstances, k)
-	end
-	return k
-end
-function Tourist:IterateKulTiras()
-	if initZonesInstances then
-		initZonesInstances()
-	end
-	return kultirasIter, nil, nil
-end
-
-
-function Tourist:IterateRecommendedZones()
-	return retNormal, recZones, nil
-end
-
-function Tourist:IterateRecommendedInstances()
-	return retNormal, recInstances, nil
-end
-
-function Tourist:HasRecommendedInstances()
-	return next(recInstances) ~= nil
-end
-
-function Tourist:IsInstance(zone)
-	zone = Tourist:GetMapNameByIDAlt(zone) or zone
-	local t = types[zone]
-	return t == "Instance" or t == "Battleground" or t == "Arena"
-end
-
-function Tourist:IsZone(zone)
-	zone = Tourist:GetMapNameByIDAlt(zone) or zone
-	local t = types[zone]
-	return t and t ~= "Instance" and t ~= "Battleground" and t ~= "Transport" and t ~= "Arena" and t ~= "Complex"
-end
-
-function Tourist:IsContinent(zone)
-	zone = Tourist:GetMapNameByIDAlt(zone) or zone
-	local t = types[zone]
-	return t == "Continent"
-end
-
-function Tourist:GetComplex(zone)
-	zone = Tourist:GetMapNameByIDAlt(zone) or zone
-	return complexOfInstance[zone]
-end
-
-function Tourist:GetType(zone)
-	zone = Tourist:GetMapNameByIDAlt(zone) or zone
-	return types[zone] or "Zone"
-end
-
-function Tourist:IsZoneOrInstance(zone)
-	zone = Tourist:GetMapNameByIDAlt(zone) or zone
-	local t = types[zone]
-	return t and t ~= "Transport"
-end
-
-function Tourist:IsTransport(zone)
-	zone = Tourist:GetMapNameByIDAlt(zone) or zone
-	local t = types[zone]
-	return t == "Transport"
-end
-
-function Tourist:IsComplex(zone)
-	zone = Tourist:GetMapNameByIDAlt(zone) or zone
-	local t = types[zone]
-	return t == "Complex"
-end
-
-function Tourist:IsBattleground(zone)
-	zone = Tourist:GetMapNameByIDAlt(zone) or zone
-	local t = types[zone]
-	return t == "Battleground"
-end
-
-function Tourist:IsArena(zone)
-	zone = Tourist:GetMapNameByIDAlt(zone) or zone
-	local t = types[zone]
-	return t == "Arena"
-end
-
-function Tourist:IsPvPZone(zone)
-	zone = Tourist:GetMapNameByIDAlt(zone) or zone
-	local t = types[zone]
-	return t == "PvP Zone"
-end
-
-function Tourist:IsCity(zone)
-	zone = Tourist:GetMapNameByIDAlt(zone) or zone
-	local t = types[zone]
-	return t == "City"
-end
-
-function Tourist:IsAlliance(zone)
-	zone = Tourist:GetMapNameByIDAlt(zone) or zone
-	return factions[zone] == "Alliance"
-end
-
-function Tourist:IsHorde(zone)
-	zone = Tourist:GetMapNameByIDAlt(zone) or zone
-	return factions[zone] == "Horde"
-end
-
-if isHorde then
-	Tourist.IsFriendly = Tourist.IsHorde
-	Tourist.IsHostile = Tourist.IsAlliance
-else
-	Tourist.IsFriendly = Tourist.IsAlliance
-	Tourist.IsHostile = Tourist.IsHorde
-end
-
-function Tourist:IsSanctuary(zone)
-	zone = Tourist:GetMapNameByIDAlt(zone) or zone
-	return factions[zone] == "Sanctuary"
-end
-
-function Tourist:IsContested(zone)
-	zone = Tourist:GetMapNameByIDAlt(zone) or zone
-	return not factions[zone]
-end
-
-function Tourist:GetContinent(zone)
-	zone = Tourist:GetMapNameByIDAlt(zone) or zone
-	return BZ[continents[zone]] or UNKNOWN
-end
-
-function Tourist:IsInKalimdor(zone)
-	zone = Tourist:GetMapNameByIDAlt(zone) or zone
-	return continents[zone] == Kalimdor
-end
-
-function Tourist:IsInEasternKingdoms(zone)
-	zone = Tourist:GetMapNameByIDAlt(zone) or zone
-	return continents[zone] == Eastern_Kingdoms
-end
-
-function Tourist:IsInOutland(zone)
-	zone = Tourist:GetMapNameByIDAlt(zone) or zone
-	return continents[zone] == Outland
-end
-
-function Tourist:IsInNorthrend(zone)
-	zone = Tourist:GetMapNameByIDAlt(zone) or zone
-	return continents[zone] == Northrend
-end
-
-function Tourist:IsInTheMaelstrom(zone)
-	zone = Tourist:GetMapNameByIDAlt(zone) or zone
-	return continents[zone] == The_Maelstrom
-end
-
-function Tourist:IsInPandaria(zone)
-	zone = Tourist:GetMapNameByIDAlt(zone) or zone
-	return continents[zone] == Pandaria
-end
-
-function Tourist:IsInDraenor(zone)
-	zone = Tourist:GetMapNameByIDAlt(zone) or zone
-	return continents[zone] == Draenor
-end
-
-function Tourist:IsInBrokenIsles(zone)
-	zone = Tourist:GetMapNameByIDAlt(zone) or zone
-	return continents[zone] == Broken_Isles
-end
-
-function Tourist:IsInArgus(zone)
-	zone = Tourist:GetMapNameByIDAlt(zone) or zone
-	return continents[zone] == Argus
-end
-
-function Tourist:IsInZandalar(zone)
-	zone = Tourist:GetMapNameByIDAlt(zone) or zone
-	return continents[zone] == Zandalar
-end
-
-function Tourist:IsInKulTiras(zone)
-	zone = Tourist:GetMapNameByIDAlt(zone) or zone
-	return continents[zone] == Kul_Tiras
-end
-
-function Tourist:GetInstanceGroupSize(instance)
-	instance = Tourist:GetMapNameByIDAlt(instance) or instance
-	return groupSizes[instance] or groupMaxSizes[instance] or 0
-end
-
-function Tourist:GetInstanceGroupMinSize(instance)
-	instance = Tourist:GetMapNameByIDAlt(instance) or instance
-	return groupMinSizes[instance] or groupSizes[instance] or 0
-end
-
-function Tourist:GetInstanceGroupMaxSize(instance)
-	instance = Tourist:GetMapNameByIDAlt(instance) or instance
-	return groupMaxSizes[instance] or groupSizes[instance] or 0
-end
-
-function Tourist:GetInstanceGroupSizeString(instance, includeAltSize)
-	instance = Tourist:GetMapNameByIDAlt(instance) or instance
-	local retValue
-	if groupSizes[instance] then
-		-- Fixed size
-		retValue = tostring(groupSizes[instance])
-	elseif groupMinSizes[instance] and groupMaxSizes[instance] then
-		-- Variable size
-		if groupMinSizes[instance] == groupMaxSizes[instance] then
-			-- ...but equal
-			retValue = tostring(groupMinSizes[instance])
-		else
-			retValue = tostring(groupMinSizes[instance]).."-"..tostring(groupMaxSizes[instance])
-		end
-	else
-		-- No size known
-		return ""
-	end
-	if includeAltSize and groupAltSizes[instance] then
-		-- Add second size
-		retValue = retValue.." or "..tostring(groupAltSizes[instance])
-	end
-	return retValue
-end
-
-function Tourist:GetInstanceAltGroupSize(instance)
-	instance = Tourist:GetMapNameByIDAlt(instance) or instance
-	return groupAltSizes[instance] or 0
-end
-
-function Tourist:GetTexture(zone)
-	zone = Tourist:GetMapNameByIDAlt(zone) or zone
-	return textures[zone]
-end
-
-function Tourist:GetZoneMapID(zone)
-	return zoneMapIDs[zone]
-end
-
-function Tourist:GetEntrancePortalLocation(instance)
-	instance = Tourist:GetMapNameByIDAlt(instance) or instance
-	local x, y = entrancePortals_x[instance], entrancePortals_y[instance]
-	if x then x = x/100 end
-	if y then y = y/100 end
-	return entrancePortals_zone[instance], x, y
-end
-
-local inf = math.huge
-local stack = setmetatable({}, {__mode='k'})
-local function iterator(S)
-	local position = S['#'] - 1
-	S['#'] = position
-	local x = S[position]
-	if not x then
-		for k in pairs(S) do
-			S[k] = nil
-		end
-		stack[S] = true
-		return nil
-	end
-	return x
-end
-
-setmetatable(cost, {
-	__index = function(self, vertex)
-		local price = 1
-
-		if lows[vertex] > playerLevel then
-			price = price * (1 + math.ceil((lows[vertex] - playerLevel) / 6))
-		end
-
-		if factions[vertex] == (isHorde and "Horde" or "Alliance") then
-			price = price / 2
-		elseif factions[vertex] == (isHorde and "Alliance" or "Horde") then
-			if types[vertex] == "City" then
-				price = price * 10
-			else
-				price = price * 3
-			end
-		end
-
-		if types[x] == "Transport" then
-			price = price * 2
-		end
-
-		self[vertex] = price
-		return price
-	end
-})
-
--- This function tries to calculate the most optimal path between alpha and bravo 
--- by foot or ground mount, that is, without using a flying mount or a taxi service. 
--- The return value is an iteration that gives a travel advice in the form of a list 
--- of zones and transports to follow in order to get from alpha to bravo. 
--- The function tries to avoid hostile zones by calculating a "price" for each possible 
--- route. The price calculation takes zone level, faction and type into account.
--- See metatable above for the 'pricing' mechanism.
-function Tourist:IteratePath(alpha, bravo)
-	alpha = Tourist:GetMapNameByIDAlt(alpha) or alpha
-	bravo = Tourist:GetMapNameByIDAlt(bravo) or bravo
-
-	if paths[alpha] == nil or paths[bravo] == nil then
-		return retNil
-	end
-
-	local d = next(stack) or {}
-	stack[d] = nil
-	local Q = next(stack) or {}
-	stack[Q] = nil
-	local S = next(stack) or {}
-	stack[S] = nil
-	local pi = next(stack) or {}
-	stack[pi] = nil
-
-	for vertex, v in pairs(paths) do
-		d[vertex] = inf
-		Q[vertex] = v
-	end
-	d[alpha] = 0
-
-	while next(Q) do
-		local u
-		local min = inf
-		for z in pairs(Q) do
-			local value = d[z]
-			if value < min then
-				min = value
-				u = z
-			end
-		end
-		if min == inf then
-			return retNil
-		end
-		Q[u] = nil
-		if u == bravo then
-			break
-		end
-
-		local adj = paths[u]
-		if type(adj) == "table" then
-			local d_u = d[u]
-			for v in pairs(adj) do
-				local c = d_u + cost[v]
-				if d[v] > c then
-					d[v] = c
-					pi[v] = u
-				end
-			end
-		elseif adj ~= false then
-			local c = d[u] + cost[adj]
-			if d[adj] > c then
-				d[adj] = c
-				pi[adj] = u
-			end
-		end
-	end
-
-	local i = 1
-	local last = bravo
-	while last do
-		S[i] = last
-		i = i + 1
-		last = pi[last]
-	end
-
-	for k in pairs(pi) do
-		pi[k] = nil
-	end
-	for k in pairs(Q) do
-		Q[k] = nil
-	end
-	for k in pairs(d) do
-		d[k] = nil
-	end
-	stack[pi] = true
-	stack[Q] = true
-	stack[d] = true
-
-	S['#'] = i
-
-	return iterator, S
-end
-
-
-local function retIsZone(t, key)
-	while true do
-		key = next(t, key)
-		if not key then
-			return nil
-		end
-		if Tourist:IsZone(key) then
-			return key
-		end
-	end
-end
-
--- This returns an iteration of zone connections (paths).
--- The second parameter determines whether other connections like transports and portals should be included
-function Tourist:IterateBorderZones(zone, zonesOnly)
-	zone = Tourist:GetMapNameByIDAlt(zone) or zone
-	local path = paths[zone]
-	
-	if not path then
-		return retNil
-	elseif type(path) == "table" then
-		return zonesOnly and retIsZone or retNormal, path
-	else
-		if zonesOnly and not Tourist:IsZone(path) then
-			return retNil
-		end
-		return retOne, path
-	end
-end
 
 
 --------------------------------------------------------------------------------------------------------
@@ -2955,7 +1524,127 @@ local function AddDuplicatesToLocalizedLookup()
 	BZR[Tourist:GetUniqueZoneNameForLookup("The Violet Hold", BROKEN_ISLES_MAP_ID)] = Tourist:GetUniqueEnglishZoneNameForLookup("The Violet Hold", BROKEN_ISLES_MAP_ID)
 end
 
+local function GetFlightnodeFaction(faction)
+	if faction == 0 then
+		return "Neutral"
+	end
+	if faction == 1 then
+		return "Horde"
+	end
+	if faction == 2 then
+		return "Alliance"
+	else
+		return tostring(faction)
+	end
+end
 
+--[[
+	GatherFlightnodeData is called just in time, right before first use, because when LibTourist is being loaded at player logon,
+	not all flightpoints are available yet through the C_TaxiMap interface.
+
+	The FlightnodeLookupTable, which is built during initialization using the hardcoded relationships between zones and nodes, 
+	contains the flightnode IDs but no values yet. GatherFlightnodeData fills the lookup as much as possible with MapTaxiNodeInfo 
+	structures retrieved from the C_TaxiMap interface.
+	
+	structure TaxiMap.MapTaxiNodeInfo
+		number nodeID						-- unique node ID
+		table position						-- position of the node on the Flight Master's map
+		string name							-- node name as displayed in game, includes zone name (mostly)
+		string atlasName					-- atlas object type, includes faction
+		Enum.FlightPathFaction faction		-- 0 = Neutral, 1 = Horde, 2 = Alliance
+		(optional) string textureKitPrefix	-- no clue what this is for
+		string factionName					-- added by LibTourist
+]]--
+
+local function GatherFlightnodeData()
+	local zMapID, zName, nodes
+	local count = 0
+	local errCount = 0
+	if gatheringFlightnodes == true then return end
+	gatheringFlightnodes = true
+	
+	-- Add node objects from the C_TaxiMap interface to the lookup
+	for zMapID, zName in pairs(MapIdLookupTable) do	
+		-- Use MapIdLookupTable instead of iterating through continents and zones to be sure all known zones are checked for flight nodes
+--		cMapID = Tourist:GetContinentMapID(zMapID)
+--		cName = MapIdLookupTable[cMapID]
+		nodes = C_TaxiMap.GetTaxiNodesForMap(zMapID)
+
+		if nodes ~= nil then
+			numNodes = tablelength(nodes)
+			if numNodes > 0 then
+				for i, node in ipairs(nodes) do
+					if not FlightnodeLookupTable[node.nodeID] then
+						trace("|r|cffff4422! -- Tourist: Missing flightnode in lookup: "..tostring(node.nodeID).." = "..tostring(node.name))
+						errCount = errCount + 1
+					else
+						if FlightnodeLookupTable[node.nodeID] == true then
+							count = count + 1
+							-- Add faction name
+							node["factionName"] = GetFlightnodeFaction(node.faction)
+							-- Store node object in lookup
+							FlightnodeLookupTable[node.nodeID] = node
+						end
+					end
+				end
+			end
+		end	
+	end
+
+	-- Add hardcoded node-to-zone relations to FlightnodeLookupTable
+	local nodesToUpdate = {}
+	for zone in Tourist:IterateZones() do
+		for node in Tourist:IterateZoneFlightnodes(zone) do
+			if FlightnodeLookupTable[node.nodeID] then
+				if not nodesToUpdate[node.nodeID] then
+					nodesToUpdate[node.nodeID] = {}
+				end
+				nodesToUpdate[node.nodeID][zone] = true
+			else
+				trace("|r|cffff4422! -- Tourist: Missing flightnode in lookup: "..tostring(node.nodeID).." = "..tostring(node.name))
+				errCount = errCount + 1
+			end
+		end
+	end
+	for k, v in pairs(nodesToUpdate) do
+		FlightnodeLookupTable[k]["zones"] = v
+	end
+	
+	trace("Tourist: Found "..tostring(count).." of "..tostring(tablelength(FlightnodeLookupTable)).." known flight nodes; "..tostring(errCount).." unknown nodes.")
+
+	flightnodeDataGathered = true
+	gatheringFlightnodes = false
+end
+
+-- Refreshes the values of the FlightnodeLookupTable
+function Tourist:RefreshFlightNodeData()
+	-- Reset lookup
+	for k, v in pairs(FlightnodeLookupTable) do
+		FlightnodeLookupTable[k] = true
+	end
+	-- Re-gather data
+	GatherFlightnodeData()
+end
+
+-- Returns the lookup table with all flightnodes. Key = node ID.
+-- Value is a node struct(see C_Taximap.MapTaxiNodeInfo) if the node could be found by GatherFlightnodeData.
+-- If the node was not returned by C_Taximap, value is true.
+function Tourist:GetFlightnodeLookupTable()
+	if flightnodeDataGathered == false then
+		GatherFlightnodeData()
+	end
+	return FlightnodeLookupTable
+end
+
+-- Returns a C_Taximap.MapTaxiNodeInfo (with some extra attributes) for the specified nodeID, if available
+function Tourist:GetFlightnode(nodeID)
+	local node = Tourist:GetFlightnodeLookupTable()[nodeID]
+	if node == true then 
+		return nil
+	else
+		return node
+	end
+end
 
 -- This function replaces the abandoned LibBabble-Zone library and returns a lookup table 
 -- containing all zone names (including continents, instances etcetera) where the English 
@@ -2974,6 +1663,1546 @@ end
 -- Returns the lookup table with all uiMapIDs as key and the English zone name as value.
 function Tourist:GetMapIDLookupTable()
 	return MapIdLookupTable
+end
+
+
+
+
+-- HELPER AND LOOKUP FUNCTIONS -------------------------------------------------------------
+
+local function PLAYER_LEVEL_UP(self, level)
+	playerLevel = UnitLevel("player")
+	
+	for k in pairs(recZones) do
+		recZones[k] = nil
+	end
+	for k in pairs(recInstances) do
+		recInstances[k] = nil
+	end
+	for k in pairs(cost) do
+		cost[k] = nil
+	end
+
+	for zone in pairs(lows) do
+		if not self:IsHostile(zone) then
+			local low, high, scaled = self:GetLevel(zone)
+			if scaled then
+				low = scaled
+				high = scaled
+			end
+			
+			local zoneType = self:GetType(zone)
+			if zoneType == "Zone" or zoneType == "PvP Zone" and low and high then
+				if low <= playerLevel and playerLevel <= high then
+					recZones[zone] = true
+				end
+			elseif zoneType == "Battleground" and low and high then
+				local playerLevel = playerLevel
+				if low <= playerLevel and playerLevel <= high then
+					recInstances[zone] = true
+				end
+			elseif zoneType == "Instance" and low and high then
+				if low <= playerLevel and playerLevel <= high then
+					recInstances[zone] = true
+				end
+			end
+		end
+	end
+end
+
+
+-- Public alternative for GetMapContinents, removes the map IDs that were added to its output in WoW 6.0
+-- Note: GetMapContinents has been removed entirely in 8.0
+-- 8.0.1: returns uiMapID as key
+function Tourist:GetMapContinentsAlt()
+	local continents = C_Map.GetMapChildrenInfo(COSMIC_MAP_ID, Enum.UIMapType.Continent, true)
+	local retValue = {}
+	for i, continentInfo in ipairs(continents) do
+		--trace("Continent "..tostring(i)..": "..continentInfo.mapID..": ".. continentInfo.name)
+		retValue[continentInfo.mapID] = continentInfo.name
+	end
+	return retValue
+end
+
+-- Public Alternative for GetMapZones because GetMapZones does NOT return all zones (as of 6.0.2), 
+-- making its output useless as input for for SetMapZoom. 
+-- Note: GetMapZones has been removed entirely in 8.0, just as SetMapZoom
+-- NOTE: This method does not convert duplicate zone names for lookup in LibTourist,
+-- use GetUniqueZoneNameForLookup for that.
+-- 8.0.1: returns uiMapID as key
+function Tourist:GetMapZonesAlt(continentID)
+	if mapZonesByContinentID[continentID] then
+		-- Get from cache
+		return mapZonesByContinentID[continentID]
+	else	
+		local mapZones = {}
+		local mapChildrenInfo = { C_Map.GetMapChildrenInfo(continentID, Enum.UIMapType.Zone, true) }
+		for key, zones in pairs(mapChildrenInfo) do  -- don't know what this extra table is for
+			for zoneIndex, zone in pairs(zones) do
+				-- Get the localized zone name
+				mapZones[zone.mapID] = zone.name
+			end
+		end
+
+		-- Add to cache
+		mapZonesByContinentID[continentID] = mapZones		
+		
+		return mapZones
+	end
+end
+
+-- Public alternative for GetMapNameByID (which was removed in 8.0.1), 
+-- returns a unique localized zone name to be used to lookup data in LibTourist
+function Tourist:GetMapNameByIDAlt(uiMapID)
+	if tonumber(uiMapID) == nil then
+		return nil
+	end
+
+	local mapInfo = C_Map.GetMapInfo(uiMapID)
+	if mapInfo then
+		local zoneName = C_Map.GetMapInfo(uiMapID).name
+		local continentMapID = Tourist:GetContinentMapID(uiMapID)
+		--trace("ContinentMap ID for "..tostring(zoneName).." ("..tostring(uiMapID)..") is "..tostring(continentMapID))
+		if uiMapID == THE_MAELSTROM_MAP_ID then
+			-- Exception for The Maelstrom continent because GetUniqueZoneNameForLookup excpects the zone mane and not the continent name
+			return zoneName
+		else
+			return Tourist:GetUniqueZoneNameForLookup(zoneName, continentMapID)
+		end
+	else
+		return nil
+	end
+end 
+
+-- Returns the uiMapID of the Continent for the given uiMapID
+function Tourist:GetContinentMapID(uiMapID)
+	-- First, check the cache, built during initialisation based on the zones returned by GetMapZonesAlt
+	local continentMapID = zoneMapIDtoContinentMapID[uiMapID]
+	if continentMapID then
+		-- Done
+		return continentMapID
+	end
+	
+	-- Not in cache, look for the continent, searching up through the map hierarchy.
+	-- Add the results to the cache to speed up future queries.
+	local mapInfo = C_Map.GetMapInfo(uiMapID)
+	if not mapInfo or mapInfo.mapType == 0 or mapInfo.mapType == 1 then
+		-- No data or Cosmic map or World map
+		zoneMapIDtoContinentMapID[uiMapID] = nil
+		return nil
+	end
+	
+	if mapInfo.mapType == 2 then
+		-- Map is a Continent map
+		zoneMapIDtoContinentMapID[uiMapID] = mapInfo.mapID
+		return mapInfo.mapID
+	end
+	
+	local parentMapInfo = C_Map.GetMapInfo(mapInfo.parentMapID)
+	if not parentMapInfo then
+		-- No parent -> no continent ID
+		zoneMapIDtoContinentMapID[uiMapID] = nil
+		return nil
+	else
+		if parentMapInfo.mapType == 2 then
+			-- Found the continent
+			zoneMapIDtoContinentMapID[uiMapID] = parentMapInfo.mapID
+			return parentMapInfo.mapID
+		else
+			-- Parent is not the Continent -> Search up one level
+			return Tourist:GetContinentMapID(parentMapInfo.mapID)
+		end
+	end
+end
+
+-- Returns a unique localized zone name to be used to lookup data in LibTourist,
+-- based on a localized or English zone name
+function Tourist:GetUniqueZoneNameForLookup(zoneName, continentMapID)
+	if continentMapID == THE_MAELSTROM_MAP_ID then  -- The Maelstrom
+		if zoneName == BZ["The Maelstrom"] or zoneName == "The Maelstrom" then
+			zoneName = BZ["The Maelstrom"].." (zone)"
+		end
+	end
+	if continentMapID == DRAENOR_MAP_ID then  -- Draenor
+		if zoneName == BZ["Nagrand"] or zoneName == "Nagrand"  then
+			zoneName = BZ["Nagrand"].." ("..BZ["Draenor"]..")"
+		end
+		if zoneName == BZ["Shadowmoon Valley"] or zoneName == "Shadowmoon Valley"  then
+			zoneName = BZ["Shadowmoon Valley"].." ("..BZ["Draenor"]..")"
+		end
+		if zoneName == BZ["Hellfire Citadel"] or zoneName == "Hellfire Citadel"  then
+			zoneName = BZ["Hellfire Citadel"].." ("..BZ["Draenor"]..")"
+		end
+	end
+	if continentMapID == BROKEN_ISLES_MAP_ID then  -- Broken Isles
+		if zoneName == BZ["Dalaran"] or zoneName == "Dalaran"  then
+			zoneName = BZ["Dalaran"].." ("..BZ["Broken Isles"]..")"
+		end
+		if zoneName == BZ["The Violet Hold"] or zoneName == "The Violet Hold"  then
+			zoneName = BZ["The Violet Hold"].." ("..BZ["Broken Isles"]..")"
+		end
+	end
+	return zoneName
+end
+
+-- Returns a unique English zone name to be used to lookup data in LibTourist,
+-- based on a localized or English zone name
+function Tourist:GetUniqueEnglishZoneNameForLookup(zoneName, continentMapID)
+	if continentMapID == THE_MAELSTROM_MAP_ID then  -- The Maelstrom
+		if zoneName == BZ["The Maelstrom"] or zoneName == "The Maelstrom" then
+			zoneName = "The Maelstrom (zone)"
+		end
+	end
+	if continentMapID == DRAENOR_MAP_ID then -- Draenor
+		if zoneName == BZ["Nagrand"] or zoneName == "Nagrand" then
+			zoneName = "Nagrand (Draenor)"
+		end
+		if zoneName == BZ["Shadowmoon Valley"] or zoneName == "Shadowmoon Valley" then
+			zoneName = "Shadowmoon Valley (Draenor)"
+		end
+		if zoneName == BZ["Hellfire Citadel"] or zoneName == "Hellfire Citadel" then
+			zoneName = "Hellfire Citadel (Draenor)"
+		end
+	end
+	if continentMapID == BROKEN_ISLES_MAP_ID then  -- Broken Isles
+		if zoneName == BZ["Dalaran"] or zoneName == "Dalaran" then
+			zoneName = "Dalaran (Broken Isles)"
+		end	
+		if zoneName == BZ["The Violet Hold"] or zoneName == "The Violet Hold"  then
+			zoneName = "The Violet Hold (Broken Isles)"
+		end
+	end
+	return zoneName
+end
+
+-- Minimum fishing skill to fish these zones junk-free (Draenor: to catch Enormous Fish only)
+-- 8.0.1: SUSPENDED until it is clear how the fishing skills currently work, if a minimum skill is still required 
+-- and how it should be calculated. There is no WoW API for this.
+function Tourist:GetFishingLevel(zone)
+	return 0
+--	zone = Tourist:GetMapNameByIDAlt(zone) or zone
+--	return fishing[zone]
+end
+
+-- Returns the minimum and maximum battle pet levels for the given zone, if the zone is known 
+-- and contains battle pets (otherwise returns nil)
+function Tourist:GetBattlePetLevel(zone)
+	zone = Tourist:GetMapNameByIDAlt(zone) or zone
+	return battlepet_lows[zone], battlepet_highs[zone]
+end
+
+-- WoW patch 7.3.5: most zones now scale - within their level range - to the player's level
+function Tourist:GetScaledZoneLevel(zone)
+	zone = Tourist:GetMapNameByIDAlt(zone) or zone
+	local playerLvl = playerLevel
+
+	if playerLvl <= lows[zone] then 
+		return lows[zone]
+	elseif playerLvl >= highs[zone] then
+		return highs[zone]
+	else
+		return playerLvl
+	end
+end
+
+
+-- Formats the minimum and maximum player level for the given zone as "[min]-[max]". 
+-- Returns one number if min and max are equal. 
+-- Returns an empty string if no player levels are applicable (like in Cities).
+-- If zone is a zone or an instance, the string will be formatted like "[scaled] ([min]-[max])", i.e. "47 (40-60)".
+function Tourist:GetLevelString(zone)
+	local lo, hi, scaled = Tourist:GetLevel(zone)
+	
+	if lo and hi then
+		if scaled then
+			if lo == hi then
+				return tostring(scaled).." ("..tostring(lo)..")"
+			else
+				return tostring(scaled).." ("..tostring(lo).."-"..tostring(hi)..")"
+			end
+		else	
+			if lo == hi then
+				return tostring(lo)
+			else
+				return tostring(lo).."-"..tostring(hi)
+			end
+		end
+	else
+		return tostring(lo or hi or "")
+	end
+end
+
+
+-- Formats the minimum and maximum battle pet level for the given zone as "min-max". 
+-- Returns one number if min and max are equal. Returns an empty string if no battle pet levels are available.
+function Tourist:GetBattlePetLevelString(zone)
+	local lo, hi = Tourist:GetBattlePetLevel(zone)
+	if lo and hi then
+		if lo == hi then
+			return tostring(lo)
+		else
+			return tostring(lo).."-"..tostring(hi)
+		end
+	else
+		return tostring(lo or hi or "")
+	end
+end
+
+-- Returns the minimum and maximum level for the given zone, instance or battleground.
+-- If zone is a zone or an instance, a third value is returned: the scaled zone level. 
+-- This is the level 'presented' to the player when inside the zone. It's calculated by GetScaledZoneLevel.
+function Tourist:GetLevel(zone)
+	zone = Tourist:GetMapNameByIDAlt(zone) or zone
+
+	if types[zone] == "Battleground" then
+		-- Note: Not all BG's start at level 10, but all BG's support players up to MAX_PLAYER_LEVEL.
+
+		local playerLvl = playerLevel
+		if playerLvl <= lows[zone] then
+			-- Player is too low level to enter the BG -> return the lowest available bracket
+			-- by assuming the player is at the min level required for the BG.
+			playerLvl = lows[zone]
+		end
+
+		-- Find the most suitable bracket
+		if playerLvl >= MAX_PLAYER_LEVEL then
+			return MAX_PLAYER_LEVEL, MAX_PLAYER_LEVEL, nil
+		elseif playerLvl >= 115 then
+			return 115, 119, nil
+		elseif playerLvl >= 110 then
+			return 110, 114, nil
+		elseif playerLvl >= 105 then
+			return 105, 109, nil
+		elseif playerLvl >= 100 then
+			return 100, 104, nil			
+		elseif playerLvl >= 95 then
+			return 95, 99, nil
+		elseif playerLvl >= 90 then
+			return 90, 94, nil
+		elseif playerLvl >= 85 then
+			return 85, 89, nil
+		elseif playerLvl >= 80 then
+			return 80, 84, nil
+		elseif playerLvl >= 75 then
+			return 75, 79, nil
+		elseif playerLvl >= 70 then
+			return 70, 74, nil
+		elseif playerLvl >= 65 then
+			return 65, 69, nil
+		elseif playerLvl >= 60 then
+			return 60, 64, nil
+		elseif playerLvl >= 55 then
+			return 55, 59, nil
+		elseif playerLvl >= 50 then
+			return 50, 54, nil
+		elseif playerLvl >= 45 then
+			return 45, 49, nil
+		elseif playerLvl >= 40 then
+			return 40, 44, nil
+		elseif playerLvl >= 35 then
+			return 35, 39, nil
+		elseif playerLvl >= 30 then
+			return 30, 34, nil
+		elseif playerLvl >= 25 then
+			return 25, 29, nil
+		elseif playerLvl >= 20 then
+			return 20, 24, nil
+		elseif playerLvl >= 15 then
+			return 15, 19, nil
+		else
+			return 10, 14, nil
+		end
+	else
+		if types[zone] ~= "Arena" and types[zone] ~= "Complex" and types[zone] ~= "City" and types[zone] ~= "Continent" then
+			-- Zones and Instances (scaling):
+			local scaled = Tourist:GetScaledZoneLevel(zone)
+			if scaled == lows[zone] and scaled == highs[zone] then scaled = nil end -- nothing to scale in a one-level bracket (like Suramar)
+			return lows[zone], highs[zone], scaled
+		else
+			-- Other zones
+			return lows[zone], highs[zone], nil
+		end
+	end
+end
+
+-- Returns an r, g and b value representing a color ranging from grey (too low) via
+-- green, yellow and orange to red (too high), depending on the player's battle pet level 
+-- within the battle pet level range of the given zone.
+function Tourist:GetBattlePetLevelColor(zone, petLevel)
+	zone = Tourist:GetMapNameByIDAlt(zone) or zone
+	local low, high = self:GetBattlePetLevel(zone)
+	
+	return Tourist:CalculateLevelColor(low, high, petLevel)
+end
+
+-- Returns an r, g and b value representing a color ranging from grey (too low) via 
+-- green, yellow and orange to red (too high), by calling CalculateLevelColor with 
+-- the min and max level of the given zone and the current player level.
+-- Note: if zone is a zone or an instance, the zone's scaled level (calculated 
+-- by GetScaledZoneLevel) is used instead of it's minimum and maximum level. 
+function Tourist:GetLevelColor(zone)
+	zone = Tourist:GetMapNameByIDAlt(zone) or zone
+	local low, high, scaled = self:GetLevel(zone)
+
+	if types[zone] == "Battleground" then
+		if playerLevel < low then
+			-- player cannot enter the lowest bracket of the BG -> red
+			return 1, 0, 0
+		end
+	end
+	
+	if scaled then
+		return Tourist:CalculateLevelColor(scaled, scaled, playerLevel)
+	else
+		return Tourist:CalculateLevelColor(low, high, playerLevel)
+	end
+end
+	
+-- Returns an r, g and b value representing a color ranging from grey (too low) via 
+-- green, yellow and orange to red (too high) depending on the player level within 
+-- the given range. Returns white if no level is applicable, like in cities.	
+function Tourist:CalculateLevelColor(low, high, currentLevel)
+	local midBracket = (low + high) / 2
+
+	if low <= 0 and high <= 0 then
+		-- City or level unknown -> White
+		return 1, 1, 1
+	elseif currentLevel == low and currentLevel == high then
+		-- Exact match, one-level bracket -> Yellow
+		return 1, 1, 0
+	elseif currentLevel <= low - 3 then
+		-- Player is three or more levels short of Low -> Red
+		return 1, 0, 0
+	elseif currentLevel < low then
+		-- Player is two or less levels short of Low -> sliding scale between Red and Orange
+		-- Green component goes from 0 to 0.5
+		local greenComponent = (currentLevel - low + 3) / 6
+		return 1, greenComponent, 0
+	elseif currentLevel == low then
+		-- Player is at low, at least two-level bracket -> Orange
+		return 1, 0.5, 0
+	elseif currentLevel < midBracket then
+		-- Player is between low and the middle of the bracket -> sliding scale between Orange and Yellow
+		-- Green component goes from 0.5 to 1
+		local halfBracketSize = (high - low) / 2
+		local posInBracketHalf = currentLevel - low
+		local greenComponent = 0.5 + (posInBracketHalf / halfBracketSize) * 0.5
+		return 1, greenComponent, 0
+	elseif currentLevel == midBracket then
+		-- Player is at the middle of the bracket -> Yellow
+		return 1, 1, 0
+	elseif currentLevel < high then
+		-- Player is between the middle of the bracket and High -> sliding scale between Yellow and Green
+		-- Red component goes from 1 to 0
+		local halfBracketSize = (high - low) / 2
+		local posInBracketHalf = currentLevel - midBracket
+		local redComponent = 1 - (posInBracketHalf / halfBracketSize)
+		return redComponent, 1, 0
+	elseif currentLevel == high then
+		-- Player is at High, at least two-level bracket -> Green
+		return 0, 1, 0
+	elseif currentLevel < high + 3 then
+		-- Player is up to three levels above High -> sliding scale between Green and Gray
+		-- Red and Blue components go from 0 to 0.5
+		-- Green component goes from 1 to 0.5
+		local pos = (currentLevel - high) / 3
+		local redAndBlueComponent = pos * 0.5
+		local greenComponent = 1 - redAndBlueComponent
+		return redAndBlueComponent, greenComponent, redAndBlueComponent
+	else
+		-- Player is at High + 3 or above -> Gray
+		return 0.5, 0.5, 0.5
+	end
+end
+
+-- Returns an r, g and b value representing a color, depending on the given zone and the current character's faction.
+function Tourist:GetFactionColor(zone)
+	zone = Tourist:GetMapNameByIDAlt(zone) or zone
+
+	if factions[zone] == "Sanctuary" then
+		-- Blue
+		return 0.41, 0.8, 0.94
+	elseif self:IsPvPZone(zone) then
+		-- Orange
+		return 1, 0.7, 0
+	elseif factions[zone] == (isHorde and "Alliance" or "Horde") then
+		-- Red
+		return 1, 0, 0
+	elseif factions[zone] == (isHorde and "Horde" or "Alliance") then
+		-- Green
+		return 0, 1, 0
+	else
+		-- Yellow
+		return 1, 1, 0
+	end
+end
+
+-- Returns an r, g and b value representing a color, depending on the given flight node faction and the current character's faction.
+-- faction can be 0, 1, 2, "Neutral", "Horde" or "Alliance".
+function Tourist:GetFlightnodeFactionColor(faction)
+	faction = GetFlightnodeFaction(faction)
+	if faction == (isHorde and "Alliance" or "Horde") then
+		-- Red (hostile)
+		return 1, 0, 0
+	elseif faction == (isHorde and "Horde" or "Alliance") then
+		-- Green (friendly)
+		return 0, 1, 0
+	else
+		-- Yellow (neutral or unknown)
+		return 1, 1, 0 
+	end
+end
+
+-- Returns the width and height of a zone map in game yards. The height is always 2/3 of the width.
+function Tourist:GetZoneYardSize(zone)
+	zone = Tourist:GetMapNameByIDAlt(zone) or zone
+	return yardWidths[zone], yardHeights[zone]
+end
+
+-- Calculates a distance in game yards between point A and point B. 
+-- Points A and B can be in different zones but must be on the same continent.
+function Tourist:GetYardDistance(zone1, x1, y1, zone2, x2, y2)
+	if tonumber(zone1) == nil then	
+		-- Not a uiMapID, translate zone name to map ID
+		zone1 = Tourist:GetZoneMapID(zone1)
+	end
+	if tonumber(zone2) == nil then	
+		-- Not a uiMapID, translate zone name to map ID
+		zone2 = Tourist:GetZoneMapID(zone2)
+	end
+	if zone1 and zone2 then
+		return HBD:GetZoneDistance(zone1, x1, y1, zone2, x2, y2)
+	else
+		return nil, nil, nil
+	end
+end
+
+-- This function is used to calculate the coordinates of a location in zone1, on the map of zone2. 
+-- The zones can be continents (including Azeroth). 
+-- The return value can be outside the 0 to 1 range.
+function Tourist:TransposeZoneCoordinate(x, y, zone1, zone2)
+	if tonumber(zone1) == nil then	
+		-- Not a uiMapID, translate zone name to map ID
+		zone1 = Tourist:GetZoneMapID(zone1)
+	end
+	if tonumber(zone2) == nil then	
+		-- Not a uiMapID, translate zone name to map ID
+		zone2 = Tourist:GetZoneMapID(zone2)
+	end
+
+	return HBD:TranslateZoneCoordinates(x, y, zone1, zone2, true)  -- True: allow < 0 and > 1
+end
+
+-- This function is used to find the actual zone a player is in, including coordinates for that zone, if the current map 
+-- is a map that contains the player position, but is not the map of the zone where the player really is.
+-- Return values:
+-- x, y = player position on the most suitable map
+-- zone = the unique localized zone name of the most suitable map 
+-- uiMapID = ID of the most suitable map 
+function Tourist:GetBestZoneCoordinate()
+	local uiMapID = C_Map.GetBestMapForUnit("player")
+	
+	if uiMapID then
+		local zone = Tourist:GetMapNameByIDAlt(uiMapID)
+		local pos = C_Map.GetPlayerMapPosition(uiMapID, "player")
+		if pos then 
+			return pos.x, pos.y, zone, uiMapID
+		else
+			return nil, nil, zone, uiMapID
+		end
+	end
+	return nil, nil, nil, nil 
+end
+
+
+local function GetBFAInstanceLow(instanceLow, instanceFaction)
+	if (isHorde and instanceFaction == "Horde") or (isHorde == false and instanceFaction == "Alliance") then
+		return instanceLow
+	else
+		-- 'Hostile' instances can be accessed at max BfA level (120)
+		return 120
+	end
+end
+
+local function GetSiegeOfBoralusEntrance()
+	if isHorde then
+		return { BZ["Tiragarde Sound"], 88.3, 51.0 }
+	else
+		return { BZ["Tiragarde Sound"], 72.5, 23.6 }
+	end
+end
+
+local function GetTheMotherlodeEntrance()
+	if isHorde then
+		return { BZ["Zuldazar"], 56.1, 59.9 }
+	else
+		return { BZ["Zuldazar"], 39.3, 71.4 }
+	end
+end
+
+
+-- Returns an r, g and b value representing a color, depending on the given zone and the current character's faction.
+function Tourist:GetFactionColor(zone)
+	zone = Tourist:GetMapNameByIDAlt(zone) or zone
+
+	if factions[zone] == "Sanctuary" then
+		-- Blue
+		return 0.41, 0.8, 0.94
+	elseif self:IsPvPZone(zone) then
+		-- Orange
+		return 1, 0.7, 0
+	elseif factions[zone] == (isHorde and "Alliance" or "Horde") then
+		-- Red
+		return 1, 0, 0
+	elseif factions[zone] == (isHorde and "Horde" or "Alliance") then
+		-- Green
+		return 0, 1, 0
+	else
+		-- Yellow
+		return 1, 1, 0
+	end
+end
+
+
+
+local function tablelength(T)
+  local count = 0
+  for _ in pairs(T) do count = count + 1 end
+  return count
+end
+
+local function retNil() 
+	return nil 
+end
+	
+local function retOne(object, state)
+	if state == object then
+		return nil
+	else
+		return object
+	end
+end
+
+local function retNormal(t, position)
+	return (next(t, position))
+end
+
+local function round(num, digits)
+	-- banker's rounding
+	local mantissa = 10^digits
+	local norm = num*mantissa
+	norm = norm + 0.5
+	local norm_f = math.floor(norm)
+	if norm == norm_f and (norm_f % 2) ~= 0 then
+		return (norm_f-1)/mantissa
+	end
+	return norm_f/mantissa
+end
+
+local function mysort(a,b)
+	if not lows[a] then
+		return false
+	elseif not lows[b] then
+		return true
+	else
+		local aval, bval = groupSizes[a] or groupMaxSizes[a], groupSizes[b] or groupMaxSizes[b]
+		if aval and bval then
+			if aval ~= bval then
+				return aval < bval
+			end
+		end
+		aval, bval = lows[a], lows[b]
+		if aval ~= bval then
+			return aval < bval
+		end
+		aval, bval = highs[a], highs[b]
+		if aval ~= bval then
+			return aval < bval
+		end
+		return a < b
+	end
+end
+local t = {}
+local function myiter(t)
+	local n = t.n
+	n = n + 1
+	local v = t[n]
+	if v then
+		t[n] = nil
+		t.n = n
+		return v
+	else
+		t.n = nil
+	end
+end
+local function flightnodesort(a, b)
+	return a.name < b.name
+end
+
+function Tourist:IterateZoneInstances(zone)
+	zone = Tourist:GetMapNameByIDAlt(zone) or zone
+	local inst = instances[zone]
+
+	if not inst then
+		return retNil
+	elseif type(inst) == "table" then
+		for k in pairs(t) do
+			t[k] = nil
+		end
+		for k in pairs(inst) do
+			t[#t+1] = k
+		end
+		table.sort(t, mysort)
+		t.n = 0
+		return myiter, t, nil
+	else
+		return retOne, inst, nil
+	end
+end
+
+function Tourist:IterateZoneFlightnodes(zone)
+	if flightnodeDataGathered == false then
+		GatherFlightnodeData()
+	end
+
+	zone = Tourist:GetMapNameByIDAlt(zone) or zone
+	local nodes = flightnodes[zone]
+		
+	if not nodes then
+		-- No nodes
+		return retNil
+	elseif type(nodes) == "table" then
+		-- Table of node IDs. Check if they have been found by GatherFlightnodeData
+		-- If so, the value is a node object, otherwise the value is true
+		local foundNodes = {}
+		for id, _ in pairs(nodes) do
+			if FlightnodeLookupTable[id] ~= true then
+				-- FlightnodeLookupTable[id] is an object, use it as key for the iter code below
+				foundNodes[FlightnodeLookupTable[id]] = true
+--			else
+				--trace("Skipped: "..tostring(id))
+			end
+		end
+
+		for k in pairs(t) do
+			t[k] = nil
+		end
+		for k in pairs(foundNodes) do
+			t[#t+1] = k
+		end
+		table.sort(t, flightnodesort)
+		t.n = 0
+		return myiter, t, nil
+	else
+		-- Single node ID. Check if it has been found by GatherFlightnodeData
+		if FlightnodeLookupTable[nodes] ~= true then
+			return retOne, FlightnodeLookupTable[nodes], nil
+		else
+			-- No data
+			return retNil
+		end		
+	end
+end
+
+
+function Tourist:IterateZoneComplexes(zone)
+	zone = Tourist:GetMapNameByIDAlt(zone) or zone
+	local compl = zoneComplexes[zone]
+
+	if not compl then
+		return retNil
+	elseif type(compl) == "table" then
+		for k in pairs(t) do
+			t[k] = nil
+		end
+		for k in pairs(compl) do
+			t[#t+1] = k
+		end
+		table.sort(t, mysort)
+		t.n = 0
+		return myiter, t, nil
+	else
+		return retOne, compl, nil
+	end
+end
+
+function Tourist:GetInstanceZone(instance)
+	instance = Tourist:GetMapNameByIDAlt(instance) or instance
+	for k, v in pairs(instances) do
+		if v then
+			if type(v) == "string" then
+				if v == instance then
+					return k
+				end
+			else -- table
+				for l in pairs(v) do
+					if l == instance then
+						return k
+					end
+				end
+			end
+		end
+	end
+end
+
+function Tourist:GetComplexZone(complex)
+	complex = Tourist:GetMapNameByIDAlt(complex) or complex
+	for k, v in pairs(zoneComplexes) do
+		if v then
+			if type(v) == "string" then
+				if v == complex then
+					return k
+				end
+			else -- table
+				for l in pairs(v) do
+					if l == complex then
+						return k
+					end
+				end
+			end
+		end
+	end
+end
+
+function Tourist:DoesZoneHaveInstances(zone)
+	zone = Tourist:GetMapNameByIDAlt(zone) or zone
+	return not not instances[zone]
+end
+
+function Tourist:DoesZoneHaveFlightnodes(zone)
+	zone = Tourist:GetMapNameByIDAlt(zone) or zone
+	return not not flightnodes[zone]
+end
+
+function Tourist:DoesZoneHaveComplexes(zone)
+	zone = Tourist:GetMapNameByIDAlt(zone) or zone
+	return not not zoneComplexes[zone]
+end
+
+
+local zonesInstances
+local function initZonesInstances()
+	if not zonesInstances then
+		zonesInstances = {}
+		for zone, v in pairs(lows) do
+			if types[zone] ~= "Transport" then
+				zonesInstances[zone] = true
+			end
+		end
+	end
+	initZonesInstances = nil  -- Set function to nil so initialisation is done only once (and just in time)
+end
+
+function Tourist:IterateZonesAndInstances()
+	if initZonesInstances then
+		initZonesInstances()
+	end
+	return retNormal, zonesInstances, nil
+end
+
+local function zoneIter(_, position)
+	local k = next(zonesInstances, position)
+	while k ~= nil and (types[k] == "Instance" or types[k] == "Battleground" or types[k] == "Arena" or types[k] == "Complex") do
+		k = next(zonesInstances, k)
+	end
+	return k
+end
+function Tourist:IterateZones()
+	if initZonesInstances then
+		initZonesInstances()
+	end
+	return zoneIter, nil, nil
+end
+
+local function instanceIter(_, position)
+	local k = next(zonesInstances, position)
+	while k ~= nil and (types[k] ~= "Instance" and types[k] ~= "Battleground" and types[k] ~= "Arena") do
+		k = next(zonesInstances, k)
+	end
+	return k
+end
+function Tourist:IterateInstances()
+	if initZonesInstances then
+		initZonesInstances()
+	end
+	return instanceIter, nil, nil
+end
+
+local function bgIter(_, position)
+	local k = next(zonesInstances, position)
+	while k ~= nil and types[k] ~= "Battleground" do
+		k = next(zonesInstances, k)
+	end
+	return k
+end
+function Tourist:IterateBattlegrounds()
+	if initZonesInstances then
+		initZonesInstances()
+	end
+	return bgIter, nil, nil
+end
+
+local function arIter(_, position)
+	local k = next(zonesInstances, position)
+	while k ~= nil and types[k] ~= "Arena" do
+		k = next(zonesInstances, k)
+	end
+	return k
+end
+function Tourist:IterateArenas()
+	if initZonesInstances then
+		initZonesInstances()
+	end
+	return arIter, nil, nil
+end
+
+local function compIter(_, position)
+	local k = next(zonesInstances, position)
+	while k ~= nil and types[k] ~= "Complex" do
+		k = next(zonesInstances, k)
+	end
+	return k
+end
+function Tourist:IterateComplexes()
+	if initZonesInstances then
+		initZonesInstances()
+	end
+	return compIter, nil, nil
+end
+
+local function pvpIter(_, position)
+	local k = next(zonesInstances, position)
+	while k ~= nil and types[k] ~= "PvP Zone" do
+		k = next(zonesInstances, k)
+	end
+	return k
+end
+function Tourist:IteratePvPZones()
+	if initZonesInstances then
+		initZonesInstances()
+	end
+	return pvpIter, nil, nil
+end
+
+local function allianceIter(_, position)
+	local k = next(zonesInstances, position)
+	while k ~= nil and factions[k] ~= "Alliance" do
+		k = next(zonesInstances, k)
+	end
+	return k
+end
+function Tourist:IterateAlliance()
+	if initZonesInstances then
+		initZonesInstances()
+	end
+	return allianceIter, nil, nil
+end
+
+local function hordeIter(_, position)
+	local k = next(zonesInstances, position)
+	while k ~= nil and factions[k] ~= "Horde" do
+		k = next(zonesInstances, k)
+	end
+	return k
+end
+function Tourist:IterateHorde()
+	if initZonesInstances then
+		initZonesInstances()
+	end
+	return hordeIter, nil, nil
+end
+
+if isHorde then
+	Tourist.IterateFriendly = Tourist.IterateHorde
+	Tourist.IterateHostile = Tourist.IterateAlliance
+else
+	Tourist.IterateFriendly = Tourist.IterateAlliance
+	Tourist.IterateHostile = Tourist.IterateHorde
+end
+
+local function sanctIter(_, position)
+	local k = next(zonesInstances, position)
+	while k ~= nil and factions[k] ~= "Sanctuary" do
+		k = next(zonesInstances, k)
+	end
+	return k
+end
+function Tourist:IterateSanctuaries()
+	if initZonesInstances then
+		initZonesInstances()
+	end
+	return sanctIter, nil, nil
+end
+
+local function contestedIter(_, position)
+	local k = next(zonesInstances, position)
+	while k ~= nil and factions[k] do
+		k = next(zonesInstances, k)
+	end
+	return k
+end
+function Tourist:IterateContested()
+	if initZonesInstances then
+		initZonesInstances()
+	end
+	return contestedIter, nil, nil
+end
+
+local function kalimdorIter(_, position)
+	local k = next(zonesInstances, position)
+	while k ~= nil and continents[k] ~= Kalimdor do
+		k = next(zonesInstances, k)
+	end
+	return k
+end
+function Tourist:IterateKalimdor()
+	if initZonesInstances then
+		initZonesInstances()
+	end
+	return kalimdorIter, nil, nil
+end
+
+local function easternKingdomsIter(_, position)
+	local k = next(zonesInstances, position)
+	while k ~= nil and continents[k] ~= Eastern_Kingdoms do
+		k = next(zonesInstances, k)
+	end
+	return k
+end
+function Tourist:IterateEasternKingdoms()
+	if initZonesInstances then
+		initZonesInstances()
+	end
+	return easternKingdomsIter, nil, nil
+end
+
+local function outlandIter(_, position)
+	local k = next(zonesInstances, position)
+	while k ~= nil and continents[k] ~= Outland do
+		k = next(zonesInstances, k)
+	end
+	return k
+end
+function Tourist:IterateOutland()
+	if initZonesInstances then
+		initZonesInstances()
+	end
+	return outlandIter, nil, nil
+end
+
+local function northrendIter(_, position)
+	local k = next(zonesInstances, position)
+	while k ~= nil and continents[k] ~= Northrend do
+		k = next(zonesInstances, k)
+	end
+	return k
+end
+function Tourist:IterateNorthrend()
+	if initZonesInstances then
+		initZonesInstances()
+	end
+	return northrendIter, nil, nil
+end
+
+local function theMaelstromIter(_, position)
+	local k = next(zonesInstances, position)
+	while k ~= nil and continents[k] ~= The_Maelstrom do
+		k = next(zonesInstances, k)
+	end
+	return k
+end
+function Tourist:IterateTheMaelstrom()
+	if initZonesInstances then
+		initZonesInstances()
+	end
+	return theMaelstromIter, nil, nil
+end
+
+local function pandariaIter(_, position)
+	local k = next(zonesInstances, position)
+	while k ~= nil and continents[k] ~= Pandaria do
+		k = next(zonesInstances, k)
+	end
+	return k
+end
+function Tourist:IteratePandaria()
+	if initZonesInstances then
+		initZonesInstances()
+	end
+	return pandariaIter, nil, nil
+end
+
+
+local function draenorIter(_, position)
+	local k = next(zonesInstances, position)
+	while k ~= nil and continents[k] ~= Draenor do
+		k = next(zonesInstances, k)
+	end
+	return k
+end
+function Tourist:IterateDraenor()
+	if initZonesInstances then
+		initZonesInstances()
+	end
+	return draenorIter, nil, nil
+end
+
+
+local function brokenislesIter(_, position)
+	local k = next(zonesInstances, position)
+	while k ~= nil and continents[k] ~= Broken_Isles do
+		k = next(zonesInstances, k)
+	end
+	return k
+end
+function Tourist:IterateBrokenIsles()
+	if initZonesInstances then
+		initZonesInstances()
+	end
+	return brokenislesIter, nil, nil
+end
+
+
+local function argusIter(_, position)
+	local k = next(zonesInstances, position)
+	while k ~= nil and continents[k] ~= Argus do
+		k = next(zonesInstances, k)
+	end
+	return k
+end
+function Tourist:IterateArgus()
+	if initZonesInstances then
+		initZonesInstances()
+	end
+	return argusIter, nil, nil
+end
+
+local function zandalarIter(_, position)
+	local k = next(zonesInstances, position)
+	while k ~= nil and continents[k] ~= Zandalar do
+		k = next(zonesInstances, k)
+	end
+	return k
+end
+function Tourist:IterateZandalar()
+	if initZonesInstances then
+		initZonesInstances()
+	end
+	return zandalarIter, nil, nil
+end
+
+local function kultirasIter(_, position)
+	local k = next(zonesInstances, position)
+	while k ~= nil and continents[k] ~= Kul_Tiras do
+		k = next(zonesInstances, k)
+	end
+	return k
+end
+function Tourist:IterateKulTiras()
+	if initZonesInstances then
+		initZonesInstances()
+	end
+	return kultirasIter, nil, nil
+end
+
+
+function Tourist:IterateRecommendedZones()
+	return retNormal, recZones, nil
+end
+
+function Tourist:IterateRecommendedInstances()
+	return retNormal, recInstances, nil
+end
+
+function Tourist:HasRecommendedInstances()
+	return next(recInstances) ~= nil
+end
+
+function Tourist:IsInstance(zone)
+	zone = Tourist:GetMapNameByIDAlt(zone) or zone
+	local t = types[zone]
+	return t == "Instance" or t == "Battleground" or t == "Arena"
+end
+
+function Tourist:IsZone(zone)
+	zone = Tourist:GetMapNameByIDAlt(zone) or zone
+	local t = types[zone]
+	return t and t ~= "Instance" and t ~= "Battleground" and t ~= "Transport" and t ~= "Arena" and t ~= "Complex"
+end
+
+function Tourist:IsContinent(zone)
+	zone = Tourist:GetMapNameByIDAlt(zone) or zone
+	local t = types[zone]
+	return t == "Continent"
+end
+
+function Tourist:GetComplex(zone)
+	zone = Tourist:GetMapNameByIDAlt(zone) or zone
+	return complexOfInstance[zone]
+end
+
+function Tourist:GetType(zone)
+	zone = Tourist:GetMapNameByIDAlt(zone) or zone
+	return types[zone] or "Zone"
+end
+
+function Tourist:IsZoneOrInstance(zone)
+	zone = Tourist:GetMapNameByIDAlt(zone) or zone
+	local t = types[zone]
+	return t and t ~= "Transport"
+end
+
+function Tourist:IsTransport(zone)
+	zone = Tourist:GetMapNameByIDAlt(zone) or zone
+	local t = types[zone]
+	return t == "Transport"
+end
+
+function Tourist:IsComplex(zone)
+	zone = Tourist:GetMapNameByIDAlt(zone) or zone
+	local t = types[zone]
+	return t == "Complex"
+end
+
+function Tourist:IsBattleground(zone)
+	zone = Tourist:GetMapNameByIDAlt(zone) or zone
+	local t = types[zone]
+	return t == "Battleground"
+end
+
+function Tourist:IsArena(zone)
+	zone = Tourist:GetMapNameByIDAlt(zone) or zone
+	local t = types[zone]
+	return t == "Arena"
+end
+
+function Tourist:IsPvPZone(zone)
+	zone = Tourist:GetMapNameByIDAlt(zone) or zone
+	local t = types[zone]
+	return t == "PvP Zone"
+end
+
+function Tourist:IsCity(zone)
+	zone = Tourist:GetMapNameByIDAlt(zone) or zone
+	local t = types[zone]
+	return t == "City"
+end
+
+function Tourist:IsAlliance(zone)
+	zone = Tourist:GetMapNameByIDAlt(zone) or zone
+	return factions[zone] == "Alliance"
+end
+
+function Tourist:IsHorde(zone)
+	zone = Tourist:GetMapNameByIDAlt(zone) or zone
+	return factions[zone] == "Horde"
+end
+
+if isHorde then
+	Tourist.IsFriendly = Tourist.IsHorde
+	Tourist.IsHostile = Tourist.IsAlliance
+else
+	Tourist.IsFriendly = Tourist.IsAlliance
+	Tourist.IsHostile = Tourist.IsHorde
+end
+
+function Tourist:IsSanctuary(zone)
+	zone = Tourist:GetMapNameByIDAlt(zone) or zone
+	return factions[zone] == "Sanctuary"
+end
+
+function Tourist:IsContested(zone)
+	zone = Tourist:GetMapNameByIDAlt(zone) or zone
+	return not factions[zone]
+end
+
+function Tourist:GetContinent(zone)
+	zone = Tourist:GetMapNameByIDAlt(zone) or zone
+	return BZ[continents[zone]] or UNKNOWN
+end
+
+function Tourist:IsInKalimdor(zone)
+	zone = Tourist:GetMapNameByIDAlt(zone) or zone
+	return continents[zone] == Kalimdor
+end
+
+function Tourist:IsInEasternKingdoms(zone)
+	zone = Tourist:GetMapNameByIDAlt(zone) or zone
+	return continents[zone] == Eastern_Kingdoms
+end
+
+function Tourist:IsInOutland(zone)
+	zone = Tourist:GetMapNameByIDAlt(zone) or zone
+	return continents[zone] == Outland
+end
+
+function Tourist:IsInNorthrend(zone)
+	zone = Tourist:GetMapNameByIDAlt(zone) or zone
+	return continents[zone] == Northrend
+end
+
+function Tourist:IsInTheMaelstrom(zone)
+	zone = Tourist:GetMapNameByIDAlt(zone) or zone
+	return continents[zone] == The_Maelstrom
+end
+
+function Tourist:IsInPandaria(zone)
+	zone = Tourist:GetMapNameByIDAlt(zone) or zone
+	return continents[zone] == Pandaria
+end
+
+function Tourist:IsInDraenor(zone)
+	zone = Tourist:GetMapNameByIDAlt(zone) or zone
+	return continents[zone] == Draenor
+end
+
+function Tourist:IsInBrokenIsles(zone)
+	zone = Tourist:GetMapNameByIDAlt(zone) or zone
+	return continents[zone] == Broken_Isles
+end
+
+function Tourist:IsInArgus(zone)
+	zone = Tourist:GetMapNameByIDAlt(zone) or zone
+	return continents[zone] == Argus
+end
+
+function Tourist:IsInZandalar(zone)
+	zone = Tourist:GetMapNameByIDAlt(zone) or zone
+	return continents[zone] == Zandalar
+end
+
+function Tourist:IsInKulTiras(zone)
+	zone = Tourist:GetMapNameByIDAlt(zone) or zone
+	return continents[zone] == Kul_Tiras
+end
+
+function Tourist:GetInstanceGroupSize(instance)
+	instance = Tourist:GetMapNameByIDAlt(instance) or instance
+	return groupSizes[instance] or groupMaxSizes[instance] or 0
+end
+
+function Tourist:GetInstanceGroupMinSize(instance)
+	instance = Tourist:GetMapNameByIDAlt(instance) or instance
+	return groupMinSizes[instance] or groupSizes[instance] or 0
+end
+
+function Tourist:GetInstanceGroupMaxSize(instance)
+	instance = Tourist:GetMapNameByIDAlt(instance) or instance
+	return groupMaxSizes[instance] or groupSizes[instance] or 0
+end
+
+function Tourist:GetInstanceGroupSizeString(instance, includeAltSize)
+	instance = Tourist:GetMapNameByIDAlt(instance) or instance
+	local retValue
+	if groupSizes[instance] then
+		-- Fixed size
+		retValue = tostring(groupSizes[instance])
+	elseif groupMinSizes[instance] and groupMaxSizes[instance] then
+		-- Variable size
+		if groupMinSizes[instance] == groupMaxSizes[instance] then
+			-- ...but equal
+			retValue = tostring(groupMinSizes[instance])
+		else
+			retValue = tostring(groupMinSizes[instance]).."-"..tostring(groupMaxSizes[instance])
+		end
+	else
+		-- No size known
+		return ""
+	end
+	if includeAltSize and groupAltSizes[instance] then
+		-- Add second size
+		retValue = retValue.." or "..tostring(groupAltSizes[instance])
+	end
+	return retValue
+end
+
+function Tourist:GetInstanceAltGroupSize(instance)
+	instance = Tourist:GetMapNameByIDAlt(instance) or instance
+	return groupAltSizes[instance] or 0
+end
+
+function Tourist:GetTexture(zone)
+	zone = Tourist:GetMapNameByIDAlt(zone) or zone
+	return textures[zone]
+end
+
+function Tourist:GetZoneMapID(zone)
+	return zoneMapIDs[zone]
+end
+
+function Tourist:GetEntrancePortalLocation(instance)
+	instance = Tourist:GetMapNameByIDAlt(instance) or instance
+	local x, y = entrancePortals_x[instance], entrancePortals_y[instance]
+	if x then x = x/100 end
+	if y then y = y/100 end
+	return entrancePortals_zone[instance], x, y
+end
+
+local inf = math.huge
+local stack = setmetatable({}, {__mode='k'})
+local function iterator(S)
+	local position = S['#'] - 1
+	S['#'] = position
+	local x = S[position]
+	if not x then
+		for k in pairs(S) do
+			S[k] = nil
+		end
+		stack[S] = true
+		return nil
+	end
+	return x
+end
+
+setmetatable(cost, {
+	__index = function(self, vertex)
+		local price = 1
+
+		if lows[vertex] > playerLevel then
+			price = price * (1 + math.ceil((lows[vertex] - playerLevel) / 6))
+		end
+
+		if factions[vertex] == (isHorde and "Horde" or "Alliance") then
+			price = price / 2
+		elseif factions[vertex] == (isHorde and "Alliance" or "Horde") then
+			if types[vertex] == "City" then
+				price = price * 10
+			else
+				price = price * 3
+			end
+		end
+
+		if types[x] == "Transport" then
+			price = price * 2
+		end
+
+		self[vertex] = price
+		return price
+	end
+})
+
+-- This function tries to calculate the most optimal path between alpha and bravo 
+-- by foot or ground mount, that is, without using a flying mount or a taxi service. 
+-- The return value is an iteration that gives a travel advice in the form of a list 
+-- of zones and transports to follow in order to get from alpha to bravo. 
+-- The function tries to avoid hostile zones by calculating a "price" for each possible 
+-- route. The price calculation takes zone level, faction and type into account.
+-- See metatable above for the 'pricing' mechanism.
+function Tourist:IteratePath(alpha, bravo)
+	alpha = Tourist:GetMapNameByIDAlt(alpha) or alpha
+	bravo = Tourist:GetMapNameByIDAlt(bravo) or bravo
+
+	if paths[alpha] == nil or paths[bravo] == nil then
+		return retNil
+	end
+
+	local d = next(stack) or {}
+	stack[d] = nil
+	local Q = next(stack) or {}
+	stack[Q] = nil
+	local S = next(stack) or {}
+	stack[S] = nil
+	local pi = next(stack) or {}
+	stack[pi] = nil
+
+	for vertex, v in pairs(paths) do
+		d[vertex] = inf
+		Q[vertex] = v
+	end
+	d[alpha] = 0
+
+	while next(Q) do
+		local u
+		local min = inf
+		for z in pairs(Q) do
+			local value = d[z]
+			if value < min then
+				min = value
+				u = z
+			end
+		end
+		if min == inf then
+			return retNil
+		end
+		Q[u] = nil
+		if u == bravo then
+			break
+		end
+
+		local adj = paths[u]
+		if type(adj) == "table" then
+			local d_u = d[u]
+			for v in pairs(adj) do
+				local c = d_u + cost[v]
+				if d[v] > c then
+					d[v] = c
+					pi[v] = u
+				end
+			end
+		elseif adj ~= false then
+			local c = d[u] + cost[adj]
+			if d[adj] > c then
+				d[adj] = c
+				pi[adj] = u
+			end
+		end
+	end
+
+	local i = 1
+	local last = bravo
+	while last do
+		S[i] = last
+		i = i + 1
+		last = pi[last]
+	end
+
+	for k in pairs(pi) do
+		pi[k] = nil
+	end
+	for k in pairs(Q) do
+		Q[k] = nil
+	end
+	for k in pairs(d) do
+		d[k] = nil
+	end
+	stack[pi] = true
+	stack[Q] = true
+	stack[d] = true
+
+	S['#'] = i
+
+	return iterator, S
+end
+
+
+local function retIsZone(t, key)
+	while true do
+		key = next(t, key)
+		if not key then
+			return nil
+		end
+		if Tourist:IsZone(key) then
+			return key
+		end
+	end
+end
+
+-- This returns an iteration of zone connections (paths).
+-- The second parameter determines whether other connections like transports and portals should be included
+function Tourist:IterateBorderZones(zone, zonesOnly)
+	zone = Tourist:GetMapNameByIDAlt(zone) or zone
+	local path = paths[zone]
+	
+	if not path then
+		return retNil
+	elseif type(path) == "table" then
+		return zonesOnly and retIsZone or retNormal, path
+	else
+		if zonesOnly and not Tourist:IsZone(path) then
+			return retNil
+		end
+		return retOne, path
+	end
 end
 
 
@@ -4187,6 +4416,9 @@ do
 			[transports["STORMWIND_TIRAGARDESOUND_PORTAL"]] = true,
 			[transports["STORMWIND_STORMSHIELD_PORTAL"]] = true,
 		},
+		flightnodes = {
+			[2] = true,      -- Stormwind, Elwynn (A)
+		},
 		faction = "Alliance",
 		type = "City",
 		fishing_min = 75,
@@ -4201,6 +4433,9 @@ do
 			[BZ["Tirisfal Glades"]] = true,
 			[transports["SILVERMOON_UNDERCITY_TELEPORT"]] = true,
 			[transports["UNDERCITY_HELLFIRE_PORTAL"]] = true,
+		},
+		flightnodes = {
+			[11] = true,     -- Undercity, Tirisfal (H)
 		},
 		faction = "Horde",
 		type = "City",
@@ -4218,6 +4453,9 @@ do
 			[transports["IRONFORGE_HELLFIRE_PORTAL"]] = true,
 			[transports["IRONFORGE_TIRAGARDESOUND_PORTAL"]] = true,
 		},
+		flightnodes = {
+			[6] = true,      -- Ironforge, Dun Morogh (A)
+		},
 		faction = "Alliance",
 		type = "City",
 		fishing_min = 75,
@@ -4232,6 +4470,9 @@ do
 			[transports["SILVERMOON_UNDERCITY_TELEPORT"]] = true,
 			[transports["SILVERMOON_HELLFIRE_PORTAL"]] = true,
 			[transports["SILVERMOON_ZULDAZAR_PORTAL"]] = true,
+		},
+		flightnodes = {
+			[82] = true,    -- Silvermoon City (H)
 		},
 		faction = "Horde",
 		type = "City",
@@ -4308,6 +4549,11 @@ do
 			[BZ["Coldridge Valley"]] = true,
 			[BZ["New Tinkertown"]] = true,
 		},
+		flightnodes = {
+			[620] = true,    -- Gol'Bolar Quarry, Dun Morogh (A)
+			[619] = true,    -- Kharanos, Dun Morogh (A)
+			[6] = true,      -- Ironforge, Dun Morogh (A)
+		},
 		faction = "Alliance",
 		fishing_min = 25,
 		battlepet_low = 1,
@@ -4327,6 +4573,11 @@ do
 			[BZ["Burning Steppes"]] = true,
 			[transports["ELWYNNFOREST_DARKMOON_PORTAL"]] = true,
 		},
+		flightnodes = {
+			[2] = true,      -- Stormwind, Elwynn (A)
+			[582] = true,    -- Goldshire, Elwynn (A)
+			[589] = true,    -- Eastvale Logging Camp, Elwynn (A)
+		},
 		faction = "Alliance",
 		fishing_min = 25,
 		battlepet_low = 1,
@@ -4341,6 +4592,11 @@ do
 			[BZ["Silvermoon City"]] = true,
 			[BZ["Ghostlands"]] = true,
 			[BZ["Sunstrider Isle"]] = true,
+		},
+		flightnodes = {
+			[82] = true,     -- Silvermoon City (H)
+			[631] = true,    -- Falconwing Square, Eversong Woods (H)
+			[625] = true,    -- Fairbreeze Village, Eversong Woods (H)
 		},
 		faction = "Horde",
 		fishing_min = 25,
@@ -4375,6 +4631,9 @@ do
 			[BZ["Silverpine Forest"]] = true,
 			[BZ["Ruins of Gilneas City"]] = true,
 		},
+		flightnodes = {
+			[646] = true,    -- Forsaken Forward Command, Gilneas (H)
+		},
 		fishing_min = 75,
 	}
 
@@ -4406,6 +4665,11 @@ do
 			[BZ["Silverpine Forest"]] = true,
 			[BZ["Deathknell"]] = true,
 		},
+		flightnodes = {
+			[11] = true,     -- Undercity, Tirisfal (H)
+			[384] = true,    -- The Bulwark, Tirisfal (H)
+			[460] = true,    -- Brill, Tirisfal Glades (H)
+		},
 --		complexes = {
 --			[BZ["Scarlet Monastery"]] = true,   -- Duplicate name with instance (thanks, Blizz)
 --		},
@@ -4425,6 +4689,11 @@ do
 			[BZ["Elwynn Forest"]] = true,
 			[BZ["The Deadmines"]] = true,
 		},
+		flightnodes = {
+			[584] = true,    -- Furlbrow's Pumpkin Farm, Westfall (A)
+			[583] = true,    -- Moonbrook, Westfall (A)
+			[4] = true,      -- Sentinel Hill, Westfall (A)
+		},
 		faction = "Alliance",
 		fishing_min = 75,
 		battlepet_low = 3,
@@ -4441,6 +4710,10 @@ do
 			[BZ["Zul'Aman"]] = true,
 			[BZ["Eversong Woods"]] = true,
 		},
+		flightnodes = {
+			[83] = true,     -- Tranquillien, Ghostlands (H)
+			[205] = true,    -- Zul'Aman, Ghostlands (N)
+		},
 		faction = "Horde",
 		fishing_min = 75,
 		battlepet_low = 3,
@@ -4456,6 +4729,10 @@ do
 			[BZ["Badlands"]] = true,
 			[BZ["Dun Morogh"]] = true,
 			[BZ["Searing Gorge"]] = not isHorde and true or nil,
+		},
+		flightnodes = {
+			[555] = true,    -- Farstrider Lodge, Loch Modan (A)
+			[8] = true,     -- Thelsamar, Loch Modan (A)
 		},
 		faction = "Alliance",
 		fishing_min = 75,
@@ -4474,6 +4751,12 @@ do
 			[BZ["Shadowfang Keep"]] = true,
 			[BZ["Ruins of Gilneas"]] = true,
 		},
+		flightnodes = {
+			[654] = true,    -- The Forsaken Front, Silverpine Forest (H)
+			[10] = true,     -- The Sepulcher, Silverpine Forest (H)
+			[645] = true,    -- Forsaken High Command, Silverpine Forest (H)
+			[681] = true,    -- Forsaken Rear Guard, Silverpine Forest (H)
+		},
 		faction = "Horde",
 		fishing_min = 75,
 		battlepet_low = 3,
@@ -4490,6 +4773,11 @@ do
 			[BZ["Duskwood"]] = true,
 			[BZ["Swamp of Sorrows"]] = true,
 		},
+		flightnodes = {
+			[596] = true,    -- Shalewind Canyon, Redridge (A)
+			[615] = true,    -- Camp Everstill, Redridge (A)
+			[5] = true,      -- Lakeshire, Redridge (A)
+		},
 		fishing_min = 75,
 		battlepet_low = 4,
 		battlepet_high = 6,
@@ -4505,6 +4793,10 @@ do
 			[BZ["Westfall"]] = true,
 			[BZ["Deadwind Pass"]] = true,
 			[BZ["Elwynn Forest"]] = true,
+		},
+		flightnodes = {
+			[622] = true,    -- Raven Hill, Duskwood (A)
+			[12] = true,     -- Darkshire, Duskwood (A)
 		},
 		fishing_min = 150,
 		battlepet_low = 5,
@@ -4523,6 +4815,13 @@ do
 			[BZ["Silverpine Forest"]] = true,
 			[BZ["Western Plaguelands"]] = true,
 		},
+		flightnodes = {
+			[670] = true,    -- Strahnbrad, Alterac Mountains (H)
+			[13] = true,     -- Tarren Mill, Hillsbrad (H)
+			[667] = true,    -- Ruins of Southshore, Hillsbrad (H)
+			[669] = true,    -- Eastpoint Tower, Hillsbrad (H)
+			[668] = true,    -- Southpoint Gate, Hillsbrad (H)
+		},
 		faction = "Horde",
 		fishing_min = 150,
 		battlepet_low = 6,
@@ -4540,6 +4839,13 @@ do
 			[BZ["Dun Morogh"]] = true,
 			[BZ["Loch Modan"]] = true,
 		},
+		flightnodes = {
+			[551] = true,    -- Whelgar's Retreat, Wetlands (A)
+			[553] = true,    -- Dun Modr, Wetlands (A)
+			[552] = true,    -- Greenwarden's Grove, Wetlands (A)
+			[554] = true,    -- Slabchisel's Survey, Wetlands (A)
+			[7] = true,      -- Menethil Harbor, Wetlands (A)
+		},
 		fishing_min = 150,
 		battlepet_low = 6,
 		battlepet_high = 7,
@@ -4555,6 +4861,11 @@ do
 			[BZ["Hillsbrad Foothills"]] = true,
 			[BZ["Arathi Basin"]] = true,
 			[BZ["The Hinterlands"]] = true,
+		},
+		flightnodes = {
+			[601] = true,    -- Galen's Fall, Arathi (H)
+			[17] = true,     -- Hammerfall, Arathi (H)
+			[16] = true,     -- Refuge Pointe, Arathi (A)
 		},
 		fishing_min = 150,
 		battlepet_low = 7,
@@ -4573,6 +4884,16 @@ do
 			[transports["UNDERCITY_GROMGOL_PORTAL"]] = true,
 			[transports["BOOTYBAY_RATCHET_BOAT"]] = true,
 		},
+		flightnodes = {
+			[593] = true,    -- Bambala, Stranglethorn (H)
+			[18] = true,     -- Booty Bay, Stranglethorn (H)
+			[19] = true,     -- Booty Bay, Stranglethorn (A)
+			[590] = true,    -- Fort Livingston, Stranglethorn (A)
+			[592] = true,    -- Hardwrench Hideaway, Stranglethorn (H)
+			[195] = true,    -- Rebel Camp, Stranglethorn Vale (A)
+			[591] = true,    -- Explorers' League Digsite, Stranglethorn (A)
+			[20] = true,     -- Grom'gol, Stranglethorn (H)
+		},
 		fishing_min = 150,
 		battlepet_low = 7,
 		battlepet_high = 10,
@@ -4590,6 +4911,12 @@ do
 			[transports["ORGRIMMAR_GROMGOL_ZEPPELIN"]] = true,
 			[transports["UNDERCITY_GROMGOL_PORTAL"]] = true,
 		},
+		flightnodes = {
+			[593] = true,    -- Bambala, Stranglethorn (H)
+			[590] = true,    -- Fort Livingston, Stranglethorn (A)
+			[195] = true,    -- Rebel Camp, Stranglethorn Vale (A)
+			[20] = true,     -- Grom'gol, Stranglethorn (H)
+		},
 		fishing_min = 150,
 		battlepet_low = 7,
 		battlepet_high = 9,
@@ -4602,6 +4929,12 @@ do
 		paths = {
 			[transports["BOOTYBAY_RATCHET_BOAT"]] = true,
 			["Northern Stranglethorn"] = true,
+		},
+		flightnodes = {
+			[18] = true,     -- Booty Bay, Stranglethorn (H)
+			[19] = true,     -- Booty Bay, Stranglethorn (A)
+			[592] = true,    -- Hardwrench Hideaway, Stranglethorn (H)
+			[591] = true,    -- Explorers' League Digsite, Stranglethorn (A)
 		},
 		fishing_min = 225,
 		battlepet_low = 9,
@@ -4616,6 +4949,12 @@ do
 			[BZ["Hillsbrad Foothills"]] = true,
 			[BZ["Western Plaguelands"]] = true,
 			[BZ["Arathi Highlands"]] = true,
+		},
+		flightnodes = {
+			[617] = true,    -- Hiri'watha Research Station, The Hinterlands (H)
+			[43] = true,     -- Aerie Peak, The Hinterlands (A)
+			[618] = true,    -- Stormfeather Outpost, The Hinterlands (A)
+			[76] = true,     -- Revantusk Village, The Hinterlands (H)
 		},
 		fishing_min = 225,
 		battlepet_low = 11,
@@ -4634,6 +4973,13 @@ do
 			[BZ["Scholomance"]] = true,
 			[BZ["Hillsbrad Foothills"]] = true,
 		},
+		flightnodes = {
+			[649] = true,    -- Andorhal, Western Plaguelands (H)
+			[651] = true,    -- The Menders' Stead, Western Plaguelands (N)
+			[650] = true,    -- Andorhal, Western Plaguelands (A)
+			[66] = true,     -- Chillwind Camp, Western Plaguelands (A)
+			[672] = true,    -- Hearthglen, Western Plaguelands (N)
+		},
 		fishing_min = 225,
 		battlepet_low = 10,
 		battlepet_high = 11,
@@ -4648,6 +4994,18 @@ do
 			[BZ["Western Plaguelands"]] = true,
 			[BZ["Stratholme"]] = true,
 			[BZ["Ghostlands"]] = true,
+		},
+		flightnodes = {
+			[383] = true,     -- Thondroril River, Eastern Plaguelands (N)
+			[1862] = true,    -- Acherus: The Ebon Hold (N)
+			[67] = true,      -- Light's Hope Chapel, Eastern Plaguelands (A)
+			[86] = true,      -- Eastwall Tower, Eastern Plaguelands (N)
+			[68] = true,      -- Light's Hope Chapel, Eastern Plaguelands (H)
+			[630] = true,     -- Light's Shield Tower, Eastern Plaguelands (N)
+			[85] = true,      -- Northpass Tower, Eastern Plaguelands (N)
+			[87] = true,      -- Crown Guard Tower, Eastern Plaguelands (N)
+			[84] = true,      -- Plaguewood Tower, Eastern Plaguelands (N)
+			[315] = true,     -- Acherus: The Ebon Hold (N)
 		},
 		type = "PvP Zone",
 		fishing_min = 300,
@@ -4664,6 +5022,13 @@ do
 			[BZ["Uldaman"]] = true,
 			[BZ["Searing Gorge"]] = true,
 			[BZ["Loch Modan"]] = true,
+		},
+		flightnodes = {
+			[635] = true,    -- Fuselight, Badlands (N)
+			[632] = true,    -- Bloodwatcher Point, Badlands (H)
+			[634] = true,    -- Dragon's Mouth, Badlands (A)
+			[633] = true,    -- Dustwind Dig, Badlands (A)
+			[21] = true,     -- New Kargath, Badlands (H)
 		},
 		fishing_min = 300,
 		battlepet_low = 13,
@@ -4687,6 +5052,11 @@ do
 			[BZ["Blackrock Mountain"]] = true,
 			[BZ["Badlands"]] = true,
 			[BZ["Loch Modan"]] = not isHorde and true or nil,
+		},
+		flightnodes = {
+			[673] = true,    -- Iron Summit, Searing Gorge (N)
+			[75] = true,     -- Thorium Point, Searing Gorge (H)
+			[74] = true,     -- Thorium Point, Searing Gorge (A)
 		},
 		complexes = {
 			[BZ["Blackrock Mountain"]] = true,
@@ -4714,6 +5084,12 @@ do
 			[BZ["Redridge Mountains"]] = true,
 			[BZ["Elwynn Forest"]] = true,
 		},
+		flightnodes = {
+			[70] = true,     -- Flame Crest, Burning Steppes (H)
+			[676] = true,    -- Chiselgrip, Burning Steppes (N)
+			[675] = true,    -- Flamestar Post, Burning Steppes (N)
+			[71] = true,     -- Morgan's Vigil, Burning Steppes (A)
+		},
 		complexes = {
 			[BZ["Blackrock Mountain"]] = true,
 		},
@@ -4733,6 +5109,12 @@ do
 			[BZ["The Temple of Atal'Hakkar"]] = true,
 			[BZ["Redridge Mountains"]] = true,
 		},
+		flightnodes = {
+			[599] = true,    -- Bogpaddle, Swamp of Sorrows (N)
+			[598] = true,    -- Marshtide Watch, Swamp of Sorrows (A)
+			[600] = true,    -- The Harborage, Swamp of Sorrows (A)
+			[56] = true,     -- Stonard, Swamp of Sorrows (H)
+		},
 		fishing_min = 425,
 		battlepet_low = 14,
 		battlepet_high = 15,
@@ -4745,6 +5127,12 @@ do
 		paths = {
 			[BZ["The Dark Portal"]] = true,
 			[BZ["Swamp of Sorrows"]] = true,
+		},
+		flightnodes = {
+			[602] = true,    -- Surwich, Blasted Lands (A)
+			[603] = true,    -- Sunveil Excursion, Blasted Lands (H)
+			[604] = true,    -- Dreadmaul Hold, Blasted Lands (H)
+			[45] = true,     -- Nethergarde Keep, Blasted Lands (A)
 		},
 		fishing_min = 425,
 		battlepet_low = 16,
@@ -4785,6 +5173,9 @@ do
 			[BZ["Magisters' Terrace"]] = true,
 			[BZ["Sunwell Plateau"]] = true,
 		},
+		flightnodes = {
+			[213] = true,    -- Shattered Sun Staging Area (N)
+		},
 		instances = {
 			[BZ["Magisters' Terrace"]] = true,
 			[BZ["Sunwell Plateau"]] = true,
@@ -4801,6 +5192,22 @@ do
 		instances = {
 			[BZ["Throne of the Tides"]] = true,
 		},
+		flightnodes = {
+			[522] = true,    -- Silver Tide Hollow, Vashj'ir (N) S seahorse
+			[524] = true,    -- Darkbreak Cove, Vashj'ir (A) A seahorse
+			[526] = true,    -- Tenebrous Cavern, Vashj'ir (H) A seahorse
+			[605] = true,    -- Voldrin's Hold, Vashj'ir (A) S seahorse
+			[611] = true,    -- Voldrin's Hold, Vashj'ir (A) S
+			[606] = true,    -- Sandy Beach, Vashj'ir (A) S 
+			[607] = true,    -- Sandy Beach, Vashj'ir (A) S seahorse
+			[608] = true,    -- Sandy Beach, Vashj'ir (H) S 
+			[609] = true,    -- Sandy Beach, Vashj'ir (H) S seahorse
+			[610] = true,    -- Stygian Bounty, Vashj'ir (H) S 
+			[612] = true,    -- Stygian Bounty, Vashj'ir (H) S seahorse
+			[521] = true,    -- Smuggler's Scar, Vashj'ir (N) K seahorse
+			[523] = true,    -- Tranquil Wash, Vashj'ir (A) S seahorse
+			[525] = true,    -- Legion's Rest, Vashj'ir (H) S seahorse
+		},
 		fishing_min = 575,
 		battlepet_low = 22,
 		battlepet_high = 23,
@@ -4812,6 +5219,9 @@ do
 		continent = Eastern_Kingdoms,
 		paths = {
 			[BZ["Shimmering Expanse"]] = true,
+		},
+		flightnodes = {
+			[521] = true,    -- Smuggler's Scar, Vashj'ir (N) seahorse
 		},
 		fishing_min = 575,
 		battlepet_low = 22,
@@ -4825,6 +5235,19 @@ do
 		paths = {
 			[BZ["Kelp'thar Forest"]] = true,
 			[BZ["Abyssal Depths"]] = true,
+		},
+		flightnodes = {
+			[522] = true,    -- Silver Tide Hollow, Vashj'ir (N) seahorse
+			[605] = true,    -- Voldrin's Hold, Vashj'ir (A) seahorse
+			[611] = true,    -- Voldrin's Hold, Vashj'ir (A) 
+			[606] = true,    -- Sandy Beach, Vashj'ir (A)  
+			[607] = true,    -- Sandy Beach, Vashj'ir (A) seahorse
+			[608] = true,    -- Sandy Beach, Vashj'ir (H)  
+			[609] = true,    -- Sandy Beach, Vashj'ir (H) seahorse
+			[610] = true,    -- Stygian Bounty, Vashj'ir (H)  
+			[612] = true,    -- Stygian Bounty, Vashj'ir (H) seahorse
+			[523] = true,    -- Tranquil Wash, Vashj'ir (A) seahorse
+			[525] = true,    -- Legion's Rest, Vashj'ir (H) seahorse
 		},
 		fishing_min = 575,
 		battlepet_low = 22,
@@ -4841,6 +5264,10 @@ do
 		paths = {
 			[BZ["Shimmering Expanse"]] = true,
 			[BZ["Throne of the Tides"]] = true,
+		},
+		flightnodes = {
+			[524] = true,    -- Darkbreak Cove, Vashj'ir (A) seahorse
+			[526] = true,    -- Tenebrous Cavern, Vashj'ir (H) seahorse
 		},
 		fishing_min = 575,
 		battlepet_low = 22,
@@ -4862,6 +5289,19 @@ do
 			[BZ["Twin Peaks"]] = true,
 			[transports["TWILIGHTHIGHLANDS_STORMWIND_PORTAL"]] = true,
 			[transports["TWILIGHTHIGHLANDS_ORGRIMMAR_PORTAL"]] = true,
+		},
+		flightnodes = {
+			[657] = true,    -- The Gullet, Twilight Highlands (H)
+			[659] = true,    -- Bloodgulch, Twilight Highlands (H)
+			[661] = true,    -- Dragonmaw Port, Twilight Highlands (H)
+			[663] = true,    -- Victor's Point, Twilight Highlands (A)
+			[665] = true,    -- Thundermar, Twilight Highlands (A)
+			[656] = true,    -- Crushblow, Twilight Highlands (H)
+			[658] = true,    -- Vermillion Redoubt, Twilight Highlands (N)
+			[660] = true,    -- The Krazzworks, Twilight Highlands (H)
+			[662] = true,    -- Highbank, Twilight Highlands (A)
+			[664] = true,    -- Firebeard's Patrol, Twilight Highlands (A)
+			[666] = true,    -- Kirthaven, Twilight Highlands (A)
 		},
 		fishing_min = 650,
 		battlepet_low = 23,
@@ -4930,6 +5370,9 @@ do
 			[transports["ORGRIMMAR_ZULDAZAR_PORTAL"]] = true,
 			[transports["ORGRIMMAR_WARSPEAR_PORTAL"]] = true,
 		},
+		flightnodes = {
+			[23] = true,     -- Orgrimmar, Durotar (H)
+		},
 		faction = "Horde",
 		type = "City",
 		fishing_min = 75,
@@ -4944,6 +5387,9 @@ do
 			[transports["ORGRIMMAR_THUNDERBLUFF_ZEPPELIN"]] = true,
 			[transports["THUNDERBLUFF_HELLFIRE_PORTAL"]] = true,
 			[transports["THUNDERBLUFF_ZULDAZAR_PORTAL"]] = true,
+		},
+		flightnodes = {
+			[22] = true,     -- Thunder Bluff, Mulgore (H)
 		},
 		faction = "Horde",
 		type = "City",
@@ -4960,6 +5406,9 @@ do
 			[transports["EXODAR_DARNASSUS_PORTAL"]] = true,
 			[transports["EXODAR_TIRAGARDESOUND_PORTAL"]] = true,
 		},
+		flightnodes = {
+			[94] = true,    -- The Exodar (A)
+		},
 		faction = "Alliance",
 		type = "City",
 		battlepet_low = 1,
@@ -4972,6 +5421,9 @@ do
 			[BZ["Teldrassil"]] = true,
 			[transports["DARNASSUS_HELLFIRE_PORTAL"]] = true,
 			[transports["DARNASSUS_EXODAR_PORTAL"]] = true,
+		},
+		flightnodes = {
+			[457] = true,    -- Darnassus, Teldrassil (A)
 		},
 		faction = "Alliance",
 		type = "City",
@@ -5049,6 +5501,10 @@ do
 			[BZ["Bloodmyst Isle"]] = true,
 			[transports["TELDRASSIL_AZUREMYST_PORTAL"]] = true,
 		},
+		flightnodes = {
+			[94] = true,     -- The Exodar (A)
+			[624] = true,    -- Azure Watch, Azuremyst Isle (A)
+		},
 		faction = "Alliance",
 		fishing_min = 25,
 		battlepet_low = 1,
@@ -5066,6 +5522,11 @@ do
 			[BZ["Valley of Trials"]] = true,
 			[BZ["Echo Isles"]] = true,
 		},
+		flightnodes = {
+			[536] = true,    -- Sen'jin Village, Durotar (H)
+			[537] = true,    -- Razor Hill, Durotar (H)
+			[23] = true,     -- Orgrimmar, Durotar (H)
+		},
 		faction = "Horde",
 		fishing_min = 25,
 		battlepet_low = 1,
@@ -5080,6 +5541,10 @@ do
 			[BZ["Thunder Bluff"]] = true,
 			[BZ["Southern Barrens"]] = true,
 			[transports["MULGORE_DARKMOON_PORTAL"]] = true,
+		},
+		flightnodes = {
+			[402] = true,    -- Bloodhoof Village, Mulgore (H)
+			[22] = true,     -- Thunder Bluff, Mulgore (H)
 		},
 		faction = "Horde",
 		fishing_min = 25,
@@ -5097,6 +5562,11 @@ do
 			[transports["TELDRASSIL_AZUREMYST_PORTAL"]] = true,
 			[transports["STORMWIND_TELDRASSIL_PORTAL"]] = true,
 		},
+		flightnodes = {
+			[27] = true,     -- Rut'theran Village, Teldrassil (A)
+			[456] = true,    -- Dolanaar, Teldrassil (A)
+			[457] = true,    -- Darnassus, Teldrassil (A)
+		},
 		faction = "Alliance",
 		fishing_min = 25,
 		battlepet_low = 1,
@@ -5107,8 +5577,16 @@ do
 		low = 10,
 		high = 60,
 		continent = Kalimdor,
-		paths = BZ["Ashenvale"],
-		paths = BZ["Orgrimmar"],
+		paths = {
+			[BZ["Ashenvale"]] = true,
+			[BZ["Orgrimmar"]] = true,
+		},
+		flightnodes = {
+			[683] = true,    -- Valormok, Azshara (H)
+			[613] = true,    -- Southern Rocketway, Azshara (H)
+			[44] = true,     -- Bilgewater Harbor, Azshara (H)
+			[614] = true,    -- Northern Rocketway, Azshara (H)
+		},
 		fishing_min = 75,
 		faction = "Horde",
 		battlepet_low = 3,
@@ -5120,6 +5598,9 @@ do
 		high = 60,
 		continent = Kalimdor,
 		paths = BZ["Azuremyst Isle"],
+		flightnodes = {
+			[93] = true,    -- Blood Watch, Bloodmyst Isle (A)
+		},
 		faction = "Alliance",
 		fishing_min = 75,
 		battlepet_low = 3,
@@ -5132,6 +5613,10 @@ do
 		continent = Kalimdor,
 		paths = {
 			[BZ["Ashenvale"]] = true,
+		},
+		flightnodes = {
+			[339] = true,    -- Grove of the Ancients, Darkshore (A)
+			[26] = true,     -- Lor'danel, Darkshore (A)
 		},
 		faction = "Alliance",
 		fishing_min = 75,
@@ -5156,6 +5641,11 @@ do
 			[BZ["Warsong Gulch"]] = isHorde and true or nil,
 			[BZ["Stonetalon Mountains"]] = true,
 		},
+		flightnodes = {
+			[458] = true,   -- Nozzlepot's Outpost, Northern Barrens (H)
+			[80] = true,    -- Ratchet, Northern Barrens (N)
+			[25] = true,    -- The Crossroads, Northern Barrens (H)
+		},
 		faction = "Horde",
 		fishing_min = 75,
 		battlepet_low = 3,
@@ -5179,6 +5669,17 @@ do
 			[BZ["Darkshore"]] = true,
 			[BZ["Stonetalon Mountains"]] = true,
 		},
+		flightnodes = {
+			[61] = true,     -- Splintertree Post, Ashenvale (H)
+			[351] = true,    -- Stardust Spire, Ashenvale (A)
+			[338] = true,    -- Blackfathom Camp, Ashenvale (A)
+			[28] = true,     -- Astranaar, Ashenvale (A)
+			[356] = true,    -- Silverwind Refuge, Ashenvale (H)
+			[58] = true,     -- Zoram'gar Outpost, Ashenvale (H)
+			[167] = true,    -- Forest Song, Ashenvale (A)
+			[354] = true,    -- The Mor'Shan Ramparts, Ashenvale (H)
+			[350] = true,    -- Hellscream's Watch, Ashenvale (H)
+		},
 		fishing_min = 150,
 		battlepet_low = 4,
 		battlepet_high = 6,
@@ -5194,6 +5695,18 @@ do
 			[BZ["Southern Barrens"]] = true,
 			[BZ["Ashenvale"]] = true,
 		},
+		flightnodes = {
+			[365] = true,    -- Farwatcher's Glen, Stonetalon Mountains (A)
+			[33] = true,     -- Thal'darah Overlook, Stonetalon Mountains (A)
+			[541] = true,    -- Mirkfallon Post, Stonetalon Mountains (A)
+			[29] = true,     -- Sun Rock Retreat, Stonetalon Mountains (H)
+			[360] = true,    -- Cliffwalker Post, Stonetalon Mountains (H)
+			[540] = true,    -- The Sludgewerks, Stonetalon Mountains (H)
+			[362] = true,    -- Krom'gar Fortress, Stonetalon Mountains (H)
+			[363] = true,    -- Malaka'jin, Stonetalon Mountains (H)
+			[364] = true,    -- Northwatch Expedition Base Camp, Stonetalon Mountains (A)
+			[361] = true,    -- Windshear Hold, Stonetalon Mountains (A)
+		},
 		fishing_min = 150,
 		battlepet_low = 5,
 		battlepet_high = 7,
@@ -5208,6 +5721,15 @@ do
 			[BZ["Feralas"]] = true,
 			[BZ["Stonetalon Mountains"]] = true,
 			[BZ["Maraudon"]] = true,
+		},
+		flightnodes = {
+			[367] = true,    -- Thargad's Camp, Desolace (A)
+			[368] = true,    -- Karnum's Glade, Desolace (N)
+			[369] = true,    -- Thunk's Abode, Desolace (N)
+			[370] = true,    -- Ethel Rethor, Desolace (N)
+			[38] = true,     -- Shadowprey Village, Desolace (H)
+			[366] = true,    -- Furien's Post, Desolace (H)
+			[37] = true,     -- Nijel's Point, Desolace (A)
 		},
 		fishing_min = 225,
 		battlepet_low = 7,
@@ -5229,6 +5751,14 @@ do
 			[BZ["Stonetalon Mountains"]] = true,
 			[BZ["Mulgore"]] = true,
 		},
+		flightnodes = {
+			[388] = true,    -- Northwatch Hold, Southern Barrens (A)
+			[389] = true,    -- Fort Triumph, Southern Barrens (A)
+			[390] = true,    -- Hunter's Hill, Southern Barrens (H)
+			[77] = true,     -- Vendetta Point, Southern Barrens (H)
+			[387] = true,    -- Honor's Stand, Southern Barrens (A)
+			[391] = true,    -- Desolation Hold, Southern Barrens (H)
+		},
 		fishing_min = 225,
 		battlepet_low = 9,
 		battlepet_high = 10,
@@ -5244,6 +5774,11 @@ do
 			[BZ["Southern Barrens"]] = true,
 			[BZ["Thousand Needles"]] = true,
 			[transports["MENETHIL_THERAMORE_BOAT"]] = true,
+		},
+		flightnodes = {
+			[55] = true,     -- Brackenwall Village, Dustwallow Marsh (H)
+			[179] = true,    -- Mudsprocket, Dustwallow Marsh (N)
+			[32] = true,     -- Theramore, Dustwallow Marsh (A)
 		},
 		fishing_min = 225,
 		battlepet_low = 12,
@@ -5263,6 +5798,15 @@ do
 			[BZ["Thousand Needles"]] = true,
 			[BZ["Desolace"]] = true,
 			[BZ["Dire Maul"]] = true,
+		},
+		flightnodes = {
+			[565] = true,    -- Dreamer's Rest, Feralas (A)
+			[567] = true,    -- Tower of Estulan, Feralas (A)
+			[569] = true,    -- Stonemaul Hold, Feralas (H)	
+			[41] = true,     -- Feathermoon, Feralas (A)
+			[568] = true,    -- Camp Ataya, Feralas (H)
+			[42] = true,     -- Camp Mojache, Feralas (H)
+			[31] = true,     -- Shadebough, Feralas (A)
 		},
 		complexes = {
 			[BZ["Dire Maul"]] = true,
@@ -5286,6 +5830,10 @@ do
 			[BZ["Dustwallow Marsh"]] = true,
 			[BZ["Razorfen Downs"]] = true,
 		},
+		flightnodes = {
+			[513] = true,    -- Fizzle & Pozzik's Speedbarge, Thousand Needles (N)
+			[30] = true,     -- Westreach Summit, Thousand Needles (H)
+		},
 		fishing_min = 300,
 		battlepet_low = 13,
 		battlepet_high = 14,
@@ -5299,6 +5847,13 @@ do
 			[BZ["Winterspring"]] = true,
 			[BZ["Moonglade"]] = true,
 			[BZ["Ashenvale"]] = true,
+		},
+		flightnodes = {
+			[595] = true,    -- Wildheart Point, Felwood (N)
+			[597] = true,    -- Irontree Clearing, Felwood (H)
+			[166] = true,    -- Emerald Sanctuary, Felwood (N)
+			[594] = true,    -- Whisperwind Grove, Felwood (N)
+			[65] = true,     -- Talonbranch Glade, Felwood (A)
 		},
 		fishing_min = 300,
 		battlepet_low = 14,
@@ -5327,6 +5882,13 @@ do
 			[BZ["Caverns of Time"]] = true,
 			[BZ["Uldum"]] = true,
 		},
+		flightnodes = {
+			[532] = true,    -- Gunstan's Dig, Tanaris (A)
+			[39] = true,     -- Gadgetzan, Tanaris (A)
+			[531] = true,    -- Dawnrise Expedition, Tanaris (H)
+			[40] = true,     -- Gadgetzan, Tanaris (H)
+			[539] = true,    -- Bootlegger Outpost, Tanaris (N)
+		},
 		complexes = {
 			[BZ["Caverns of Time"]] = true,
 		},
@@ -5343,6 +5905,10 @@ do
 			[BZ["Silithus"]] = true,
 			[BZ["Tanaris"]] = true,
 		},
+		flightnodes = {
+			[79] = true,     -- Marshal's Stand, Un'Goro Crater (N)
+			[386] = true,    -- Mossy Pile, Un'Goro Crater (N)
+		},
 		fishing_min = 375,
 		battlepet_low = 15,
 		battlepet_high = 16,
@@ -5357,6 +5923,10 @@ do
 			[BZ["Moonglade"]] = true,
 			[BZ["Mount Hyjal"]] = true,
 		},
+		flightnodes = {
+			[53] = true,    -- Everlook, Winterspring (H)
+			[52] = true,    -- Everlook, Winterspring (A)
+		},
 		fishing_min = 425,
 		battlepet_low = 17,
 		battlepet_high = 18,
@@ -5370,6 +5940,10 @@ do
 			[BZ["Ruins of Ahn'Qiraj"]] = true,
 			[BZ["Un'Goro Crater"]] = true,
 			[BZ["Ahn'Qiraj: The Fallen Kingdom"]] = true,
+		},
+		flightnodes = {
+			[73] = true,    -- Cenarion Hold, Silithus (A)
+			[72] = true,    -- Cenarion Hold, Silithus (H)
 		},
 		instances = {
 			[BZ["Ahn'Qiraj"]] = true,
@@ -5392,6 +5966,12 @@ do
 			[BZ["Felwood"]] = true,
 			[BZ["Winterspring"]] = true,
 		},
+		flightnodes = {
+			[49] = true,    -- Moonglade (A)
+			[69] = true,    -- Moonglade (H)
+			[62] = true,    -- Nighthaven, Moonglade (A)
+			[63] = true,    -- Nighthaven, Moonglade (H)
+		},
 		fishing_min = 300,
 		battlepet_low = 15,
 		battlepet_high = 16,
@@ -5403,6 +5983,13 @@ do
 		continent = Kalimdor,
 		paths = {
 			[BZ["Winterspring"]] = true,
+		},
+		flightnodes = {
+			[558] = true,    -- Grove of Aessina, Hyjal (N)
+			[616] = true,    -- Gates of Sothann, Hyjal (N)
+			[781] = true,    -- Sanctuary of Malorne, Hyjal (N)
+			[559] = true,    -- Nordrassil, Hyjal (N)
+			[557] = true,    -- Shrine of Aviana, Hyjal (N)
 		},
 		instances = {
 			[BZ["Firelands"]] = true,
@@ -5418,6 +6005,11 @@ do
 		continent = Kalimdor,
 		paths = {
 			[BZ["Tanaris"]] = true,
+		},
+		flightnodes = {
+			[653] = true,    -- Oasis of Vir'sar, Uldum (N)
+			[652] = true,    -- Ramkahen, Uldum (N)
+			[674] = true,    -- Schnottz's Landing, Uldum (N)
 		},
 		instances = {
 			[BZ["Halls of Origination"]] = true,
@@ -5451,7 +6043,10 @@ do
 			[transports["SHATTRATH_QUELDANAS_PORTAL"]] = true,
 			[transports["SHATTRATH_STORMWIND_PORTAL"]] = true,
 			[transports["SHATTRATH_ORGRIMMAR_PORTAL"]] = true,
-			},
+		},
+		flightnodes = {
+			[128] = true,    -- Shattrath, Terokkar Forest (N)
+		},
 		faction = "Sanctuary",
 		type = "City",
 		battlepet_low = 17,
@@ -5478,6 +6073,15 @@ do
 			[transports["HELLFIRE_ORGRIMMAR_PORTAL"]] = true,
 			[transports["HELLFIRE_STORMWIND_PORTAL"]] = true,
 		},
+		flightnodes = {
+			[99] = true,     -- Thrallmar, Hellfire Peninsula (H)
+			[101] = true,    -- Temple of Telhamat, Hellfire Peninsula (A)
+			[141] = true,    -- Spinebreaker Ridge, Hellfire Peninsula (H)
+			[100] = true,    -- Honor Hold, Hellfire Peninsula (A)
+			[102] = true,    -- Falcon Watch, Hellfire Peninsula (H)
+			[129] = true,    -- Hellfire Peninsula, The Dark Portal (A)
+			[130] = true,    -- Hellfire Peninsula, The Dark Portal (H)
+		},
 		complexes = {
 			[BZ["Hellfire Citadel"]] = true,
 		},
@@ -5503,6 +6107,12 @@ do
 			[BZ["Terokkar Forest"]] = true,
 			[BZ["Nagrand"]] = true,
 			[BZ["Hellfire Peninsula"]] = true,
+		},
+		flightnodes = {
+			[118] = true,    -- Zabra'jin, Zangarmarsh (H)
+			[164] = true,    -- Orebor Harborage, Zangarmarsh (A)
+			[117] = true,    -- Telredor, Zangarmarsh (A)
+			[151] = true,    -- Swamprat Post, Zangarmarsh (H)
 		},
 		complexes = {
 			[BZ["Coilfang Reservoir"]] = true,
@@ -5531,6 +6141,11 @@ do
 			[BZ["Hellfire Peninsula"]] = true,
 			[BZ["Nagrand"]] = true,
 		},
+		flightnodes = {
+			[127] = true,    -- Stonebreaker Hold, Terokkar Forest (H)
+			[128] = true,    -- Shattrath, Terokkar Forest (N)
+			[121] = true,    -- Allerian Stronghold, Terokkar Forest (A)
+		},
 		complexes = {
 			[BZ["Ring of Observance"]] = true,
 		},
@@ -5552,6 +6167,10 @@ do
 			[BZ["Shattrath City"]] = true,
 			[BZ["Terokkar Forest"]] = true,
 		},
+		flightnodes = {
+			[120] = true,    -- Garadar, Nagrand (H)
+			[119] = true,    -- Telaar, Nagrand (A)
+		},
 		type = "PvP Zone",
 		fishing_min = 475,
 		battlepet_low = 18,
@@ -5572,6 +6191,13 @@ do
 			[BZ["Zangarmarsh"]] = true,
 			[BZ["Gruul's Lair"]] = true,
 		},
+		flightnodes = {
+			[126] = true,    -- Thunderlord Stronghold, Blade's Edge Mountains (H)
+			[163] = true,    -- Mok'Nathal Village, Blade's Edge Mountains (H)
+			[160] = true,    -- Evergrove, Blade's Edge Mountains (N)
+			[125] = true,    -- Sylvanaar, Blade's Edge Mountains (A)
+			[156] = true,    -- Toshley's Station, Blade's Edge Mountains (A)
+		},
 		battlepet_low = 18,
 		battlepet_high = 20,
 	}
@@ -5591,6 +6217,11 @@ do
 --			[BZ["Tempest Keep"]] = true,
 			[BZ["Blade's Edge Mountains"]] = true,
 		},
+		flightnodes = {
+			[150] = true,    -- Cosmowrench, Netherstorm (N)
+			[122] = true,    -- Area 52, Netherstorm (N)
+			[139] = true,    -- The Stormspire, Netherstorm (N)
+		},
 --		complexes = {
 --			[BZ["Tempest Keep"]] = true,
 --		},
@@ -5607,6 +6238,12 @@ do
 		paths = {
 			[BZ["Terokkar Forest"]] = true,
 			[BZ["Black Temple"]] = true,
+		},
+		flightnodes = {
+			[124] = true,    -- Wildhammer Stronghold, Shadowmoon Valley (A)
+			[140] = true,    -- Altar of Sha'tar, Shadowmoon Valley (N)		
+			[123] = true,    -- Shadowmoon Village, Shadowmoon Valley (H)
+			[159] = true,    -- Sanctum of the Stars, Shadowmoon Valley (N)
 		},
 		fishing_min = 375,
 		battlepet_low = 20,
@@ -5626,6 +6263,9 @@ do
 			[transports["DALARAN_COT_PORTAL"]] = true,
 			[transports["DALARAN_STORMWIND_PORTAL"]] = true,
 			[transports["DALARAN_ORGRIMMAR_PORTAL"]] = true,
+		},
+		flightnodes = {
+			[310] = true,    -- Dalaran (N)
 		},
 		instances = {
 			[BZ["The Violet Hold"]] = true,
@@ -5652,6 +6292,16 @@ do
 			[transports["ORGRIMMAR_BOREANTUNDRA_ZEPPELIN"]] = true,
 			[transports["MOAKI_UNUPE_BOAT"]] = true,
 		},
+		flightnodes = {
+			[245] = true,    -- Valiance Keep, Borean Tundra (A)
+			[259] = true,    -- Bor'gorok Outpost, Borean Tundra (H)
+			[246] = true,    -- Fizzcrank Airstrip, Borean Tundra (A)
+			[258] = true,    -- Taunka'le Village, Borean Tundra (H)
+			[226] = true,    -- Transitus Shield, Coldarra (N)
+			[257] = true,    -- Warsong Hold, Borean Tundra (H)
+			[289] = true,    -- Amber Ledge, Borean Tundra (N)
+			[296] = true,    -- Unu'pe, Borean Tundra (N)
+		},
 		instances = {
 			[BZ["The Nexus"]] = true,
 			[BZ["The Oculus"]] = true,
@@ -5676,6 +6326,16 @@ do
 			[transports["MOAKI_KAMAGUA_BOAT"]] = true,
 			[BZ["Utgarde Keep"]] = true,
 			[BZ["Utgarde Pinnacle"]] = true,
+		},
+		flightnodes = {
+			[248] = true,    -- Apothecary Camp, Howling Fjord (H)
+			[191] = true,    -- Vengeance Landing, Howling Fjord (H)
+			[190] = true,    -- New Agamand, Howling Fjord (H)
+			[192] = true,    -- Camp Winterhoof, Howling Fjord (H)
+			[184] = true,    -- Fort Wildervar, Howling Fjord (A)
+			[295] = true,    -- Kamagua, Howling Fjord (N)
+			[185] = true,    -- Westguard Keep, Howling Fjord (A)
+			[183] = true,    -- Valgarde Port, Howling Fjord (A)
 		},
 		instances = {
 			[BZ["Utgarde Keep"]] = true,
@@ -5702,6 +6362,16 @@ do
 			[BZ["Naxxramas"]] = true,
 			[BZ["The Obsidian Sanctum"]] = true,
 		},
+		flightnodes = {
+			[252] = true,    -- Wyrmrest Temple, Dragonblight (N)
+			[256] = true,    -- Agmar's Hammer, Dragonblight (H)
+			[260] = true,    -- Kor'kron Vanguard, Dragonblight (H)
+			[254] = true,    -- Venomspite, Dragonblight (H)
+			[247] = true,    -- Stars' Rest, Dragonblight (A)
+			[244] = true,    -- Wintergarde Keep, Dragonblight (A)
+			[251] = true,    -- Fordragon Hold, Dragonblight (A)
+			[294] = true,    -- Moa'ki, Dragonblight (N)
+		},
 		instances = {
 			[BZ["Azjol-Nerub"]] = true,
 			[BZ["Ahn'kahet: The Old Kingdom"]] = true,
@@ -5724,6 +6394,12 @@ do
 			[BZ["Zul'Drak"]] = true,
 			[BZ["Drak'Tharon Keep"]] = true,
 		},
+		flightnodes = {
+			[249] = true,    -- Camp Oneqwah, Grizzly Hills (H)
+			[255] = true,    -- Westfall Brigade, Grizzly Hills (A)
+			[250] = true,    -- Conquest Hold, Grizzly Hills (H)
+			[253] = true,    -- Amberpine Lodge, Grizzly Hills (A)
+		},
 		instances = BZ["Drak'Tharon Keep"],
 		fishing_min = 475,
 		battlepet_low = 21,
@@ -5741,6 +6417,13 @@ do
 			[BZ["Gundrak"]] = true,
 			[BZ["Drak'Tharon Keep"]] = true,
 		},
+		flightnodes = {
+			[304] = true,    -- The Argent Stand, Zul'Drak (N)
+			[305] = true,    -- Ebon Watch, Zul'Drak (N)
+			[306] = true,    -- Light's Breach, Zul'Drak (N)
+			[307] = true,    -- Zim'Torga, Zul'Drak (N)
+			[331] = true,    -- Gundrak, Zul'Drak (N)
+		},
 		instances = {
 			[BZ["Gundrak"]] = true,
 			[BZ["Drak'Tharon Keep"]] = true,
@@ -5755,6 +6438,10 @@ do
 		high = 80,
 		continent = Northrend,
 		paths = BZ["Borean Tundra"],
+		flightnodes = {
+			[308] = true,    -- River's Heart, Sholazar Basin (N)
+			[309] = true,    -- Nesingwary Base Camp, Sholazar Basin (N)
+		},
 		fishing_min = 525,
 		battlepet_low = 21,
 		battlepet_high = 22,
@@ -5772,6 +6459,13 @@ do
 			[BZ["Halls of Reflection"]] = true,
 			[BZ["Icecrown Citadel"]] = true,
 			[BZ["Hrothgar's Landing"]] = true,
+		},
+		flightnodes = {
+			[325] = true,    -- Death's Rise, Icecrown (N)
+			[333] = true,    -- The Shadow Vault, Icecrown (N)
+			[334] = true,    -- The Argent Vanguard, Icecrown (N)
+			[335] = true,    -- Crusaders' Pinnacle, Icecrown (N)
+			[340] = true,    -- Argent Tournament Grounds, Icecrown (N)
 		},
 		instances = {
 			[BZ["Trial of the Champion"]] = true,
@@ -5797,6 +6491,15 @@ do
 			[BZ["Halls of Lightning"]] = true,
 			[BZ["Ulduar"]] = true,
 		},
+		flightnodes = {
+			[326] = true,    -- Ulduar, The Storm Peaks (N)
+			[320] = true,    -- K3, The Storm Peaks (N)
+			[321] = true,    -- Frosthold, The Storm Peaks (A)
+			[322] = true,    -- Dun Niffelem, The Storm Peaks (N)
+			[323] = true,    -- Grom'arsh Crash-Site, The Storm Peaks (H)
+			[324] = true,    -- Camp Tunka'lo, The Storm Peaks (H)
+			[327] = true,    -- Bouldercrag's Refuge, The Storm Peaks (N)
+		},
 		instances = {
 			[BZ["Halls of Stone"]] = true,
 			[BZ["Halls of Lightning"]] = true,
@@ -5816,6 +6519,11 @@ do
 			[BZ["Dragonblight"]] = true,
 			[BZ["Zul'Drak"]] = true,
 			[BZ["The Storm Peaks"]] = true,
+		},
+		flightnodes = {
+			[336] = true,    -- Windrunner's Overlook, Crystalsong Forest (A)
+			[310] = true,    -- Dalaran (N)
+			[337] = true,    -- Sunreaver's Command, Crystalsong Forest (H)
 		},
 		fishing_min = 500,
 		battlepet_low = 22,
@@ -5837,6 +6545,10 @@ do
 		high = 80,
 		continent = Northrend,
 		paths = BZ["Vault of Archavon"],
+		flightnodes = {
+			[303] = true,    -- Valiance Landing Camp, Wintergrasp (A)
+			[332] = true,    -- Warsong Camp, Wintergrasp (H)
+		},
 		instances = BZ["Vault of Archavon"],
 		type = "PvP Zone",
 		fishing_min = 525,
@@ -5971,6 +6683,19 @@ do
 			[transports["JADEFOREST_ORGRIMMAR_PORTAL"]] = true,
 			[transports["JADEFOREST_STORMWIND_PORTAL"]] = true,
 		},
+		flightnodes = {
+			[968] = true,    -- Jade Temple Grounds, Jade Forest (N)
+			[895] = true,    -- Dawn's Blossom, Jade Forest (N)
+			[972] = true,    -- Pearlfin Village, Jade Forest (A)
+			[967] = true,    -- The Arboretum, Jade Forest (N)
+			[969] = true,    -- Sri-La Village, Jade Forest (N)
+			[971] = true,    -- Tian Monastery, Jade Forest (N)
+			[973] = true,    -- Honeydew Village, Jade Forest (H)
+			[1080] = true,   -- Serpent's Overlook, Jade Forest (N)
+			[894] = true,    -- Grookin Hill, Jade Forest (H)
+			[966] = true,    -- Paw'Don Village, Jade Forest (A)
+			[970] = true,    -- Emperor's Omen, Jade Forest (N)
+		},
 		fishing_min = 650,
 		battlepet_low = 23,
 		battlepet_high = 25,
@@ -5991,6 +6716,12 @@ do
 			[BZ["The Veiled Stair"]] = true,
 			[BZ["Deepwind Gorge"]] = true,
 		},
+		flightnodes = {
+			[989] = true,    -- Stoneplow, Valley of the Four Winds (N)
+			[985] = true,    -- Halfhill, Valley of the Four Winds (N)
+			[984] = true,    -- Pang's Stead, Valley of the Four Winds (N)
+			[1052] = true,   -- Grassy Cline, Valley of the Four Winds (N)
+		},
 		fishing_min = 700,
 		battlepet_low = 23,
 		battlepet_high = 25,
@@ -6002,6 +6733,17 @@ do
 		continent = Pandaria,
 		paths = {
 			[BZ["Valley of the Four Winds"]] = true,
+		},
+		flightnodes = {
+			[1190] = true,   -- Lion's Landing, Krasarang Wilds (A)
+			[991] = true,    -- Sentinel Basecamp, Krasarang Wilds (A)
+			[993] = true,    -- Marista, Krasarang Wilds (N)
+			[1195] = true,   -- Domination Point, Krasarang Wilds (H)
+			[986] = true,    -- Zhu's Watch, Krasarang Wilds (N)
+			[988] = true,    -- The Incursion, Krasarang Wilds (A)
+			[990] = true,    -- Dawnchaser Retreat, Krasarang Wilds (H)
+			[992] = true,    -- Cradle of Chi-Ji, Krasarang Wilds (N)
+			[987] = true,    -- Thunder Cleft, Krasarang Wilds (H)
 		},
 		fishing_min = 700,
 		battlepet_low = 23,
@@ -6019,6 +6761,9 @@ do
 			[BZ["Terrace of Endless Spring"]] = true,
 			[BZ["Valley of the Four Winds"]] = true,
 			[BZ["Kun-Lai Summit"]] = true,
+		},
+		flightnodes = {
+			[1029] = true,    -- Tavern in the Mists, The Veiled Stair (N)
 		},
 		fishing_min = 750,
 		battlepet_low = 23,
@@ -6040,6 +6785,18 @@ do
 			[BZ["Vale of Eternal Blossoms"]] = true,
 			[BZ["The Veiled Stair"]] = true,
 		},
+		flightnodes = {
+			[1025] = true,    -- Winter's Blossom, Kun-Lai Summit (N)
+			[1019] = true,    -- Eastwind Rest, Kun-Lai Summit (H)
+			[1021] = true,    -- Zouchin Village, Kun-Lai Summit (N)
+			[1023] = true,    -- Kota Basecamp, Kun-Lai Summit (N)
+			[1117] = true,    -- Serpent's Spine, Kun-Lai Summit (H)
+			[1020] = true,    -- Westwind Rest, Kun-Lai Summit (A)
+			[1022] = true,    -- One Keg, Kun-Lai Summit (N)
+			[1024] = true,    -- Shado-Pan Fallback, Kun-Lai Summit (N)
+			[1017] = true,    -- Binan Village, Kun-Lai Summit (N)
+			[1018] = true,    -- Temple of the White Tiger, Kun-Lai Summit (N)
+		},
 		fishing_min = 625,
 		battlepet_low = 23,
 		battlepet_high = 25,
@@ -6056,6 +6813,12 @@ do
 			[BZ["Siege of Niuzao Temple"]] = true,
 			[BZ["Dread Wastes"]] = true,
 			[transports["TOWNLONGSTEPPES_ISLEOFTHUNDER_PORTAL"]] = true,
+		},
+		flightnodes = {
+			[1053] = true,    -- Longying Outpost, Townlong Steppes (N)
+			[1054] = true,    -- Gao-Ran Battlefront, Townlong Steppes (N)
+			[1055] = true,    -- Rensai's Watchpost, Townlong Steppes (N)
+			[1056] = true,    -- Shado-Pan Garrison, Townlong Steppes (N)
 		},
 		fishing_min = 700,
 		battlepet_low = 24,
@@ -6074,6 +6837,13 @@ do
 			[BZ["Gate of the Setting Sun"]] = true,
 			[BZ["Heart of Fear"]] = true,
 			[BZ["Townlong Steppes"]] = true
+		},
+		flightnodes = {
+			[1072] = true,    -- The Sunset Brewgarden, Dread Wastes (N)
+			[1090] = true,    -- The Briny Muck, Dread Wastes (N)
+			[1115] = true,    -- The Lion's Redoubt, Dread Wastes (A)
+			[1070] = true,    -- Klaxxi'vess, Dread Wastes (N)
+			[1071] = true,    -- Soggy's Gamble, Dread Wastes (N)
 		},
 		fishing_min = 625,
 		battlepet_low = 24,
@@ -6095,6 +6865,11 @@ do
 			[BZ["Shrine of Two Moons"]] = true,
 			[BZ["Shrine of Seven Stars"]] = true,
 		},
+		flightnodes = {
+			[1057] = true,    -- Shrine of Seven Stars, Vale of Eternal Blossoms (A)
+			[1058] = true,    -- Shrine of Two Moons, Vale of Eternal Blossoms (H)
+			[1073] = true,    -- Serpent's Spine, Vale of Eternal Blossoms (N)
+		},
 		fishing_min = 825,
 		battlepet_low = 23,
 		battlepet_high = 25,
@@ -6104,6 +6879,10 @@ do
 		low = 90,
 		high = 90,
 		continent = Pandaria,
+		flightnodes = {
+			[1221] = true,    -- Beeble's Wreck, Isle Of Giants (A)
+			[1222] = true,    -- Bozzle's Wreck, Isle Of Giants (H)
+		},
 		fishing_min = 750,
 		battlepet_low = 23,
 		battlepet_high = 25,
@@ -6129,6 +6908,10 @@ do
 		high = 90,
 		continent = Pandaria,
 		paths = BZ["The Jade Forest"],
+		flightnodes = {
+			[1293] = true,    -- Tushui Landing, Timeless Isle (A)
+			[1294] = true,    -- Huojin Landing, Timeless Isle (H)
+		},		
 		fishing_min = 825,
 		battlepet_low = 25,
 		battlepet_high = 25,
@@ -6175,6 +6958,9 @@ do
         paths = {
             [BZ["Shadowmoon Valley"].." ("..BZ["Draenor"]..")"] = true,
         },
+		flightnodes = {
+			[1476] = true,    -- Lunarfall (Alliance), Shadowmoon Valley (A)
+		},
         faction = "Alliance",
         fishing_min = 950,
 		yards = 683.334,
@@ -6191,6 +6977,9 @@ do
         paths = {
             [BZ["Frostfire Ridge"]] = true,
         },
+		flightnodes = {
+			[1432] = true,    -- Frostwall Garrison, Frostfire Ridge (H)
+		},
         faction = "Horde",
         fishing_min = 950,
 		yards = 702.08,
@@ -6213,6 +7002,18 @@ do
 			[BZ["Frostwall"]] = true,
 			[transports["FROSTFIRERIDGE_ORGRIMMAR_PORTAL"]] = true,
 		},
+		flightnodes = {
+			[1396] = true,    -- Darkspear's Edge, Frostfire Ridge (H)
+			[1389] = true,    -- Bloodmaul Slag Mines, Frostfire Ridge (N)
+			[1528] = true,    -- Iron Siegeworks, Frostfire Ridge (A)
+			[1386] = true,    -- Wor'gol, Frostfire Ridge (H)
+			[1390] = true,    -- Stonefang Outpost, Frostfire Ridge (H)
+			[1559] = true,    -- Wolf's Stand, Frostfire Ridge (H)
+			[1432] = true,    -- Frostwall Garrison, Frostfire Ridge (H)
+			[1395] = true,    -- Thunder Pass, Frostfire Ridge (H)
+			[1388] = true,    -- Throm'Var, Frostfire Ridge (H)
+			[1387] = true,    -- Bladespire Citadel, Frostfire Ridge (H)
+		},
 		fishing_min = 950,
 		battlepet_low = 23,
 		battlepet_high = 25,
@@ -6231,6 +7032,20 @@ do
 			[BZ["Tanaan Jungle"]] = true,
 			[BZ["Lunarfall"]] = true,
 			[transports["SHADOWMOONVALLEY_STORMWIND_PORTAL"]] = true,
+		},
+		flightnodes = {
+			[1467] = true,    -- The Draakorium, Shadowmoon Valley (A)
+			[1381] = true,    -- Embaari Village, Shadowmoon Valley (A)
+			[1475] = true,    -- Socrethar's Rise, Shadowmoon Valley (N)
+			[1569] = true,    -- Akeeta's Hovel, Shadowmoon Valley (N)
+			[1468] = true,    -- Elodor (Alliance), Shadowmoon Valley (A)
+			[1382] = true,    -- Twilight Glade, Shadowmoon Valley (A)
+			[1476] = true,    -- Lunarfall (Alliance), Shadowmoon Valley (A)
+			[1529] = true,    -- Darktide Roost, Shadowmoon Valley (N)
+			[1383] = true,    -- Path of the Light, Shadowmoon Valley (A)
+			[1567] = true,    -- Temple of Karabor, Shadowmoon Valley (A)
+			[1556] = true,    -- Tranquil Court, Shadowmoon Valley (A)
+			[1384] = true,    -- Exile's Rise, Shadowmoon Valley (N)
 		},
 		fishing_min = 950,
 		battlepet_low = 23,
@@ -6252,6 +7067,20 @@ do
 			[BZ["Talador"]] = true,
 			[BZ["Tanaan Jungle"]] = true,
 		},
+		flightnodes = {
+			[1512] = true,    -- Bastion Rise, Gorgrond (H)
+			[1580] = true,    -- Everbloom Overlook, Gorgrond (N)
+			[1539] = true,    -- Skysea Ridge, Gorgrond (N)
+			[1442] = true,    -- Beastwatch, Gorgrond (H)
+			[1514] = true,    -- Evermorn Springs, Gorgrond (H)
+			[1518] = true,    -- Wildwood Wash, Gorgrond (A)
+			[1520] = true,    -- Breaker's Crown, Gorgrond (N)
+			[1511] = true,    -- Bastion Rise, Gorgrond (A)
+			[1524] = true,    -- Iron Docks, Gorgrond (N)
+			[1519] = true,    -- Highpass, Gorgrond (A)
+			[1523] = true,    -- Deeproot, Gorgrond (A)
+			[1568] = true,    -- Everbloom Wilds, Gorgrond (N)
+		},
 		fishing_min = 950,
 		battlepet_low = 25,
 		battlepet_high = 25,
@@ -6271,6 +7100,20 @@ do
 			[BZ["Spires of Arak"]] = true,
 			[BZ["Nagrand"].." ("..BZ["Draenor"]..")"] = true,
 		},
+		flightnodes = {
+			[1452] = true,    -- Retribution Point, Talador (N)
+			[1441] = true,    -- Frostwolf Overlook, Talador (H)
+			[1445] = true,    -- Durotan's Grasp, Talador (H)
+			[1453] = true,    -- Exarch's Refuge, Talador (A)
+			[1450] = true,    -- Shattrath City, Talador (N)
+			[1454] = true,    -- Exarch's Refuge, Talador (H)
+			[1443] = true,    -- Vol'jin's Pride, Talador (H)
+			[1447] = true,    -- Fort Wrynn (Alliance), Talador (A)
+			[1451] = true,    -- Anchorite's Sojourn, Talador (A)
+			[1440] = true,    -- Zangarra, Talador (N)
+			[1448] = true,    -- Redemption Rise, Talador (A)
+			[1462] = true,    -- Terokkar Refuge, Talador (N)
+		},
 		fishing_min = 950,
 		battlepet_low = 25,
 		battlepet_high = 25,
@@ -6288,6 +7131,15 @@ do
 			[BZ["Shadowmoon Valley"].." ("..BZ["Draenor"]..")"] = true,
 			[BZ["Talador"]] = true,
 		},
+		flightnodes = {
+			[1513] = true,    -- Apexis Excavation, Spires of Arak (N)
+			[1510] = true,    -- Pinchwhistle Gearworks, Spires of Arak (N)
+			[1493] = true,    -- Southport, Spires of Arak (A)
+			[1515] = true,    -- Crow's Crook, Spires of Arak (N)
+			[1487] = true,    -- Axefall, Spires of Arak (H)
+			[1509] = true,    -- Talon Watch, Spires of Arak (N)
+			[1508] = true,    -- Veil Terokk, Spires of Arak (N)
+		},
 		fishing_min = 950,
 		battlepet_low = 25,
 		battlepet_high = 25,
@@ -6303,6 +7155,17 @@ do
 		},
 		paths = {
 			[BZ["Talador"]] = true,
+		},
+		flightnodes = {
+			[1572] = true,    -- Rilzit's Holdfast, Nagrand (N)
+			[1505] = true,    -- Riverside Post, Nagrand (H)
+			[1573] = true,    -- Nivek's Overlook, Nagrand (N)
+			[1502] = true,    -- The Ring of Trials, Nagrand (N)
+			[1506] = true,    -- Telaari Station, Nagrand (A)
+			[1574] = true,    -- Joz's Rylaks, Nagrand (N)
+			[1503] = true,    -- Throne of the Elements, Nagrand (N)
+			[1507] = true,    -- Yrel's Watch, Nagrand (A)
+			[1504] = true,    -- Wor'var, Nagrand (H)
 		},
 		fishing_min = 950,
 		battlepet_low = 25,
@@ -6320,6 +7183,16 @@ do
 			[BZ["Talador"]] = true,
 			[BZ["Shadowmoon Valley"].." ("..BZ["Draenor"]..")"] = true,
 			[BZ["Gorgrond"]] = true,
+		},
+		flightnodes = {
+			[1646] = true,    -- Vault of the Earth, Tanaan Jungle (N)
+			[1643] = true,    -- Aktar's Post, Tanaan Jungle (N)
+			[1647] = true,    -- Malo's Lookout, Tanaan Jungle (N)
+			[1644] = true,    -- The Iron Front, Tanaan Jungle (H)
+			[1620] = true,    -- Lion's Watch, Tanaan Jungle (A)
+			[1645] = true,    -- The Iron Front, Tanaan Jungle (A)
+			[1621] = true,    -- Vol'mar, Tanaan Jungle (H)
+			[1648] = true,    -- Sha'naari Refuge, Tanaan Jungle (N)
 		},
 		fishing_min = 950,
 		battlepet_low = 25,
@@ -6340,6 +7213,10 @@ do
 			[transports["STORMSHIELD_STORMWIND_PORTAL"]] = true,
 			[transports["STORMSHIELD_IRONFORGE_PORTAL"]] = true,
 			[transports["STORMSHIELD_DARNASSUS_PORTAL"]] = true,
+		},
+		flightnodes = {
+			[1420] = true,    -- Stormshield (Alliance), Ashran (A)
+			[1408] = true,    -- Warspear, Ashran (H)
 		},
 		fishing_min = 950,
 		battlepet_low = 25,
@@ -6369,7 +7246,10 @@ do
 			[transports["DALARANBROKENISLES_DRAGONBLIGHT_PORTAL"]] = true,
 			[transports["DALARANBROKENISLES_HILLSBRAD_PORTAL"]] = true,
 			[transports["DALARANBROKENISLES_KARAZHAN_PORTAL"]] = true,
-			},
+		},
+		flightnodes = {
+			[1774] = true,    -- Dalaran (N)
+		},
 		instances = {
 			[BZ["The Violet Hold"].." ("..BZ["Broken Isles"]..")"] = true,
 		},		
@@ -6385,6 +7265,9 @@ do
 		paths = {
 			[BZ["Highmountain"]] = true,
 			[BZ["Stormheim"]] = true,
+		},
+		flightnodes = {
+			[1719] = true,    -- Thunder Totem, Highmountain (N)
 		},
 		faction = "Sanctuary",
 		type = "City",
@@ -6406,6 +7289,17 @@ do
 			[BZ["Suramar"]] = true,
 			[BZ["Val'sharah"]] = true,
 		},
+		flightnodes = {
+			[1861] = true,    -- Illidari Perch, Azsuna (N)
+			[1633] = true,    -- Shackle's Den, Azsuna (N)
+			[1622] = true,    -- Illidari Stand, Azsuna (N)
+			[1615] = true,    -- Challiane's Terrace, Azsuna (N)
+			[1859] = true,    -- Felblaze Ingress, Azsuna (N)
+			[1837] = true,    -- Wardens' Redoubt, Azsuna (N)
+			[1860] = true,    -- Watchers' Aerie, Azsuna (N)
+			[1613] = true,    -- Azurewing Repose, Azsuna (N)
+			[1870] = true,    -- Eye of Azshara, Azsuna (N)
+		},
 		fishing_min = 950,
 		battlepet_low = 25,
 		battlepet_high = 25,
@@ -6425,6 +7319,13 @@ do
 			[BZ["Azsuna"]] = true,
 			[BZ["Highmountain"]] = true,
 		},
+		flightnodes = {
+			[1713] = true,    -- Bradensbrook, Val'sharah (N)
+			[1885] = true,    -- Gloaming Reef, Val'sharah (N)
+			[1764] = true,    -- Starsong Refuge, Val'sharah (N)
+			[1766] = true,    -- Garden of the Moon, Val'sharah (N)
+			[1673] = true,    -- Lorlathil, Val'sharah (N)
+		},
 		fishing_min = 950,
 		battlepet_low = 25,
 		battlepet_high = 25,
@@ -6443,6 +7344,19 @@ do
 			[BZ["Val'sharah"]] = true,
 			[BZ["Trueshot Lodge"]] = true,
 		},
+		flightnodes = {
+			[1767] = true,    -- Nesingwary, Highmountain (N)
+			[1756] = true,    -- Shipwreck Cove, Highmountain (N)
+			[1719] = true,    -- Thunder Totem, Highmountain (N)
+			[1753] = true,    -- Skyhorn, Highmountain (N)
+			[1761] = true,    -- Prepfoot, Highmountain (N)
+			[1754] = true,    -- The Witchwood, Highmountain (N)
+			[1758] = true,    -- Obsidian Overlook, Highmountain (N)
+			[1777] = true,    -- Sylvan Falls, Highmountain (N)
+			[1755] = true,    -- Felbane Camp, Highmountain (N)
+			[1759] = true,    -- Ironhorn Enclave, Highmountain (N)
+			[1778] = true,    -- Stonehoof Watch, Highmountain (N)
+		},
 		fishing_min = 950,
 		battlepet_low = 25,
 		battlepet_high = 25,
@@ -6460,6 +7374,18 @@ do
 			[BZ["Suramar"]] = true,
 			[BZ["Highmountain"]] = true,
 		},
+		flightnodes = {
+			[1857] = true,    -- Stormtorn Foothills, Stormheim (N)
+			[1741] = true,    -- Forsaken Foothold, Stormheim (H)
+			[1745] = true,    -- Lorna's Watch, Stormheim (A)
+			[1738] = true,    -- Cullen's Post, Stormheim (H)
+			[1742] = true,    -- Valdisdall, Stormheim (N)
+			[1855] = true,    -- Shield's Rest, Stormheim (N)
+			[1739] = true,    -- Dreadwake's Landing, Stormheim (H)
+			[1863] = true,    -- Hafr Fjall, Stormheim (N)
+			[1747] = true,    -- Skyfire Triage Camp, Stormheim (A)
+			[1744] = true,    -- Greywatch, Stormheim (A)
+		},		
 		fishing_min = 950,
 		battlepet_low = 25,
 		battlepet_high = 25,
@@ -6471,6 +7397,11 @@ do
 		continent = Broken_Isles,
 		instances = {
 			[BZ["Cathedral of Eternal Night"]] = true,
+		},
+		flightnodes = {
+			[1941] = true,    -- Deliverance Point, Broken Shore (N)
+			[1942] = true,    -- Aalgen Point, Broken Shore (N)
+			[1856] = true,    -- Vengeance Point, Broken Shore (N)
 		},
 		fishing_min = 950,
 		battlepet_low = 25,
@@ -6493,6 +7424,11 @@ do
 			[BZ["Highmountain"]] = true,
 			[BZ["Stormheim"]] = true,
 		},
+		flightnodes = {
+			[1879] = true,    -- Crimson Thicket, Suramar (N)
+			[1880] = true,    -- Irongrove Retreat, Suramar (N)
+			[1858] = true,    -- Meredil, Suramar (N)
+		},
 		fishing_min = 950,
 		battlepet_low = 25,
 		battlepet_high = 25,
@@ -6514,12 +7450,22 @@ do
 		low = 110,
 		high = 110,
 		continent = Argus,
+		flightnodes = {
+			[1976] = true,    -- Destiny Point, Krokuun (N)
+			[1967] = true,    -- Shattered Fields, Krokuun (N)
+			[1928] = true,    -- Krokul Hovel, Krokuun (N)
+		},
 	}
 	
 	zones[BZ["Antoran Wastes"]] = {
 		low = 110,
 		high = 110,
 		continent = Argus,
+		flightnodes = {
+			[1993] = true,    -- The Veiled Den, Antoran Wastes (N)
+			[1988] = true,    -- Hope's Landing, Antoran Wastes (N)
+	        [1992] = true,    -- Light's Purchase, Antoran Wastes (N)
+		},		
 	}
 	
 	zones[BZ["Mac'Aree"]] = {
@@ -6528,6 +7474,13 @@ do
 		continent = Argus,
 		instances = {
 			[BZ["The Seat of the Triumvirate"]] = true,
+		},
+		flightnodes = {
+			[2003] = true,    -- City Center, Mac'Aree (N)
+			[1991] = true,    -- Prophet's Reflection, Mac'Aree (N)
+			[1981] = true,    -- Shadowguard Incursion, Mac'Aree (N)
+			[1978] = true,    -- Conservatory of the Arcane, Mac'Aree (N)
+			[1982] = true,    -- Triumvirate's End, Mac'Aree (N)
 		},
 	}
 	
@@ -6547,6 +7500,11 @@ do
 			[transports["ZULDAZAR_THUNDERBLUFF_PORTAL"]] = true,
 			[transports["ZULDAZAR_SILVERMOON_PORTAL"]] = true,
 		},	
+		flightnodes = {
+			[2061] = true,    -- The Sliver, Zuldazar (H)
+			[1959] = true,    -- The Great Seal (H)
+			[1957] = true,    -- Port of Zandalar, Zuldazar (H)
+		},
 		faction = "Horde",
 		continent = Zandalar,
 		type = "City",
@@ -6563,6 +7521,15 @@ do
 			[BZ["Zuldazar"]] = true,		
 			[BZ["The Underrot"]] = true,
 		},	
+		flightnodes = {
+			[2161] = true,    -- Redfield's Watch, Nazmir (A)
+			[2078] = true,    -- Fort Victory, Nazmir (A)
+			[1955] = true,    -- Gloom Hollow, Nazmir (H)
+			[2080] = true,    -- Grimwatt's Crash, Nazmir (A)
+			[1956] = true,    -- Forlorn Ruins, Nazmir (H)
+			[1953] = true,    -- Zul'jan, Nazmir (H)
+			[1954] = true,    -- Zo'bal Ruins, Nazmir (H)
+		},
 		faction = "Horde",
 		continent = Zandalar,
 	}
@@ -6578,6 +7545,16 @@ do
 			[BZ["Zuldazar"]] = true,		
 			[BZ["Temple of Sethraliss"]] = true,
 		},	
+		flightnodes = {
+			[2112] = true,    -- Vulture's Nest, Vol'dun (A)
+			[2120] = true,    -- Tortaka Refuge, Vol'dun (N)
+			[2162] = true,    -- Devoted Sanctuary, Vol'dun (N)
+			[2143] = true,    -- Scorched Sands Outpost, Vol'dun (H)
+			[2119] = true,    -- Sanctuary of the Devoted, Vol'dun (N)
+			[2117] = true,    -- Vulpera Hideaway, Vol'dun (H)
+			[2111] = true,    -- Vorrik's Sanctum, Vol'dun (H)
+			[2118] = true,    -- Temple of Akunda, Vol'dun (H)
+		},
 		faction = "Horde",
 		continent = Zandalar,
 	}
@@ -6597,6 +7574,32 @@ do
 			[BZ["Atal'Dazar"]] = true,
 			[BZ["Kings' Rest"]] = true,
 		},	
+		flightnodes = {
+			[1975] = true,    -- Zeb'ahari, Zuldazar (H)
+			[2061] = true,    -- The Sliver, Zuldazar (H)
+			[2009] = true,    -- Warport Rastari, Zuldazar (H)
+			[2012] = true,    -- Xibala, Zuldazar (A)
+			[2164] = true,    -- Isle of Fangs, Zuldazar (H)
+			[2045] = true,    -- Garden of the Loa, Zuldazar (H)
+			[2075] = true,    -- Seeker's Outpost, Zuldazar (N)
+			[2145] = true,    -- Verdant Hollow, Zuldazar (A)
+			[2147] = true,    -- Castaway Encampment, Zuldazar (A)
+			[1959] = true,    -- The Great Seal (H)
+			[2153] = true,    -- Mistvine Ledge, Zuldazar (A)
+			[2126] = true,    -- Scaletrader Post, Zuldazar (N)
+			[2066] = true,    -- Atal'Gral, Zuldazar (N)
+			[2027] = true,    -- Temple of the Prophet, Zuldazar (H)
+			[1966] = true,    -- Warbeast Kraal, Zuldazar (H)
+			[2165] = true,    -- Tusk Isle, Zuldazar (H)
+			[1965] = true,    -- Nesingwary's Gameland, Zuldazar (N)
+			[2076] = true,    -- Atal'Gral, Zuldazar (N)
+			[1957] = true,    -- Port of Zandalar, Zuldazar (H)
+			[1974] = true,    -- Xibala, Zuldazar (H)
+			[2071] = true,    -- Dreadpearl, Zuldazar (N)
+			[2046] = true,    -- Atal'dazar, Zuldazar (H)
+			[2148] = true,    -- Mugamba Overlook, Zuldazar (A)
+			[2157] = true,    -- Veiled Grotto, Zuldazar (A)
+		},
 		faction = "Horde",
 		continent = Zandalar,
 	}
@@ -6624,6 +7627,24 @@ do
 			[BZ["Shrine of the Storm"]] = true,
 			[BZ["Tiragarde Sound"]] = true,
 		},		
+		flightnodes = {
+			[2101] = true,    -- The Amber Waves, Stormsong Valley (A)
+			[2094] = true,    -- Warfang Hold, Stormsong Valley (H)
+			[2095] = true,    -- Shrine of the Storm, Stormsong Valley (H)
+			[2088] = true,    -- Mildenhall Meadery, Stormsong Valley (A)
+			[2089] = true,    -- Seekers Vista, Stormsong Valley (N)
+			[2097] = true,    -- Deadwash, Stormsong Valley (A)
+			[2093] = true,    -- Ironmaul Overlook, Stormsong Valley (H)
+			[2092] = true,    -- Diretusk Hollow, Stormsong Valley (H)
+			[2133] = true,    -- Shrine of the Storm, Stormsong Valley (A)
+			[2137] = true,    -- Millstone Hamlet, Stormsong Valley (A)
+			[2085] = true,    -- Tidecross, Stormsong Valley (A)
+			[2138] = true,    -- Fort Daelin, Stormsong Valley (A)
+			[2086] = true,    -- Brennadam, Stormsong Valley (A)
+			[2139] = true,    -- Windfall Cavern, Stormsong Valley (H)
+			[2090] = true,    -- Hillcrest Pasture, Stormsong Valley (H)
+			[2091] = true,    -- Stonetusk Watch, Stormsong Valley (H)
+		},
 		faction = "Alliance",
 		continent = Kul_Tiras,
 	}	
@@ -6638,6 +7659,20 @@ do
 			[BZ["Tiragarde Sound"]] = true,
 			[BZ["Waycrest Manor"]] = true,
 		},		
+		flightnodes = {
+			[2037] = true,    -- Barbthorn Ridge, Drustvar (A)
+			[2109] = true,    -- Whitegrove Chapel, Drustvar (N)
+			[2034] = true,    -- Hangman's Point, Drustvar (A)
+			[2127] = true,    -- Anyport, Drustvar (N)
+			[2135] = true,    -- Krazzlefrazz Outpost, Drustvar (H)
+			[2106] = true,    -- Arom's Stand, Drustvar (A)
+			[2107] = true,    -- Watchman's Rise, Drustvar (A)
+			[2033] = true,    -- Fallhaven, Drustvar (A)
+			[2108] = true,    -- Falconhurst, Drustvar (A)
+			[2035] = true,    -- Fletcher's Hollow, Drustvar (A)
+			[2275] = true,    -- Mudfisher Cove, Drustvar (H)
+			[2274] = true,    -- Swiftwind Post, Drustvar (H)
+		},
 		faction = "Alliance",
 		continent = Kul_Tiras,
 	}
@@ -6658,6 +7693,25 @@ do
 			[BZ["Freehold"]] = true,
 			[BZ["Siege of Boralus"]] = true,
 		},		
+		flightnodes = {
+			[2079] = true,    -- Kennings Lodge, Tiragarde Sound (A)
+			[2102] = true,    -- Roughneck Camp, Tiragarde Sound (A)
+			[2096] = true,    -- Tol Dagor, Tiragarde Sound (A)
+			[2023] = true,    -- Freehold, Tiragarde Sound (N)
+			[2276] = true,    -- Tol Dagor, Tiragarde Sound (H)
+			[2074] = true,    -- Bridgeport, Tiragarde Sound (A)
+			[2277] = true,    -- Proudmoore Keep, Tiragarde Sound (A)
+			[2060] = true,    -- Hatherford, Tiragarde Sound (A)
+			[2278] = true,    -- Mariner's Row, Tiragarde Sound (A)
+			[2087] = true,    -- Outrigger Post, Tiragarde Sound (A)
+			[2084] = true,    -- Norwington Estate, Tiragarde Sound (A)
+			[2077] = true,    -- Castaway Point, Tiragarde Sound (N)
+			[2083] = true,    -- Tradewinds Market, Tiragarde Sound (A)
+			[2273] = true,    -- Waning Glacier, Tiragarde Sound (H)
+			[2042] = true,    -- Vigil Hill, Tiragarde Sound (A)
+			[2279] = true,    -- Stonefist Watch, Tiragarde Sound (H)
+			[2062] = true,    -- Wolf's Den, Tiragarde Sound (H)
+		},
 		faction = "Alliance",
 		continent = Kul_Tiras,
 	}	
@@ -8546,6 +9600,7 @@ do
 	-- }
 
 	
+
 	
 --------------------------------------------------------------------------------------------------------
 --                                                CORE                                                --
@@ -8649,6 +9704,7 @@ do
 		continents[k] = v.continent or UNKNOWN
 		instances[k] = v.instances
 		paths[k] = v.paths or false
+		flightnodes[k] = v.flightnodes or false
 		types[k] = v.type or "Zone"
 		groupSizes[k] = v.groupSize
 		groupMinSizes[k] = v.groupMinSize
@@ -8672,7 +9728,17 @@ do
 			entrancePortals_x[k] = v.entrancePortal[2]
 			entrancePortals_y[k] = v.entrancePortal[3]
 		end
+		if v.flightnodes then
+			for nodeID in pairs(v.flightnodes) do
+				if not FlightnodeLookupTable[nodeID] then
+					FlightnodeLookupTable[nodeID] = true
+				end
+			end
+		end
 	end
+
+	trace("Tourist: Built Flightnode lookup table: "..tostring(tablelength(FlightnodeLookupTable)).." nodes.")
+	
 	zones = nil
 
 	trace("Tourist: Initialized.")
