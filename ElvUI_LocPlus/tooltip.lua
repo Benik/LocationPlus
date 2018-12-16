@@ -2,7 +2,7 @@ local E, L, V, P, G = unpack(ElvUI);
 local LP = E:GetModule('LocationPlus')
 local T = LibStub('LibTourist-3.0');
 
-local format, tonumber, pairs = string.format, tonumber, pairs
+local format, tonumber, pairs, tinsert = string.format, tonumber, pairs, table.insert
 
 local GetBindLocation = GetBindLocation
 local C_Map_GetBestMapForUnit = C_Map.GetBestMapForUnit
@@ -86,7 +86,14 @@ local currency = {
 	1580,	-- Seal of Wartorn Fate
 	1587,	-- War Supplies
 	1710,	-- Seafarer's Dubloon
+	1718,	-- Titan Residuum
 }
+
+if E.myfaction == 'Alliance' then
+	tinsert(currency, 1717)
+elseif E.myfaction == 'Horde' then
+	tinsert(currency, 1716)
+end
 
 -----------------------
 -- Tooltip functions --
@@ -411,7 +418,7 @@ function LP:UpdateTooltip()
 
 	-- Currency
 	local numEntries = GetCurrencyListSize() -- Check for entries to disable the tooltip title when no currency
-	if E.db.locplus.curr and numEntries > 3 then
+	if E.db.locplus.curr and numEntries > 0 then
 		GameTooltip:AddLine(" ")
 		GameTooltip:AddLine(TOKENS.." :", selectioncolor)
 
