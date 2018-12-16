@@ -1,3 +1,11 @@
+[b]2.39[/b]
+*toc update for patch 8.1
+*LibTourist update
+*Added patch 8.1 currencies
+
+[b]2.38[/b]
+*toc update for patch 8.1
+
 [b]2.37[/b]
 *toc update for patch 8.1
 
