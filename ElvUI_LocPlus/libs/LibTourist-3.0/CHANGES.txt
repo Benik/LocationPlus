@@ -1,10 +1,67 @@
 ------------------------------------------------------------------------
-r211 | Odica | 2018-09-09 15:36:15 +0000 (Sun, 09 Sep 2018) | 3 lines
+r214 | Odica | 2018-12-12 22:37:39 +0000 (Wed, 12 Dec 2018) | 1 line
 Changed paths:
    M /trunk/LibTourist-3.0.lua
 
-- added entrance portal coordinates for Waycrest Manor, Freehold, Tol Dagor and Shrine of the Storm
-- added 'dynamic' entrance portal coordinates (because Horde and Alliance have separate entrances) for Siege of Boralus and The MOTHERLODE!!
-- corrected entrance portal coordinates for The Underrot and Temple of Sethraliss
+Added 6 missing flightnodes.
+------------------------------------------------------------------------
+r213 | Odica | 2018-10-08 21:27:40 +0000 (Mon, 08 Oct 2018) | 54 lines
+Changed paths:
+   M /trunk/LibTourist-3.0.lua
+
+New in this version: Flight node data
+-------------------------------------
+
+LibTourist now gathers data about flight nodes, using the C_TaxiMap interface. For each zone that has flight nodes, the node IDs have been stored in the library. At runtime, the C_TaxiMap interface is used to assign node data to these IDs in a lookup table.
+
+Note: For some reason, C_TaxiMap does not return data for a small number of node IDs (10 to 20 on a total of 547). Which IDs depends on a few things, including the character's faction and if zones like Silithus and Blasted Lands are set to 'now' or 'present'. The nodes unavailable in C_TaxiMap do not exist at all for the character. All other nodes are returned, regardless of their faction and if they have been discovered or not. The Seahorses in Vashj'ir and teleports on Argus are included.
+
+Libtourist caches the MapTaxiNodeInfo objects from C_TaxiMap with two additional properties. The following data is made available:
+
+	structure TaxiMap.MapTaxiNodeInfo
+		number nodeID				-- unique node ID
+		table position				-- position of the node on the Flight Master's map (no relation with the world map!)
+		string name				-- node name as displayed in game, includes zone name (mostly)
+		string atlasName			-- atlas object type
+		Enum.FlightPathFaction faction		-- 0 = Neutral, 1 = Horde, 2 = Alliance
+		(optional) string textureKitPrefix	-- no clue what this is for
+		string factionName			-- added by LibTourist: "Neutral", "Horde" or "Alliance" (not localized)
+		table zones				-- added by LibTourist: localized names of the zones in which the node resides*
+
+*) some nodes, like those in major cities, are linked to the city (i.e. Orgrimmar) and the zone in which the city lies (i.e. Durotar). The majority has only one zone assigned.
+
+Unfortunately and strangely, there is no data available in C_TaxiMap on connections between nodes.
+
+
+NEW API FUNCTIONS
+-----------------
+
+- Tourist:GetFlightnodeLookupTable()
+Returns the lookup table with all flight nodes. 
+Key = node ID.
+Value is a node struct (see above) if the node could be found in C_TaxiMap.
+If the node was not returned by C_Taximap, value is true.
+
+- Tourist:RefreshFlightNodeData()
+Refreshes the values of the FlightnodeLookupTable.
+Note: the collection of nodes returned by C_TaxiMap changes when a zone like Silithus is set to a different time by visiting Zidormi.
+As I don't know how to detect such a time switch, the nodes lookup is not updated when it happens.
+
+- Tourist:GetFlightnode(nodeID)
+Returns a MapTaxiNodeInfo struct (with some extra attributes) for the specified nodeID, if known and available.
+
+- Tourist:GetFlightnodeFactionColor(faction)
+Returns an r, g and b value representing a color, depending on the given flight node faction and the current character's faction.
+Parameter faction can be 0, 1, 2, "Neutral", "Horde" or "Alliance" (not localized).
+
+- Tourist:IterateZoneFlightnodes(zone)
+Loops through the available flight nodes for the given zone, returning MapTaxiNodeInfo structs (see above)
+
+- Tourist:DoesZoneHaveFlightnodes(zone)
+Returns true if *any* flight nodes (available or not) have been assigned to the given zone, available or not. 
+Note: This still has to be improved so it only returns true if there are available nodes assigned to the zone. Teldrassil is an example of a zone that can have no available nodes depending on the time it is set to.
+
+
+Any feedback is welcome on bugs or improvements!
 ------------------------------------------------------------------------
 

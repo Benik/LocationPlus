@@ -1,6 +1,6 @@
 --[[
 Name: LibTourist-3.0
-Revision: $Rev: 213 $
+Revision: $Rev: 214 $
 Author(s): Odica (maintainer), originally created by ckknight and Arrowmaster
 Documentation: https://www.wowace.com/projects/libtourist-3-0/pages/api-reference
 SVN: svn://svn.wowace.com/wow/libtourist-3-0/mainline/trunk
@@ -9,7 +9,7 @@ License: MIT
 ]]
 
 local MAJOR_VERSION = "LibTourist-3.0"
-local MINOR_VERSION = 90000 + tonumber(("$Revision: 213 $"):match("(%d+)"))
+local MINOR_VERSION = 90000 + tonumber(("$Revision: 214 $"):match("(%d+)"))
 
 if not LibStub then error(MAJOR_VERSION .. " requires LibStub") end
 local C_Map = C_Map
@@ -1563,6 +1563,9 @@ local function GatherFlightnodeData()
 	if gatheringFlightnodes == true then return end
 	gatheringFlightnodes = true
 	
+	local missingNodes = {}
+	
+	
 	-- Add node objects from the C_TaxiMap interface to the lookup
 	for zMapID, zName in pairs(MapIdLookupTable) do	
 		-- Use MapIdLookupTable instead of iterating through continents and zones to be sure all known zones are checked for flight nodes
@@ -1575,8 +1578,11 @@ local function GatherFlightnodeData()
 			if numNodes > 0 then
 				for i, node in ipairs(nodes) do
 					if not FlightnodeLookupTable[node.nodeID] then
-						trace("|r|cffff4422! -- Tourist: Missing flightnode in lookup: "..tostring(node.nodeID).." = "..tostring(node.name))
-						errCount = errCount + 1
+						if not missingNodes[node.nodeID] then
+							trace("|r|cffff4422! -- Tourist: Missing flightnode in lookup: "..tostring(node.nodeID).." = "..tostring(node.name))
+							errCount = errCount + 1
+							missingNodes[node.nodeID] = node.name
+						end
 					else
 						if FlightnodeLookupTable[node.nodeID] == true then
 							count = count + 1
@@ -5133,6 +5139,8 @@ do
 			[603] = true,    -- Sunveil Excursion, Blasted Lands (H)
 			[604] = true,    -- Dreadmaul Hold, Blasted Lands (H)
 			[45] = true,     -- Nethergarde Keep, Blasted Lands (A)
+			[1537] = true, 	 -- Shattered Landing, Blasted Lands
+			[1538] = true,   -- Shattered Beachhead, Blasted Lands		
 		},
 		fishing_min = 425,
 		battlepet_low = 16,
@@ -7402,6 +7410,7 @@ do
 			[1941] = true,    -- Deliverance Point, Broken Shore (N)
 			[1942] = true,    -- Aalgen Point, Broken Shore (N)
 			[1856] = true,    -- Vengeance Point, Broken Shore (N)
+			[1906] = true,    -- The Fel Hammer, Broken Shore
 		},
 		fishing_min = 950,
 		battlepet_low = 25,
@@ -7504,6 +7513,7 @@ do
 			[2061] = true,    -- The Sliver, Zuldazar (H)
 			[1959] = true,    -- The Great Seal (H)
 			[1957] = true,    -- Port of Zandalar, Zuldazar (H)
+			[2381] = true,    -- The Mugambala, Zuldazar
 		},
 		faction = "Horde",
 		continent = Zandalar,
@@ -7711,6 +7721,8 @@ do
 			[2042] = true,    -- Vigil Hill, Tiragarde Sound (A)
 			[2279] = true,    -- Stonefist Watch, Tiragarde Sound (H)
 			[2062] = true,    -- Wolf's Den, Tiragarde Sound (H)
+			[2140] = true,    -- Plunder Harbour, Tiragarde Sound (H)
+			[2067] = true,    -- Timberfell Outpost, Tiragarde Sound (H)
 		},
 		faction = "Alliance",
 		continent = Kul_Tiras,
