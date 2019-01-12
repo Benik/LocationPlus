@@ -1,6 +1,6 @@
 --[[
 Name: LibTourist-3.0
-Revision: $Rev: 214 $
+Revision: $Rev: 216 $
 Author(s): Odica (maintainer), originally created by ckknight and Arrowmaster
 Documentation: https://www.wowace.com/projects/libtourist-3-0/pages/api-reference
 SVN: svn://svn.wowace.com/wow/libtourist-3-0/mainline/trunk
@@ -9,7 +9,7 @@ License: MIT
 ]]
 
 local MAJOR_VERSION = "LibTourist-3.0"
-local MINOR_VERSION = 90000 + tonumber(("$Revision: 214 $"):match("(%d+)"))
+local MINOR_VERSION = 90000 + tonumber(("$Revision: 216 $"):match("(%d+)"))
 
 if not LibStub then error(MAJOR_VERSION .. " requires LibStub") end
 local C_Map = C_Map
@@ -731,7 +731,7 @@ local MapIdLookupTable = {
     [588] = "Ashran",
     [589] = "Ashran Mine",
     [590] = "Frostwall",
-    [592] = "Defense of Karabor",
+--  [592] = "Defense of Karabor", -- Not in C_Map
     [593] = "Auchindoun",
     [594] = "Shattrath City",
     [595] = "Iron Docks",
@@ -1178,6 +1178,97 @@ local MapIdLookupTable = {
     [1196] = "Tiragarde Sound",
     [1197] = "Drustvar",
     [1198] = "Stormsong Valley",
+    [1203] = "Darkshore",
+    [1208] = "Eastern Kingdoms",
+    [1209] = "Kalimdor",
+    [1244] = "Arathi Highlands",
+    [1245] = "Badlands",
+    [1246] = "Blasted Lands",
+    [1247] = "Tirisfal Glades",
+    [1248] = "Silverpine Forest",
+    [1249] = "Western Plaguelands",
+    [1250] = "Eastern Plaguelands",
+    [1251] = "Hillsbrad Foothills",
+    [1252] = "The Hinterlands",
+    [1253] = "Dun Morogh",
+    [1254] = "Searing Gorge",
+    [1255] = "Burning Steppes",
+    [1256] = "Elwynn Forest",
+    [1257] = "Deadwind Pass",
+    [1258] = "Duskwood",
+    [1259] = "Loch Modan",
+    [1260] = "Redridge Mountains",
+    [1261] = "Swamp of Sorrows",
+    [1262] = "Westfall",
+    [1263] = "Wetlands",
+    [1264] = "Stormwind City",
+    [1265] = "Ironforge",
+    [1266] = "Undercity",
+    [1267] = "Eversong Woods",
+    [1268] = "Ghostlands",
+    [1269] = "Silvermoon City",
+    [1270] = "Isle of Quel'Danas",
+    [1271] = "Gilneas",
+    [1272] = "Vashj'ir",
+    [1273] = "Ruins of Gilneas",
+    [1274] = "Stranglethorn Vale",
+    [1275] = "Twilight Highlands",
+    [1276] = "Tol Barad",
+    [1277] = "Tol Barad Peninsula",
+    [1305] = "Durotar",
+    [1306] = "Mulgore",
+    [1307] = "Northern Barrens",
+    [1308] = "Teldrassil",
+    [1309] = "Darkshore",
+    [1310] = "Ashenvale",
+    [1311] = "Thousand Needles",
+    [1312] = "Stonetalon Mountains",
+    [1313] = "Desolace",
+    [1314] = "Feralas",
+    [1315] = "Dustwallow Marsh",
+    [1316] = "Tanaris",
+    [1317] = "Azshara",
+    [1318] = "Felwood",
+    [1319] = "Un'Goro Crater",
+    [1320] = "Moonglade",
+    [1321] = "Silithus",
+    [1322] = "Winterspring",
+    [1323] = "Thunder Bluff",
+    [1324] = "Darnassus",
+    [1325] = "Azuremyst Isle",
+    [1326] = "The Exodar",
+    [1327] = "Bloodmyst Isle",
+    [1328] = "Mount Hyjal",
+    [1329] = "Southern Barrens",
+    [1330] = "Uldum",
+    [1331] = "The Exodar",
+    [1332] = "Darkshore",
+    [1333] = "Darkshore",
+    [1335] = "Cooking: Impossible",
+    [1336] = "Havenswood",
+    [1337] = "Jorundall",
+    [1338] = "Darkshore",
+    [1343] = "8.1 Darkshore Outdoor Final Phase",
+    [1345] = "Crucible of Storms",
+    [1346] = "Crucible of Storms",
+    [1347] = "Zandalari Treasury",
+    [1348] = "Zandalari Treasury",
+    [1349] = "Tol Dagor",
+    [1350] = "Tol Dagor",
+    [1351] = "Tol Dagor",
+    [1352] = "Battle of Dazar'alor",
+    [1353] = "Battle of Dazar'alor",
+    [1354] = "Battle of Dazar'alor",
+    [1356] = "Battle of Dazar'alor",
+    [1357] = "Battle of Dazar'alor",
+    [1358] = "Battle of Dazar'alor",
+    [1359] = "Icecrown Citadel",
+    [1360] = "Icecrown Citadel",
+    [1361] = "OldIronforge",
+    [1362] = "Shrine of the Storm",
+    [1363] = "CrucibleRaid_Bottom_Intro",
+    [1364] = "Battle of Dazar'alor",
+    [1367] = "Battle of Dazar'alor",	
 }
 
 
@@ -5139,8 +5230,8 @@ do
 			[603] = true,    -- Sunveil Excursion, Blasted Lands (H)
 			[604] = true,    -- Dreadmaul Hold, Blasted Lands (H)
 			[45] = true,     -- Nethergarde Keep, Blasted Lands (A)
-			[1537] = true, 	 -- Shattered Landing, Blasted Lands
-			[1538] = true,   -- Shattered Beachhead, Blasted Lands		
+			[1537] = true, 	 -- Shattered Landing, Blasted Lands (H)
+			[1538] = true,   -- Shattered Beachhead, Blasted Lands (A)	
 		},
 		fishing_min = 425,
 		battlepet_low = 16,
@@ -7410,7 +7501,7 @@ do
 			[1941] = true,    -- Deliverance Point, Broken Shore (N)
 			[1942] = true,    -- Aalgen Point, Broken Shore (N)
 			[1856] = true,    -- Vengeance Point, Broken Shore (N)
-			[1906] = true,    -- The Fel Hammer, Broken Shore
+			[1906] = true,    -- The Fel Hammer, Broken Shore (N), Demon Hunter Class Order Hall
 		},
 		fishing_min = 950,
 		battlepet_low = 25,
@@ -7499,7 +7590,7 @@ do
 	
 	zones[BZ["Dazar'alor"]] = {
 		instances = {
-			[BZ["The MOTHERLODE!!"]] = true,		
+			[BZ["The MOTHERLODE!!"]] = true,	
 		},
 		paths = {
 			[BZ["Zuldazar"]] = true,
@@ -7513,7 +7604,7 @@ do
 			[2061] = true,    -- The Sliver, Zuldazar (H)
 			[1959] = true,    -- The Great Seal (H)
 			[1957] = true,    -- Port of Zandalar, Zuldazar (H)
-			[2381] = true,    -- The Mugambala, Zuldazar
+			[2381] = true,    -- The Mugambala, Zuldazar (H)
 		},
 		faction = "Horde",
 		continent = Zandalar,
@@ -7525,11 +7616,13 @@ do
 		high = 120,
 		instances = {
 			[BZ["The Underrot"]] = true,
+			[BZ["Uldir"]] = true,
 		},
 		paths = {
 			[BZ["Vol'dun"]] = true,
 			[BZ["Zuldazar"]] = true,		
 			[BZ["The Underrot"]] = true,
+			[BZ["Uldir"]] = true,
 		},	
 		flightnodes = {
 			[2161] = true,    -- Redfield's Watch, Nazmir (A)
@@ -7576,6 +7669,7 @@ do
 			[BZ["The MOTHERLODE!!"]] = true,
 			[BZ["Atal'Dazar"]] = true,
 			[BZ["Kings' Rest"]] = true,
+			[BZ["Battle of Dazar'alor"]] = true,	
 		},
 		paths = {
 			[BZ["Dazar'alor"]] = true,
@@ -7583,6 +7677,7 @@ do
 			[BZ["Vol'dun"]] = true,		
 			[BZ["Atal'Dazar"]] = true,
 			[BZ["Kings' Rest"]] = true,
+			[BZ["Battle of Dazar'alor"]] = true,	
 		},	
 		flightnodes = {
 			[1975] = true,    -- Zeb'ahari, Zuldazar (H)
@@ -8858,6 +8953,31 @@ do
 		type = "Instance",
 		entrancePortal = { BZ["Zuldazar"], 37.9, 39.5 }, 
 	}
+
+
+	-- Patch 8.1 raids
+	zones[BZ["Battle of Dazar'alor"]] = {
+		low = 120,
+		high = 120,
+		continent = Zandalar,
+		paths = BZ["Zuldazar"],
+		groupSize = 10,
+		altGroupSize = 30,
+		type = "Instance",
+		entrancePortal = { BZ["Zuldazar"], 54.3, 29.9 },
+	}
+
+	zones[BZ["Uldir"]] = {
+		low = 120,
+		high = 120,
+		continent = Zandalar,
+		paths = BZ["Nazmir"],
+		groupSize = 10,
+		altGroupSize = 30,
+		type = "Instance",
+		entrancePortal = { BZ["Nazmir"], 53.9, 62.7 }, 
+	}
+
 
 	
 	-- Raids --

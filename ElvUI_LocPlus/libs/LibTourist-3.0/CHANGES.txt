@@ -1,4 +1,19 @@
 ------------------------------------------------------------------------
+r216 | Odica | 2018-12-17 22:17:51 +0000 (Mon, 17 Dec 2018) | 4 lines
+Changed paths:
+   M /trunk/LibTourist-3.0.lua
+
+- added Uldim (raid)
+- added Battle for Dazar'alor (raid)
+- added 37 missing MapIDs to lookup
+- removed MapID 592 (Defense of Karabor) from lookup, is not returned by C_Map
+------------------------------------------------------------------------
+r215 | Odica | 2018-12-16 22:39:40 +0000 (Sun, 16 Dec 2018) | 1 line
+Changed paths:
+   M /trunk/LibTourist-3.0.toc
+
+Updated TOC to 80100
+------------------------------------------------------------------------
 r214 | Odica | 2018-12-12 22:37:39 +0000 (Wed, 12 Dec 2018) | 1 line
 Changed paths:
    M /trunk/LibTourist-3.0.lua
