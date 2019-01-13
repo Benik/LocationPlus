@@ -1,3 +1,6 @@
+[b]2.40[/b]
+*LibTourist update
+
 [b]2.39[/b]
 *toc update for patch 8.1
 *LibTourist update
