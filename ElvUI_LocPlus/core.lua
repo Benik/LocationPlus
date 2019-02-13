@@ -302,7 +302,7 @@ function LP:ShadowPanels()
 	local panelsToAddShadow = {LocationPlusPanel, XCoordsPanel, YCoordsPanel, LeftCoordDtPanel, RightCoordDtPanel}
 	
 	for _, frame in pairs(panelsToAddShadow) do
-		frame:CreateShadow('Default')
+		frame:CreateShadow()
 		if E.db.locplus.shadow then
 			frame.shadow:Show()
 		else
