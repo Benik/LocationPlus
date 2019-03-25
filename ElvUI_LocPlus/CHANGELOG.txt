@@ -1,3 +1,9 @@
+[b]2.42[/b]
+Update LibTourist for patch 8.1.5
+
+[b]2.41[/b]
+Fix CreateShadow
+
 [b]2.40[/b]
 *LibTourist update
 
