@@ -87,6 +87,7 @@ local currency = {
 	1587,	-- War Supplies
 	1710,	-- Seafarer's Dubloon
 	1718,	-- Titan Residuum
+	1721,	-- Prismatic Manapearl
 }
 
 if E.myfaction == 'Alliance' then
