@@ -1,6 +1,6 @@
-﻿## Interface: 80100
+﻿## Interface: 80200
 ## Author: Benik
-## Version: 2.42
+## Version: 2.43
 ## Title: |cff1784d1ElvUI|r Location Plus
 ## Notes: a plugin for ElvUI 10+, that adds location, coords, 2 Datatexts and a tooltip full of info.
 ## RequiredDeps: ElvUI
