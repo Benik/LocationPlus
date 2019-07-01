@@ -68,13 +68,13 @@ local function LocPanel_OnEnter(self)
 	GameTooltip:SetOwner(self, "ANCHOR_BOTTOM", 0, -4)
 	GameTooltip:ClearAllPoints()
 	GameTooltip:SetPoint("BOTTOM", self, "BOTTOM", 0, 0)
-	
+
 	if InCombatLockdown() and E.db.locplus.ttcombathide then
 		GameTooltip:Hide()
 	else
 		LP:UpdateTooltip()
 	end
-	
+
 	if E.db.locplus.mouseover then
 		UIFrameFadeIn(self, 0.2, self:GetAlpha(), 1)
 	end
@@ -104,7 +104,7 @@ local function CreateCoords()
 	end
 
 	local dig
-	
+
 	if E.db.locplus.dig then
 		dig = 2
 	else
@@ -120,7 +120,7 @@ end
 -- clicking the location panel
 local function LocPanel_OnClick(self, btn)
 	local zoneText = GetRealZoneText() or UNKNOWN;
-	if btn == "LeftButton" then	
+	if btn == "LeftButton" then
 		if IsShiftKeyDown() then
 			local edit_box = ChatEdit_ChooseBoxForSend()
 			local x, y = CreateCoords()
@@ -132,20 +132,20 @@ local function LocPanel_OnClick(self, btn)
 					message = format("%s (%s)", zoneText, coords)
 				end
 			ChatEdit_ActivateChat(edit_box)
-			edit_box:Insert(message) 
+			edit_box:Insert(message)
 		else
 			if IsControlKeyDown() then
 				LeftCoordDtPanel:SetScript("OnShow", function(self) E.db.locplus.dtshow = true; end)
 				LeftCoordDtPanel:SetScript("OnHide", function(self) E.db.locplus.dtshow = false; end)
 				ToggleFrame(LeftCoordDtPanel)
 				ToggleFrame(RightCoordDtPanel)
-			else 
+			else
 				ToggleFrame(WorldMapFrame)
 			end
 		end
 	end
 	if btn == "RightButton" then
-		E:ToggleConfig(); LibStub("AceConfigDialog-3.0-ElvUI"):SelectGroup("ElvUI", "locplus")
+		E:ToggleOptionsUI(); LibStub("AceConfigDialog-3.0-ElvUI"):SelectGroup("ElvUI", "locplus")
 	end
 end
 
@@ -164,7 +164,7 @@ local function CreateLocationPanel()
 	loc_panel:SetFrameStrata('LOW')
 	loc_panel:SetFrameLevel(2)
 	loc_panel:EnableMouse(true)
-	loc_panel:SetScript('OnEnter', LocPanel_OnEnter) 
+	loc_panel:SetScript('OnEnter', LocPanel_OnEnter)
 	loc_panel:SetScript('OnLeave', LocPanel_OnLeave)
 	loc_panel:SetScript('OnMouseUp', LocPanel_OnClick)
 
@@ -174,7 +174,7 @@ local function CreateLocationPanel()
 	loc_panel.Text:SetAllPoints()
 	loc_panel.Text:SetJustifyH("CENTER")
 	loc_panel.Text:SetJustifyV("MIDDLE")
-	
+
 	-- Hide in combat/Pet battle
 	loc_panel:SetScript("OnEvent",function(self, event)
 		if event == "PET_BATTLE_OPENING_START" then
@@ -300,7 +300,7 @@ end
 -- Enable/Disable shadows
 function LP:ShadowPanels()
 	local panelsToAddShadow = {LocationPlusPanel, XCoordsPanel, YCoordsPanel, LeftCoordDtPanel, RightCoordDtPanel}
-	
+
 	for _, frame in pairs(panelsToAddShadow) do
 		frame:CreateShadow()
 		if E.db.locplus.shadow then
@@ -323,30 +323,30 @@ end
 function LP:HideCoords()
 	XCoordsPanel:Point('RIGHT', LocationPlusPanel, 'LEFT', -SPACING, 0)
 	YCoordsPanel:Point('LEFT', LocationPlusPanel, 'RIGHT', SPACING, 0)
-	
+
 	LeftCoordDtPanel:ClearAllPoints()
 	RightCoordDtPanel:ClearAllPoints()
-	
+
 	if (E.db.locplus.hidecoords) or (E.db.locplus.hidecoordsInInstance and IsInInstance()) then
 		XCoordsPanel:Hide()
 		YCoordsPanel:Hide()
 		LeftCoordDtPanel:Point('RIGHT', LocationPlusPanel, 'LEFT', -SPACING, 0)
-		RightCoordDtPanel:Point('LEFT', LocationPlusPanel, 'RIGHT', SPACING, 0)		
+		RightCoordDtPanel:Point('LEFT', LocationPlusPanel, 'RIGHT', SPACING, 0)
 	else
 		XCoordsPanel:Show()
 		YCoordsPanel:Show()
 		LeftCoordDtPanel:Point('RIGHT', XCoordsPanel, 'LEFT', -SPACING, 0)
-		RightCoordDtPanel:Point('LEFT', YCoordsPanel, 'RIGHT', SPACING, 0)			
+		RightCoordDtPanel:Point('LEFT', YCoordsPanel, 'RIGHT', SPACING, 0)
 	end
 end
 
 -- Toggle transparency
 function LP:TransparentPanels()
 	local panelsToAddTrans = {LocationPlusPanel, XCoordsPanel, YCoordsPanel, LeftCoordDtPanel, RightCoordDtPanel}
-	
+
 	for _, frame in pairs(panelsToAddTrans) do
 		frame:SetTemplate('NoBackdrop')
-		if not E.db.locplus.noback then 
+		if not E.db.locplus.noback then
 			E.db.locplus.shadow = false
 		elseif E.db.locplus.trans then
 			frame:SetTemplate('Transparent')
@@ -371,7 +371,7 @@ function LP:UpdateLocation()
 	else
 		displayLine = subZoneText
 	end
-	
+
 	-- Show Other (Level, Battle Pet Level, Fishing)
 	if E.db.locplus.displayOther == 'RLEVEL' then
 		local displaylvl = LP:GetLevelRange(zoneText) or ""
@@ -391,9 +391,9 @@ function LP:UpdateLocation()
 	else
 		displayLine = displayLine
 	end
-	
+
 	LocationPlusPanel.Text:SetText(displayLine)
-	
+
 	-- Coloring
 	if displayLine ~= "" then
 		if E.db.locplus.customColor == 1 then
@@ -404,11 +404,11 @@ function LP:UpdateLocation()
 			LocationPlusPanel.Text:SetTextColor(unpackColor(E.db.locplus.userColor))
 		end
 	end
-	
+
 	-- Sizing
 	local fixedwidth = (E.db.locplus.lpwidth + 18)
 	local autowidth = (LocationPlusPanel.Text:GetStringWidth() + 18)
-	
+
 	if E.db.locplus.lpauto then
 		LocationPlusPanel:Width(autowidth)
 		LocationPlusPanel.Text:Width(autowidth)
@@ -421,7 +421,7 @@ function LP:UpdateLocation()
 			LocationPlusPanel:Width(autowidth)
 			LocationPlusPanel.Text:Width(autowidth)
 		end
-	end		
+	end
 end
 
 function LP:UpdateCoords()
@@ -431,14 +431,14 @@ function LP:UpdateCoords()
 	if (x == 0 or x == nil) and (y == 0 or y == nil) then
 		XCoordsPanel.Text:SetText("-")
 		YCoordsPanel.Text:SetText("-")
-		
+
 	else
 		if x < 10 then
 			xt = "0"..x
 		else
 			xt = x
 		end
-		
+
 		if y < 10 then
 			yt = "0"..y
 		else
@@ -463,7 +463,7 @@ end
 function LP:CoordsColor()
 	if E.db.locplus.customCoordsColor == 1 then
 		XCoordsPanel.Text:SetTextColor(unpackColor(E.db.locplus.userColor))
-		YCoordsPanel.Text:SetTextColor(unpackColor(E.db.locplus.userColor))			
+		YCoordsPanel.Text:SetTextColor(unpackColor(E.db.locplus.userColor))
 	elseif E.db.locplus.customCoordsColor == 2 then
 		XCoordsPanel.Text:SetTextColor(classColor.r, classColor.g, classColor.b)
 		YCoordsPanel.Text:SetTextColor(classColor.r, classColor.g, classColor.b)
@@ -504,15 +504,15 @@ end
 function LP:LocPlusDefaults()
 	if E.db.locplus.lpwidth == nil then
 		E.db.locplus.lpwidth = 200
-	end	
+	end
 
 	if E.db.locplus.dtwidth == nil then
 		E.db.locplus.dtwidth = 100
-	end	
-	
+	end
+
 	if E.db.locplus.dtheight == nil then
 		E.db.locplus.dtheight = 21
-	end	
+	end
 end
 
 function LP:ToggleBlizZoneText()
@@ -521,7 +521,7 @@ function LP:ToggleBlizZoneText()
 	else
 		ZoneTextFrame:RegisterEvent("ZONE_CHANGED_NEW_AREA")
 		ZoneTextFrame:RegisterEvent("ZONE_CHANGED_INDOORS")
-		ZoneTextFrame:RegisterEvent("ZONE_CHANGED")	
+		ZoneTextFrame:RegisterEvent("ZONE_CHANGED")
 	end
 end
 
