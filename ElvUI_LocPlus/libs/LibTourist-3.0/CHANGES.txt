@@ -1,82 +1,29 @@
 ------------------------------------------------------------------------
-r216 | Odica | 2018-12-17 22:17:51 +0000 (Mon, 17 Dec 2018) | 4 lines
+r225 | Odica | 2019-07-10 18:03:55 +0000 (Wed, 10 Jul 2019) | 7 lines
 Changed paths:
    M /trunk/LibTourist-3.0.lua
 
-- added Uldim (raid)
-- added Battle for Dazar'alor (raid)
-- added 37 missing MapIDs to lookup
-- removed MapID 592 (Defense of Karabor) from lookup, is not returned by C_Map
+- added Dazar'Alor - Nazjatar portal
+- added Nazjatar - Dazar'Alor portal
+- added Boralus - Nazjatar portal
+- added Nazjatar - Boralus portal
+- added 7 flight nodes (all in Nazjatar)
+
+
 ------------------------------------------------------------------------
-r215 | Odica | 2018-12-16 22:39:40 +0000 (Sun, 16 Dec 2018) | 1 line
+r224 | Odica | 2019-06-27 21:17:35 +0000 (Thu, 27 Jun 2019) | 9 lines
 Changed paths:
+   M /trunk/LibTourist-3.0.lua
    M /trunk/LibTourist-3.0.toc
 
-Updated TOC to 80100
-------------------------------------------------------------------------
-r214 | Odica | 2018-12-12 22:37:39 +0000 (Wed, 12 Dec 2018) | 1 line
-Changed paths:
-   M /trunk/LibTourist-3.0.lua
+- added 38 mapIDs
+- added 6 flight nodes
+- added zone Nazjatar (continent = Azeroth)
+- added zone Mechagon Island
+- added dungeon Mechagon
+- added raid The Eternal Palace
+- updated TOC to 80200
 
-Added 6 missing flightnodes.
-------------------------------------------------------------------------
-r213 | Odica | 2018-10-08 21:27:40 +0000 (Mon, 08 Oct 2018) | 54 lines
-Changed paths:
-   M /trunk/LibTourist-3.0.lua
-
-New in this version: Flight node data
--------------------------------------
-
-LibTourist now gathers data about flight nodes, using the C_TaxiMap interface. For each zone that has flight nodes, the node IDs have been stored in the library. At runtime, the C_TaxiMap interface is used to assign node data to these IDs in a lookup table.
-
-Note: For some reason, C_TaxiMap does not return data for a small number of node IDs (10 to 20 on a total of 547). Which IDs depends on a few things, including the character's faction and if zones like Silithus and Blasted Lands are set to 'now' or 'present'. The nodes unavailable in C_TaxiMap do not exist at all for the character. All other nodes are returned, regardless of their faction and if they have been discovered or not. The Seahorses in Vashj'ir and teleports on Argus are included.
-
-Libtourist caches the MapTaxiNodeInfo objects from C_TaxiMap with two additional properties. The following data is made available:
-
-	structure TaxiMap.MapTaxiNodeInfo
-		number nodeID				-- unique node ID
-		table position				-- position of the node on the Flight Master's map (no relation with the world map!)
-		string name				-- node name as displayed in game, includes zone name (mostly)
-		string atlasName			-- atlas object type
-		Enum.FlightPathFaction faction		-- 0 = Neutral, 1 = Horde, 2 = Alliance
-		(optional) string textureKitPrefix	-- no clue what this is for
-		string factionName			-- added by LibTourist: "Neutral", "Horde" or "Alliance" (not localized)
-		table zones				-- added by LibTourist: localized names of the zones in which the node resides*
-
-*) some nodes, like those in major cities, are linked to the city (i.e. Orgrimmar) and the zone in which the city lies (i.e. Durotar). The majority has only one zone assigned.
-
-Unfortunately and strangely, there is no data available in C_TaxiMap on connections between nodes.
-
-
-NEW API FUNCTIONS
------------------
-
-- Tourist:GetFlightnodeLookupTable()
-Returns the lookup table with all flight nodes. 
-Key = node ID.
-Value is a node struct (see above) if the node could be found in C_TaxiMap.
-If the node was not returned by C_Taximap, value is true.
-
-- Tourist:RefreshFlightNodeData()
-Refreshes the values of the FlightnodeLookupTable.
-Note: the collection of nodes returned by C_TaxiMap changes when a zone like Silithus is set to a different time by visiting Zidormi.
-As I don't know how to detect such a time switch, the nodes lookup is not updated when it happens.
-
-- Tourist:GetFlightnode(nodeID)
-Returns a MapTaxiNodeInfo struct (with some extra attributes) for the specified nodeID, if known and available.
-
-- Tourist:GetFlightnodeFactionColor(faction)
-Returns an r, g and b value representing a color, depending on the given flight node faction and the current character's faction.
-Parameter faction can be 0, 1, 2, "Neutral", "Horde" or "Alliance" (not localized).
-
-- Tourist:IterateZoneFlightnodes(zone)
-Loops through the available flight nodes for the given zone, returning MapTaxiNodeInfo structs (see above)
-
-- Tourist:DoesZoneHaveFlightnodes(zone)
-Returns true if *any* flight nodes (available or not) have been assigned to the given zone, available or not. 
-Note: This still has to be improved so it only returns true if there are available nodes assigned to the zone. Teldrassil is an example of a zone that can have no available nodes depending on the time it is set to.
-
-
-Any feedback is welcome on bugs or improvements!
+Note: even though there appears to be a continent map for Nazjatar (ID 1504) this map has no parent map and no children. Also, Nazjatar does not appear in the list of continents provided by C_Map. However, the Nazjatar zone map (ID 1355) has the Azeroth map (947) as parent. So now Azeroth has a bunch of continents and one zone as children. Had to make some exceptions to make that work, like processing Azeroth as if it were a continent in order to initialize the Nazjatar zone data.
 ------------------------------------------------------------------------
 
