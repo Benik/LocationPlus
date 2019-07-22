@@ -1,3 +1,7 @@
+[b]2.44[/b]
+ToggleConfig has been renamed to ToggleOptionsUI.  Fixes #3. (Credit: Nihilistic)
+Update LibTourist
+
 [b]2.43[/b]
 Added Prismatic Manapearl in the tokens
 Update toc for patch 8.2
