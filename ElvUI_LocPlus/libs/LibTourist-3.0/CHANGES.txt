@@ -1,29 +1,24 @@
 ------------------------------------------------------------------------
-r225 | Odica | 2019-07-10 18:03:55 +0000 (Wed, 10 Jul 2019) | 7 lines
+r227 | Odica | 2019-08-31 22:42:52 +0000 (Sat, 31 Aug 2019) | 17 lines
 Changed paths:
    M /trunk/LibTourist-3.0.lua
 
-- added Dazar'Alor - Nazjatar portal
-- added Nazjatar - Dazar'Alor portal
-- added Boralus - Nazjatar portal
-- added Nazjatar - Boralus portal
-- added 7 flight nodes (all in Nazjatar)
+Removed all hard coded battle pet levels. For a while now these are retrieved through C_Map.GetMapLevels, overwriting the hard coded values. For zones without battle pets, GetMapLevels returns no pet levels. Some of these zones however, had hard coded values defined, which would be returned by LibTourist.
+For the following zones LibTourist no longer incorrectly returns battle pet levels:
+- Isle of Quel'Danas (Eastern Kingdoms)
+- Undercity (Eastern Kingdoms)
+- Stranglethorn Vale (Eastern Kingdoms)
+- Kelp'thar Forest (Eastern Kingdoms)
+- Vashj'ir (Eastern Kingdoms)
+- Shimmering Expanse (Eastern Kingdoms)
+- Abyssal Depths (Eastern Kingdoms)
+- Kezan (The Maelstrom)
+- Shattrath City (Outland)
+- Wintergrasp (Northrend)
+- Hrothgar's Landing (Northrend)
+- Dalaran (Broken Isles)
+- Broken Shore (Broken Isles)
+- Isle of Giants (Pandaria)
 
-
-------------------------------------------------------------------------
-r224 | Odica | 2019-06-27 21:17:35 +0000 (Thu, 27 Jun 2019) | 9 lines
-Changed paths:
-   M /trunk/LibTourist-3.0.lua
-   M /trunk/LibTourist-3.0.toc
-
-- added 38 mapIDs
-- added 6 flight nodes
-- added zone Nazjatar (continent = Azeroth)
-- added zone Mechagon Island
-- added dungeon Mechagon
-- added raid The Eternal Palace
-- updated TOC to 80200
-
-Note: even though there appears to be a continent map for Nazjatar (ID 1504) this map has no parent map and no children. Also, Nazjatar does not appear in the list of continents provided by C_Map. However, the Nazjatar zone map (ID 1355) has the Azeroth map (947) as parent. So now Azeroth has a bunch of continents and one zone as children. Had to make some exceptions to make that work, like processing Azeroth as if it were a continent in order to initialize the Nazjatar zone data.
 ------------------------------------------------------------------------
 
