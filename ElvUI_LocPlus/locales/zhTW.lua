@@ -1,6 +1,5 @@
-﻿local AceLocale = LibStub:GetLibrary("AceLocale-3.0")
-local L = AceLocale:NewLocale("ElvUI", "zhTW")
-if not L then return end
+﻿local L = ElvUI[1].Libs.ACL:NewLocale("ElvUI", "zhTW")
+
 -- Credits: zhouf616, xjjxfpyyyf
 L["Adds 2 digits in the coords"] = "坐標增加2位數字"
 L["Adds 6 pixels at the Main Location Panel height."] = "主要位置框架增加6個像素高度."

@@ -1,7 +1,4 @@
-﻿-- English localization file for itIT
-local AceLocale = LibStub:GetLibrary("AceLocale-3.0");
-local L = AceLocale:NewLocale("ElvUI", "itIT");
-if not L then return; end
+﻿local L = ElvUI[1].Libs.ACL:NewLocale("ElvUI", "itIT")
 
 L["Adds 2 digits in the coords"] = "Adds 2 digits in the coords" -- Requires localization
 L["Adds 6 pixels at the Main Location Panel height."] = "Adds 6 pixels at the Main Location Panel height." -- Requires localization

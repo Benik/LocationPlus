@@ -1,8 +1,6 @@
 ﻿--Файл локализации для ruRU
 --Credits: Darth Predator
-local AceLocale = LibStub:GetLibrary("AceLocale-3.0");
-local L = AceLocale:NewLocale("ElvUI", "ruRU")
-if not L then return; end
+local L = ElvUI[1].Libs.ACL:NewLocale("ElvUI", "ruRU")
 
 L["Adds 2 digits in the coords"] = "Добавляет сотые доли координат"
 L["Adds 6 pixels at the Main Location Panel height."] = "Увеличить высоту панели зоны на 6 пикселей."

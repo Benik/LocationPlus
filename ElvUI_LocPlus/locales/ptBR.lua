@@ -1,6 +1,5 @@
-﻿local AceLocale = LibStub:GetLibrary("AceLocale-3.0")
-local L = AceLocale:NewLocale("ElvUI", "ptBR")
-if not L then return end
+﻿local L = ElvUI[1].Libs.ACL:NewLocale("ElvUI", "ptBR")
+
 -- Credits: Don
 L["Adds 2 digits in the coords"] = "Adds 2 digits in the coords" -- Requires localization
 L["Adds 6 pixels at the Main Location Panel height."] = "Adiciona 6 Pixels na altura do Painel de Localização principal."

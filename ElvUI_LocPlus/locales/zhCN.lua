@@ -1,6 +1,4 @@
-﻿local AceLocale = LibStub:GetLibrary("AceLocale-3.0")
-local L = AceLocale:NewLocale("ElvUI", "zhCN")
-if not L then return end
+﻿local L = ElvUI[1].Libs.ACL:NewLocale("ElvUI", "zhCN")
 
 -- Credits: zhouf616
 L["Adds 2 digits in the coords"] = "坐标增加2位数字"

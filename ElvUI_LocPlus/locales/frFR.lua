@@ -1,6 +1,5 @@
-﻿local AceLocale = LibStub:GetLibrary("AceLocale-3.0");
-local L = AceLocale:NewLocale("ElvUI", "frFR");
-if not L then return; end
+﻿local L = ElvUI[1].Libs.ACL:NewLocale("ElvUI", "frFR")
+
 -- Credits: Onii & Ckeurk, Updated by Alex, Lesgalapagos
 L["Adds 2 digits in the coords"] = "Ajoute 2 chiffres dans les coordonnées"
 L["Adds 6 pixels at the Main Location Panel height."] = "Ajoute 6 pixels à la hauteur du panneau de localisation principal."
