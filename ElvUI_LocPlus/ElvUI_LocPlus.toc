@@ -1,4 +1,4 @@
-﻿## Interface: 80200
+﻿## Interface: 80205
 ## Author: Benik
 ## Version: 2.44
 ## Title: |cff1784d1ElvUI|r Location Plus
