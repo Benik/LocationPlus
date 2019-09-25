@@ -1,3 +1,8 @@
+[b]2.45[/b]
+Fixed broken locales
+Update LibTourist
+toc update for 8.2.5
+
 [b]2.44[/b]
 ToggleConfig has been renamed to ToggleOptionsUI.  Fixes #3. (Credit: Nihilistic)
 Update LibTourist
