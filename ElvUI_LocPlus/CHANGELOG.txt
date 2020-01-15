@@ -1,3 +1,7 @@
+[b]2.46[/b] (Jan 15, 2020)
+Bump toc for patch 8.3
+Added 8.3 currencies
+
 [b]2.45[/b]
 Fixed broken locales
 Update LibTourist
