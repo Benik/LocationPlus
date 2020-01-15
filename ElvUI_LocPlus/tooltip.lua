@@ -82,12 +82,15 @@ local currency = {
 
 	-- BfA
 	1560, 	-- War Resources
-	1565,	-- Rich Azerite Fragment
 	1580,	-- Seal of Wartorn Fate
 	1587,	-- War Supplies
 	1710,	-- Seafarer's Dubloon
+	--1716,	-- Honorbound Service Medal (Horde)
+	--1717,	-- 7th Legion Service Medal (Alliance)
 	1718,	-- Titan Residuum
+	1719,	-- Corrupted Memento
 	1721,	-- Prismatic Manapearl
+	1755,	-- Coalescing Visions
 }
 
 if E.myfaction == 'Alliance' then
