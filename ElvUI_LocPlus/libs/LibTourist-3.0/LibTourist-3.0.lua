@@ -1,6 +1,6 @@
 --[[
 Name: LibTourist-3.0
-Revision: $Rev: 227 $
+Revision: $Rev: 232 $
 Author(s): Odica (maintainer), originally created by ckknight and Arrowmaster
 Documentation: https://www.wowace.com/projects/libtourist-3-0/pages/api-reference
 SVN: svn://svn.wowace.com/wow/libtourist-3-0/mainline/trunk
@@ -9,7 +9,7 @@ License: MIT
 ]]
 
 local MAJOR_VERSION = "LibTourist-3.0"
-local MINOR_VERSION = 90000 + tonumber(("$Revision: 227 $"):match("(%d+)"))
+local MINOR_VERSION = 90000 + tonumber(("$Revision: 232 $"):match("(%d+)"))
 
 if not LibStub then error(MAJOR_VERSION .. " requires LibStub") end
 local C_Map = C_Map
@@ -1277,6 +1277,7 @@ local MapIdLookupTable = {
     [1372] = "GnomereganB",
     [1374] = "GnomereganD",
     [1375] = "Halls of Stone",
+    [1379] = "8.3 Visions of N'Zoth - Prototype",
     [1380] = "GnomereganC",
     [1381] = "Uldir",
     [1382] = "Uldir",
@@ -1298,6 +1299,9 @@ local MapIdLookupTable = {
     [1462] = "Mechagon Island",
     [1465] = "Scarlet Halls",
     [1467] = "Outland",	
+    [1468] = "The Dreamgrove",
+    [1469] = "Vision of Orgrimmar",
+    [1470] = "Vision of Stormwind",	
     [1471] = "Emerald Dreamway",
     [1472] = "The Dragon's Spine",
     [1473] = "Chamber of Heart",
@@ -1326,10 +1330,62 @@ local MapIdLookupTable = {
     [1518] = "The Eternal Palace",
     [1519] = "The Eternal Palace",
     [1520] = "The Eternal Palace",
+    [1521] = "Karazhan Catacombs",
     [1522] = "Crumbling Cavern",
+    [1523] = "Solesa Naksu [DNT]",
     [1524] = "",
+    [1527] = "Uldum",
     [1528] = "Nazjatar",	
-
+    [1530] = "Vale of Eternal Blossoms",
+    [1531] = "Crapopolis",
+    [1532] = "Crapopolis",
+    [1534] = "Orgrimmar",
+    [1535] = "Durotar",
+    [1537] = "Alterac Valley",
+    [1538] = "Blackwing Descent",
+    [1539] = "Blackwing Descent",
+    [1540] = "Halls of Origination",
+    [1541] = "Halls of Origination",
+    [1542] = "Halls of Origination",
+    [1544] = "Mogu'Shan Palace",
+    [1545] = "Mogu'Shan Palace",
+    [1546] = "Mogu'Shan Palace",
+    [1547] = "Mogu'Shan Vaults",
+    [1548] = "Mogu'Shan Vaults",
+    [1549] = "Mogu'Shan Vaults",
+    [1552] = "Caverns of Time",
+    [1553] = "Caverns of Time",
+    [1554] = "Serpentshrine Cavern",
+    [1555] = "Tempest Keep",
+    [1556] = "Hyjal Summit",
+    [1557] = "Naxxramas",
+    [1558] = "Icecrown Citadel",
+    [1559] = "The Bastion of Twilight",
+    [1560] = "Blackwing Lair",
+    [1561] = "Firelands",
+    [1563] = "Trial of the Crusader",
+    [1570] = "Vale of Eternal Blossoms",
+    [1571] = "Uldum",
+    [1573] = "Mechagon City",
+    [1574] = "Mechagon City",
+    [1576] = "Deepwind Gorge",
+    [1577] = "Gilneas City",
+    [1578] = "Blackrock Depths",
+    [1579] = "Pools Of Power",
+    [1580] = "Ny'alotha",
+    [1581] = "Ny'alotha",
+    [1582] = "Ny'alotha",
+    [1590] = "Ny'alotha",
+    [1591] = "Ny'alotha",
+    [1592] = "Ny'alotha",
+    [1593] = "Ny'alotha",
+    [1594] = "Ny'alotha",
+    [1595] = "Ny'alotha",
+    [1596] = "Ny'alotha",
+    [1597] = "Ny'alotha",
+    [1600] = "Vault of Y'Shaarj",
+    [1602] = "Icecrown Citadel",
+    [1604] = "Chamber Of Heart",	
 }
 
 
@@ -1715,7 +1771,7 @@ end
 ]]--
 
 local function GatherFlightnodeData()
-	local zMapID, zName, nodes
+	local zMapID, zName, nodes, numNodes
 	local count = 0
 	local errCount = 0
 	if gatheringFlightnodes == true then return end
@@ -3230,7 +3286,7 @@ setmetatable(cost, {
 			end
 		end
 
-		if types[x] == "Transport" then
+		if types[vertex] == "Transport" then
 			price = price * 2
 		end
 
@@ -5889,6 +5945,7 @@ do
 			[BZ["Lost City of the Tol'vir"]] = true,
 			[BZ["The Vortex Pinnacle"]] = true,
 			[BZ["Throne of the Four Winds"]] = true,
+			[BZ["Ny'alotha"]] = true,  -- Entrance can be either here or in Vale of Eternal Blossoms
 		},
 		fishing_min = 650,
 	}
@@ -6649,6 +6706,7 @@ do
 		instances = {
 			[BZ["Mogu'shan Palace"]] = true,
 			[BZ["Siege of Orgrimmar"]] = true,
+			[BZ["Ny'alotha"]] = true,  -- Entrance can be either here or in Uldum
 		},
 		paths = {
 			[BZ["Mogu'shan Palace"]] = true,
@@ -6661,6 +6719,7 @@ do
 			[1057] = true,    -- Shrine of Seven Stars, Vale of Eternal Blossoms (A)
 			[1058] = true,    -- Shrine of Two Moons, Vale of Eternal Blossoms (H)
 			[1073] = true,    -- Serpent's Spine, Vale of Eternal Blossoms (N)
+			[2544] = true,	  -- Mistfall Village, Vale of Eternal Blossoms (N)
 		},
 		fishing_min = 825,
 	}
@@ -8704,7 +8763,21 @@ do
 		entrancePortal = { BZ["Nazmir"], 53.9, 62.7 }, 
 	}
 
-
+	-- Patch 8.3 raid
+	
+	-- The entrance of this raid can either be in Uldum or in the Vale of Eternal Blossoms, 
+	-- changing once a week.
+	-- Two entrances is not supported by the data structure of LibTourist unless a way can be found to detect the current location of the raid entrance.
+	zones[BZ["Ny'alotha"]] = {  -- a.k.a The Waking City
+		low = 120,
+		high = 120,
+		continent = Zandalar,
+		paths = BZ["Uldum"],
+		groupSize = 10,
+		altGroupSize = 25,
+		type = "Instance",
+		entrancePortal = { BZ["Uldum"], 55, 43.6 },
+	}
 	
 
 	
@@ -9511,7 +9584,7 @@ do
 		for zoneMapID, zoneName in pairs(mapZones) do
 			-- Add mapIDs to lookup table
 			zoneMapIDtoContinentMapID[zoneMapID] = continentMapID
-
+			
 			-- Check for duplicate on continent name + zone name
 			if not doneZones[continentName.."."..zoneName] then
 				uniqueZoneName = Tourist:GetUniqueZoneNameForLookup(zoneName, continentMapID)
@@ -9522,7 +9595,7 @@ do
 					zones[uniqueZoneName].texture = C_Map.GetMapArtID(continentMapID)
 					-- Get zone player and battle pet levels
 					minLvl, maxLvl, minPetLvl, maxPetLvl = C_Map.GetMapLevels(zoneMapID)
-					if minLvL and minLvL > 0 then zones[uniqueZoneName].low = minLvl end
+					if minLvl and minLvl > 0 then zones[uniqueZoneName].low = minLvl end
 					if maxLvl and maxLvl > 0 then zones[uniqueZoneName].high = maxLvl end
 					if minPetLvl and minPetLvl > 0 then zones[uniqueZoneName].battlepet_low = minPetLvl end
 					if maxPetLvl and maxPetLvl > 0 then zones[uniqueZoneName].battlepet_high = maxPetLvl end

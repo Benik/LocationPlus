@@ -1,24 +1,37 @@
 ------------------------------------------------------------------------
-r227 | Odica | 2019-08-31 22:42:52 +0000 (Sat, 31 Aug 2019) | 17 lines
+r232 | Odica | 2020-01-16 22:42:05 +0000 (Thu, 16 Jan 2020) | 8 lines
+Changed paths:
+   M /trunk/LibTourist-3.0.lua
+   M /trunk/LibTourist-3.0.toc
+
+- Upped version in TOC to 80300
+- Added 40 missing MapIDs
+- Added missing flight node: Mistfall Village, Vale of Eternal Blossoms
+- Added 8.3 raid: Ny'alotha
+- small bugfix in the function that calculates path costs for the IteratePath function
+- fixed a small bug in core method that would cause the minimum level of a zone not to be updated if the min level reported by C_Map differs from the hard coded minlevel in LibTourist.
+
+NOTE about Ny'alotha: this raid does not have a fixed entrance location, it can either be in Uldum or in the Vale of Eternal Blossoms. This is not supported by the data structure of LibTourist. Until a way can be found to dynamically detect the zone the raid's entrance is currently in, it is registered as located in Uldum. However, Vale of Eternal Blossoms also has a reference to the raid so it will show up when querying for instances in Vale of Eternal Blossoms.
+------------------------------------------------------------------------
+r231 | Odica | 2019-11-08 21:10:16 +0000 (Fri, 08 Nov 2019) | 1 line
 Changed paths:
    M /trunk/LibTourist-3.0.lua
 
-Removed all hard coded battle pet levels. For a while now these are retrieved through C_Map.GetMapLevels, overwriting the hard coded values. For zones without battle pets, GetMapLevels returns no pet levels. Some of these zones however, had hard coded values defined, which would be returned by LibTourist.
-For the following zones LibTourist no longer incorrectly returns battle pet levels:
-- Isle of Quel'Danas (Eastern Kingdoms)
-- Undercity (Eastern Kingdoms)
-- Stranglethorn Vale (Eastern Kingdoms)
-- Kelp'thar Forest (Eastern Kingdoms)
-- Vashj'ir (Eastern Kingdoms)
-- Shimmering Expanse (Eastern Kingdoms)
-- Abyssal Depths (Eastern Kingdoms)
-- Kezan (The Maelstrom)
-- Shattrath City (Outland)
-- Wintergrasp (Northrend)
-- Hrothgar's Landing (Northrend)
-- Dalaran (Broken Isles)
-- Broken Shore (Broken Isles)
-- Isle of Giants (Pandaria)
+Fixed unintended global numNodes in GatherFlightNodeData
+------------------------------------------------------------------------
+r230 | Odica | 2019-10-30 22:22:22 +0000 (Wed, 30 Oct 2019) | 1 line
+Changed paths:
+   M /trunk/lib.xml
+
+Corrected CallbackHandler path in lib.xml
+------------------------------------------------------------------------
+r229 | Odica | 2019-10-30 22:10:02 +0000 (Wed, 30 Oct 2019) | 3 lines
+Changed paths:
+   M /trunk/.pkgmeta
+   M /trunk/LibTourist-3.0.lua
+
+Added 17 new mapIDs to lookup table
+Some pkgmeta fixes
 
 ------------------------------------------------------------------------
 
