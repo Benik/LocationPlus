@@ -71,6 +71,7 @@ function LP:AddOptions()
 		order = 9000,
 		type = 'group',
 		name = L["Location Plus"],
+		childGroups = "tab",
 		args = {
 			name = {
 				order = 1,
@@ -128,7 +129,6 @@ function LP:AddOptions()
 				order = 5,
 				type = "group",
 				name = SHOW,
-				guiInline = true,
 				get = function(info) return E.db.locplus[ info[#info] ] end,
 				set = function(info, value) E.db.locplus[ info[#info] ] = value; end,
 				args = {
