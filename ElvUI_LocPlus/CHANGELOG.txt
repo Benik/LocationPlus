@@ -1,3 +1,7 @@
+[b]2.47[/b] (Feb 6, 2020)
+LibTourist update to 8.3-beta1
+Fixed the options to follow the latest ElvUI changes
+
 [b]2.46[/b] (Jan 15, 2020)
 Bump toc for patch 8.3
 Added 8.3 currencies
