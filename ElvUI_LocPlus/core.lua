@@ -54,13 +54,6 @@ local right_dtp = CreateFrame('Frame', 'RightCoordDtPanel', E.UIParent)
 do
 	DT:RegisterPanel(LeftCoordDtPanel, 1, 'ANCHOR_BOTTOM', 0, -4)
 	DT:RegisterPanel(RightCoordDtPanel, 1, 'ANCHOR_BOTTOM', 0, -4)
-
-	L['RightCoordDtPanel'] = L["LocationPlus Right Panel"];
-	L['LeftCoordDtPanel'] = L["LocationPlus Left Panel"];
-
-	-- Setting default datatexts
-	P.datatexts.panels.RightCoordDtPanel = 'Time'
-	P.datatexts.panels.LeftCoordDtPanel = 'Durability'
 end
 
 -- mouse over the location panel
@@ -288,12 +281,8 @@ function LP:ChangeFont()
 	end
 
 	local dtToFont = {RightCoordDtPanel, LeftCoordDtPanel}
-	for _, panel in pairs(dtToFont) do
-		for i=1, panel.numPoints do
-			local pointIndex = DT.PointLocation[i]
-			panel.dataPanels[pointIndex].text:FontTemplate(E["media"].lpFont, E.db.locplus.lpfontsize, E.db.locplus.lpfontflags)
-			panel.dataPanels[pointIndex].text:SetPoint("CENTER", 0, 1)
-		end
+	for _, dt in pairs(dtToFont) do
+		dt.dataPanels[1].text:FontTemplate(E["media"].lpFont, E.db.locplus.lpfontsize, E.db.locplus.lpfontflags)
 	end
 end
 
@@ -477,12 +466,14 @@ end
 local function CreateDatatextPanels()
 
 	-- Left coords Datatext panel
+	left_dtp:SetTemplate('Default', true)
 	left_dtp:Width(E.db.locplus.dtwidth)
 	left_dtp:Height(E.db.locplus.dtheight)
 	left_dtp:SetFrameStrata('LOW')
 	left_dtp:SetParent(LocationPlusPanel)
 
 	-- Right coords Datatext panel
+	right_dtp:SetTemplate('Default', true)
 	right_dtp:Width(E.db.locplus.dtwidth)
 	right_dtp:Height(E.db.locplus.dtheight)
 	right_dtp:SetFrameStrata('LOW')

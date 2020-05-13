@@ -61,6 +61,12 @@ P['locplus'] = {
 -- Init
 	['LoginMsg'] = true,
 }
+P.datatexts.panels.RightCoordDtPanel = {
+	[1] = 'Time',
+}
+P.datatexts.panels.LeftCoordDtPanel = {
+	[1] = 'Durability',
+}
 
 local FISH_ICON = "|TInterface\\AddOns\\ElvUI_LocPlus\\media\\fish.tga:14:14|t"
 local PET_ICON = "|TInterface\\AddOns\\ElvUI_LocPlus\\media\\pet.tga:14:14|t"
