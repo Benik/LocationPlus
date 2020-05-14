@@ -282,7 +282,9 @@ function LP:ChangeFont()
 
 	local dtToFont = {RightCoordDtPanel, LeftCoordDtPanel}
 	for _, dt in pairs(dtToFont) do
-		dt.dataPanels[1].text:FontTemplate(E["media"].lpFont, E.db.locplus.lpfontsize, E.db.locplus.lpfontflags)
+		for i = 1, dt.numPoints do
+			dt.dataPanels[i].text:FontTemplate(E["media"].lpFont, E.db.locplus.lpfontsize, E.db.locplus.lpfontflags)
+		end
 	end
 end
 
