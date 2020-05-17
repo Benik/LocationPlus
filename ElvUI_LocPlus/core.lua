@@ -150,12 +150,13 @@ end
 
 -- Location panel
 local function CreateLocationPanel()
+	local db = E.db.locplus
 	local loc_panel = CreateFrame('Frame', 'LocationPlusPanel', E.UIParent)
-	loc_panel:Width(E.db.locplus.lpwidth)
-	loc_panel:Height(E.db.locplus.dtheight)
+	loc_panel:Width(db.lpwidth or 200)
+	loc_panel:Height(db.dtheight or 21)
 	loc_panel:Point('TOP', E.UIParent, 'TOP', 0, -E.mult -22)
-	loc_panel:SetFrameStrata('LOW')
-	loc_panel:SetFrameLevel(2)
+	loc_panel:SetFrameStrata(db.frameStrata or 'LOW')
+	loc_panel:SetFrameLevel(db.frameLevel or 2)
 	loc_panel:EnableMouse(true)
 	loc_panel:SetScript('OnEnter', LocPanel_OnEnter)
 	loc_panel:SetScript('OnLeave', LocPanel_OnLeave)
@@ -174,19 +175,19 @@ local function CreateLocationPanel()
 			UIFrameFadeOut(self, 0.2, self:GetAlpha(), 0)
 			self.fadeInfo.finishedFunc = LocPanelOnFade
 		elseif event == "PET_BATTLE_CLOSE" then
-			if E.db.locplus.mouseover then
-				UIFrameFadeIn(self, 0.2, self:GetAlpha(), E.db.locplus.malpha)
+			if db.mouseover then
+				UIFrameFadeIn(self, 0.2, self:GetAlpha(), db.malpha)
 			else
 				UIFrameFadeIn(self, 0.2, self:GetAlpha(), 1)
 			end
 			self:Show()
-		elseif E.db.locplus.combat then
+		elseif dbcombat then
 			if event == "PLAYER_REGEN_DISABLED" then
 				UIFrameFadeOut(self, 0.2, self:GetAlpha(), 0)
 				self.fadeInfo.finishedFunc = LocPanelOnFade
 			elseif event == "PLAYER_REGEN_ENABLED" then
-				if E.db.locplus.mouseover then
-					UIFrameFadeIn(self, 0.2, self:GetAlpha(), E.db.locplus.malpha)
+				if db.mouseover then
+					UIFrameFadeIn(self, 0.2, self:GetAlpha(), db.malpha)
 				else
 					UIFrameFadeIn(self, 0.2, self:GetAlpha(), 1)
 				end
@@ -340,6 +341,12 @@ function LP:TransparentPanels()
 	end
 end
 
+function LP:StrataAndLevel()
+	local db = E.db.locplus
+	LocationPlusPanel:SetFrameStrata(db.frameStrata)
+	LocationPlusPanel:SetFrameLevel(db.frameLevel)
+end
+
 function LP:UpdateLocation()
 	local subZoneText = GetMinimapZoneText() or ""
 	local zoneText = GetRealZoneText() or UNKNOWN;
@@ -477,6 +484,7 @@ function LP:Update()
 	LP:TransparentPanels()
 	LP:ShadowPanels()
 	LP:DTHeight()
+	LP:StrataAndLevel()
 	HideDT()
 	LP:CoordsDigit()
 	LP:MouseOver()
