@@ -58,26 +58,28 @@ end
 
 -- mouse over the location panel
 local function LocPanel_OnEnter(self)
+	local db = E.db.locplus
 	GameTooltip:SetOwner(self, "ANCHOR_BOTTOM", 0, -4)
 	GameTooltip:ClearAllPoints()
 	GameTooltip:SetPoint("BOTTOM", self, "BOTTOM", 0, 0)
 
-	if InCombatLockdown() and E.db.locplus.ttcombathide then
+	if InCombatLockdown() and db.ttcombathide then
 		GameTooltip:Hide()
 	else
 		LP:UpdateTooltip()
 	end
 
-	if E.db.locplus.mouseover then
+	if db.mouseover then
 		UIFrameFadeIn(self, 0.2, self:GetAlpha(), 1)
 	end
 end
 
 -- mouse leaving the location panel
 local function LocPanel_OnLeave(self)
+	local db = E.db.locplus
 	GameTooltip:Hide()
-	if E.db.locplus.mouseover then
-		UIFrameFadeOut(self, 0.2, self:GetAlpha(), E.db.locplus.malpha)
+	if db.mouseover then
+		UIFrameFadeOut(self, 0.2, self:GetAlpha(), db.malpha)
 	end
 end
 
@@ -217,11 +219,12 @@ end
 
 -- Coord panels
 local function CreateCoordPanels()
+	local db = E.db.locplus
 
 	-- X Coord panel
 	local coordsX = CreateFrame('Frame', "XCoordsPanel", LocationPlusPanel)
 	coordsX:Width(COORDS_WIDTH)
-	coordsX:Height(E.db.locplus.dtheight)
+	coordsX:Height(db.dtheight)
 	coordsX:SetFrameStrata('LOW')
 	coordsX.Text = XCoordsPanel:CreateFontString(nil, "LOW")
 	coordsX.Text:SetAllPoints()
@@ -231,7 +234,7 @@ local function CreateCoordPanels()
 	-- Y Coord panel
 	local coordsY = CreateFrame('Frame', "YCoordsPanel", LocationPlusPanel)
 	coordsY:Width(COORDS_WIDTH)
-	coordsY:Height(E.db.locplus.dtheight)
+	coordsY:Height(db.dtheight)
 	coordsY:SetFrameStrata('LOW')
 	coordsY.Text = YCoordsPanel:CreateFontString(nil, "LOW")
 	coordsY.Text:SetAllPoints()
@@ -243,8 +246,9 @@ end
 
 -- mouse over option
 function LP:MouseOver()
-	if E.db.locplus.mouseover then
-		LocationPlusPanel:SetAlpha(E.db.locplus.malpha)
+	local db = E.db.locplus
+	if db.mouseover then
+		LocationPlusPanel:SetAlpha(db.malpha)
 	else
 		LocationPlusPanel:SetAlpha(1)
 	end
@@ -252,50 +256,53 @@ end
 
 -- datatext panels width
 function LP:DTWidth()
-	LeftCoordDtPanel:Width(E.db.locplus.dtwidth)
-	RightCoordDtPanel:Width(E.db.locplus.dtwidth)
+	local db = E.db.locplus
+	LeftCoordDtPanel:Width(db.dtwidth)
+	RightCoordDtPanel:Width(db.dtwidth)
 end
 
 -- all panels height
 function LP:DTHeight()
-	if E.db.locplus.ht then
-		LocationPlusPanel:Height((E.db.locplus.dtheight)+6)
+	local db = E.db.locplus
+	if db.ht then
+		LocationPlusPanel:Height((db.dtheight)+6)
 	else
-		LocationPlusPanel:Height(E.db.locplus.dtheight)
+		LocationPlusPanel:Height(db.dtheight)
 	end
 
-	LeftCoordDtPanel:Height(E.db.locplus.dtheight)
-	RightCoordDtPanel:Height(E.db.locplus.dtheight)
+	LeftCoordDtPanel:Height(db.dtheight)
+	RightCoordDtPanel:Height(db.dtheight)
 
-	XCoordsPanel:Height(E.db.locplus.dtheight)
-	YCoordsPanel:Height(E.db.locplus.dtheight)
+	XCoordsPanel:Height(db.dtheight)
+	YCoordsPanel:Height(db.dtheight)
 end
 
 -- Fonts
 function LP:ChangeFont()
-
-	E["media"].lpFont = LSM:Fetch("font", E.db.locplus.lpfont)
+	local db = E.db.locplus
+	E["media"].lpFont = LSM:Fetch("font", db.lpfont)
 
 	local panelsToFont = {LocationPlusPanel, XCoordsPanel, YCoordsPanel}
 	for _, frame in pairs(panelsToFont) do
-		frame.Text:FontTemplate(E["media"].lpFont, E.db.locplus.lpfontsize, E.db.locplus.lpfontflags)
+		frame.Text:FontTemplate(E["media"].lpFont, db.lpfontsize, db.lpfontflags)
 	end
 end
 
 -- Enable/Disable shadows
 function LP:ShadowPanels()
+	local db = E.db.locplus
 	local panelsToAddShadow = {LocationPlusPanel, XCoordsPanel, YCoordsPanel, LeftCoordDtPanel, RightCoordDtPanel}
 
 	for _, frame in pairs(panelsToAddShadow) do
 		frame:CreateShadow()
-		if E.db.locplus.shadow then
+		if db.shadow then
 			frame.shadow:Show()
 		else
 			frame.shadow:Hide()
 		end
 	end
 
-	if E.db.locplus.shadow then
+	if db.shadow then
 		SPACING = 2
 	else
 		SPACING = 1
@@ -306,13 +313,14 @@ end
 
 -- Show/Hide coord frames
 function LP:HideCoords()
+	local db = E.db.locplus
 	XCoordsPanel:Point('RIGHT', LocationPlusPanel, 'LEFT', -SPACING, 0)
 	YCoordsPanel:Point('LEFT', LocationPlusPanel, 'RIGHT', SPACING, 0)
 
 	LeftCoordDtPanel:ClearAllPoints()
 	RightCoordDtPanel:ClearAllPoints()
 
-	if (E.db.locplus.hidecoords) or (E.db.locplus.hidecoordsInInstance and IsInInstance()) then
+	if (db.hidecoords) or (db.hidecoordsInInstance and IsInInstance()) then
 		XCoordsPanel:Hide()
 		YCoordsPanel:Hide()
 		LeftCoordDtPanel:Point('RIGHT', LocationPlusPanel, 'LEFT', -SPACING, 0)
@@ -327,13 +335,14 @@ end
 
 -- Toggle transparency
 function LP:TransparentPanels()
+	local db = E.db.locplus
 	local panelsToAddTrans = {LocationPlusPanel, XCoordsPanel, YCoordsPanel, LeftCoordDtPanel, RightCoordDtPanel}
 
 	for _, frame in pairs(panelsToAddTrans) do
 		frame:SetTemplate('NoBackdrop')
-		if not E.db.locplus.noback then
-			E.db.locplus.shadow = false
-		elseif E.db.locplus.trans then
+		if not db.noback then
+			db.shadow = false
+		elseif db.trans then
 			frame:SetTemplate('Transparent')
 		else
 			frame:SetTemplate('Default', true)
@@ -348,12 +357,13 @@ function LP:StrataAndLevel()
 end
 
 function LP:UpdateLocation()
+	local db = E.db.locplus
 	local subZoneText = GetMinimapZoneText() or ""
 	local zoneText = GetRealZoneText() or UNKNOWN;
 	local displayLine
 
 	-- zone and subzone
-	if E.db.locplus.both then
+	if db.both then
 		if (subZoneText ~= "") and (subZoneText ~= zoneText) then
 			displayLine = zoneText .. ": " .. subZoneText
 		else
@@ -364,17 +374,17 @@ function LP:UpdateLocation()
 	end
 
 	-- Show Other (Level, Battle Pet Level, Fishing)
-	if E.db.locplus.displayOther == 'RLEVEL' then
+	if db.displayOther == 'RLEVEL' then
 		local displaylvl = LP:GetLevelRange(zoneText) or ""
 		if displaylvl ~= "" then
 			displayLine = displayLine..displaylvl
 		end
-	elseif E.db.locplus.displayOther == 'PET' then
+	elseif db.displayOther == 'PET' then
 		local displaypet = LP:GetBattlePetLvl(zoneText) or ""
 		if displaypet ~= "" then
 			displayLine = displayLine..displaypet
 		end
-	elseif E.db.locplus.displayOther == 'PFISH' then
+	elseif db.displayOther == 'PFISH' then
 		local displayfish = LP:GetFishingLvl(true) or ""
 		if displayfish ~= "" then
 			displayLine = displayLine..displayfish
@@ -387,25 +397,25 @@ function LP:UpdateLocation()
 
 	-- Coloring
 	if displayLine ~= "" then
-		if E.db.locplus.customColor == 1 then
+		if db.customColor == 1 then
 			LocationPlusPanel.Text:SetTextColor(LP:GetStatus(true))
-		elseif E.db.locplus.customColor == 2 then
+		elseif db.customColor == 2 then
 			LocationPlusPanel.Text:SetTextColor(classColor.r, classColor.g, classColor.b)
 		else
-			LocationPlusPanel.Text:SetTextColor(unpackColor(E.db.locplus.userColor))
+			LocationPlusPanel.Text:SetTextColor(unpackColor(db.userColor))
 		end
 	end
 
 	-- Sizing
-	local fixedwidth = (E.db.locplus.lpwidth + 18)
+	local fixedwidth = (db.lpwidth + 18)
 	local autowidth = (LocationPlusPanel.Text:GetStringWidth() + 18)
 
-	if E.db.locplus.lpauto then
+	if db.lpauto then
 		LocationPlusPanel:Width(autowidth)
 		LocationPlusPanel.Text:Width(autowidth)
 	else
 		LocationPlusPanel:Width(fixedwidth)
-		if E.db.locplus.trunc then
+		if db.trunc then
 			LocationPlusPanel.Text:Width(fixedwidth - 18)
 			LocationPlusPanel.Text:SetWordWrap(false)
 		elseif autowidth > fixedwidth then
@@ -452,29 +462,31 @@ function LP:CoordsDigit()
 end
 
 function LP:CoordsColor()
-	if E.db.locplus.customCoordsColor == 1 then
-		XCoordsPanel.Text:SetTextColor(unpackColor(E.db.locplus.userColor))
-		YCoordsPanel.Text:SetTextColor(unpackColor(E.db.locplus.userColor))
-	elseif E.db.locplus.customCoordsColor == 2 then
+	local db = E.db.locplus
+	if db.customCoordsColor == 1 then
+		XCoordsPanel.Text:SetTextColor(unpackColor(db.userColor))
+		YCoordsPanel.Text:SetTextColor(unpackColor(db.userColor))
+	elseif db.customCoordsColor == 2 then
 		XCoordsPanel.Text:SetTextColor(classColor.r, classColor.g, classColor.b)
 		YCoordsPanel.Text:SetTextColor(classColor.r, classColor.g, classColor.b)
 	else
-		XCoordsPanel.Text:SetTextColor(unpackColor(E.db.locplus.userCoordsColor))
-		YCoordsPanel.Text:SetTextColor(unpackColor(E.db.locplus.userCoordsColor))
+		XCoordsPanel.Text:SetTextColor(unpackColor(db.userCoordsColor))
+		YCoordsPanel.Text:SetTextColor(unpackColor(db.userCoordsColor))
 	end
 end
 
 -- Datatext panels
 local function CreateDatatextPanels()
+	local db = E.db.locplus
 	-- Left coords Datatext panel
-	left_dtp:Width(E.db.locplus.dtwidth)
-	left_dtp:Height(E.db.locplus.dtheight)
+	left_dtp:Width(db.dtwidth)
+	left_dtp:Height(db.dtheight)
 	left_dtp:SetFrameStrata('LOW')
 	left_dtp:SetParent(LocationPlusPanel)
 
 	-- Right coords Datatext panel
-	right_dtp:Width(E.db.locplus.dtwidth)
-	right_dtp:Height(E.db.locplus.dtheight)
+	right_dtp:Width(db.dtwidth)
+	right_dtp:Height(db.dtheight)
 	right_dtp:SetFrameStrata('LOW')
 	right_dtp:SetParent(LocationPlusPanel)
 end
@@ -489,21 +501,6 @@ function LP:Update()
 	LP:CoordsDigit()
 	LP:MouseOver()
 	LP:HideCoords()
-end
-
--- Defaults in case something is wrong on first load
-function LP:LocPlusDefaults()
-	if E.db.locplus.lpwidth == nil then
-		E.db.locplus.lpwidth = 200
-	end
-
-	if E.db.locplus.dtwidth == nil then
-		E.db.locplus.dtwidth = 100
-	end
-
-	if E.db.locplus.dtheight == nil then
-		E.db.locplus.dtheight = 21
-	end
 end
 
 function LP:ToggleBlizZoneText()
@@ -527,7 +524,6 @@ function LP:PLAYER_ENTERING_WORLD(...)
 end
 
 function LP:Initialize()
-	self:LocPlusDefaults()
 	CreateLocationPanel()
 	CreateDatatextPanels()
 	CreateCoordPanels()
