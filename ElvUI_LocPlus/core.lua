@@ -459,16 +459,13 @@ end
 
 -- Datatext panels
 local function CreateDatatextPanels()
-
 	-- Left coords Datatext panel
-	left_dtp:SetTemplate('Default', true)
 	left_dtp:Width(E.db.locplus.dtwidth)
 	left_dtp:Height(E.db.locplus.dtheight)
 	left_dtp:SetFrameStrata('LOW')
 	left_dtp:SetParent(LocationPlusPanel)
 
 	-- Right coords Datatext panel
-	right_dtp:SetTemplate('Default', true)
 	right_dtp:Width(E.db.locplus.dtwidth)
 	right_dtp:Height(E.db.locplus.dtheight)
 	right_dtp:SetFrameStrata('LOW')
@@ -532,6 +529,7 @@ function LP:Initialize()
 	self:ScheduleRepeatingTimer('UpdateLocation', 0.5)
 	self:RegisterEvent('PLAYER_ENTERING_WORLD')
 	hooksecurefunc(DT, 'UpdatePanelInfo', LP.Update)
+	hooksecurefunc(DT, 'UpdatePanelAttributes', LP.Update)
 	EP:RegisterPlugin(addon, LP.AddOptions)
 
 	if E.db.locplus.LoginMsg then
