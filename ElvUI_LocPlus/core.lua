@@ -279,13 +279,6 @@ function LP:ChangeFont()
 	for _, frame in pairs(panelsToFont) do
 		frame.Text:FontTemplate(E["media"].lpFont, E.db.locplus.lpfontsize, E.db.locplus.lpfontflags)
 	end
-
-	local dtToFont = {RightCoordDtPanel, LeftCoordDtPanel}
-	for _, dt in pairs(dtToFont) do
-		for i = 1, dt.numPoints do
-			dt.dataPanels[i].text:FontTemplate(E["media"].lpFont, E.db.locplus.lpfontsize, E.db.locplus.lpfontflags)
-		end
-	end
 end
 
 -- Enable/Disable shadows
