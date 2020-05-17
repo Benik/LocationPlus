@@ -477,13 +477,13 @@ end
 
 -- Update changes
 function LP:Update()
-	self:TransparentPanels()
-	self:ShadowPanels()
-	self:DTHeight()
+	LP:TransparentPanels()
+	LP:ShadowPanels()
+	LP:DTHeight()
 	HideDT()
-	self:CoordsDigit()
-	self:MouseOver()
-	self:HideCoords()
+	LP:CoordsDigit()
+	LP:MouseOver()
+	LP:HideCoords()
 end
 
 -- Defaults in case something is wrong on first load
@@ -531,6 +531,7 @@ function LP:Initialize()
 	self:ToggleBlizZoneText()
 	self:ScheduleRepeatingTimer('UpdateLocation', 0.5)
 	self:RegisterEvent('PLAYER_ENTERING_WORLD')
+	hooksecurefunc(DT, 'UpdatePanelInfo', LP.Update)
 	EP:RegisterPlugin(addon, LP.AddOptions)
 
 	if E.db.locplus.LoginMsg then

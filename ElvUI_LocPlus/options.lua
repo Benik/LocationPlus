@@ -63,11 +63,9 @@ P['locplus'] = {
 }
 P.datatexts.panels.RightCoordDtPanel = {
 	[1] = 'Time',
-	["enable"] = true,
 }
 P.datatexts.panels.LeftCoordDtPanel = {
 	[1] = 'Quick Join',
-	["enable"] = true,
 }
 
 local FISH_ICON = "|TInterface\\AddOns\\ElvUI_LocPlus\\media\\fish.tga:14:14|t"
