@@ -68,7 +68,7 @@ P.datatexts.panels.RightCoordDtPanel = {
 	[1] = 'Time',
 }
 P.datatexts.panels.LeftCoordDtPanel = {
-	[1] = 'Quick Join',
+	[1] = 'Primary Stat',
 }
 
 local FISH_ICON = "|TInterface\\AddOns\\ElvUI_LocPlus\\media\\fish.tga:14:14|t"
@@ -609,17 +609,3 @@ local function Options()
 	}
 end
 tinsert(LP.Config, Options)
-
-local function InjectDatatextOptions()
-	if LeftCoordDtPanel and E.Options.args.datatexts.args.panels.args.LeftCoordDtPanel then
-		E.Options.args.datatexts.args.panels.args.LeftCoordDtPanel.name = L['LocationPlus Left Panel']
-		E.Options.args.datatexts.args.panels.args.LeftCoordDtPanel.order = 1101
-		DT:UpdatePanelInfo('LeftCoordDtPanel')
-	end
-	if RightCoordDtPanel and E.Options.args.datatexts.args.panels.args.RightCoordDtPanel then
-		E.Options.args.datatexts.args.panels.args.RightCoordDtPanel.name = L['LocationPlus Right Panel']
-		E.Options.args.datatexts.args.panels.args.RightCoordDtPanel.order = 1102
-		DT:UpdatePanelInfo('RightCoordDtPanel')
-	end
-end
-tinsert(LP.Config, InjectDatatextOptions)

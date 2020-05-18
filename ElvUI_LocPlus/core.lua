@@ -20,9 +20,8 @@ local DT = E:GetModule('DataTexts');
 local LSM = LibStub("LibSharedMedia-3.0");
 local EP = LibStub("LibElvUIPlugin-1.0");
 local addon, ns = ...
-LP.Config = {}
 
-local format, tonumber, pairs, print = string.format, tonumber, pairs, print
+local format, tonumber, pairs, print, tinsert = string.format, tonumber, pairs, print, table.insert
 
 local CreateFrame = CreateFrame
 local ChatEdit_ChooseBoxForSend, ChatEdit_ActivateChat = ChatEdit_ChooseBoxForSend, ChatEdit_ActivateChat
@@ -42,20 +41,14 @@ local SANCTUARY_TERRITORY, ARENA, FRIENDLY, HOSTILE, CONTESTED_TERRITORY, COMBAT
 -- GLOBALS: LocationPlusPanel, LeftCoordDtPanel, RightCoordDtPanel, XCoordsPanel, YCoordsPanel, CUSTOM_CLASS_COLORS
 
 LP.version = GetAddOnMetadata("ElvUI_LocPlus", "Version")
+LP.Config = {}
+
 if E.db.locplus == nil then E.db.locplus = {} end
 
 local classColor = E.myclass == 'PRIEST' and E.PriestColors or (CUSTOM_CLASS_COLORS and CUSTOM_CLASS_COLORS[E.myclass] or RAID_CLASS_COLORS[E.myclass])
 
 local COORDS_WIDTH = 30 -- Coord panels width
 local SPACING = 1 		-- Panel spacing
-
-local left_dtp = CreateFrame('Frame', 'LeftCoordDtPanel', E.UIParent)
-local right_dtp = CreateFrame('Frame', 'RightCoordDtPanel', E.UIParent)
-
-function LP:CreateDatatexts()
-	DT:RegisterPanel(LeftCoordDtPanel, 1, 'ANCHOR_BOTTOM', 0, -4)
-	DT:RegisterPanel(RightCoordDtPanel, 1, 'ANCHOR_BOTTOM', 0, -4)
-end
 
 -- mouse over the location panel
 local function LocPanel_OnEnter(self)
@@ -480,16 +473,24 @@ end
 local function CreateDatatextPanels()
 	local db = E.db.locplus
 	-- Left coords Datatext panel
+	local left_dtp = CreateFrame('Frame', 'LeftCoordDtPanel', E.UIParent)
 	left_dtp:Width(db.dtwidth)
 	left_dtp:Height(db.dtheight)
 	left_dtp:SetFrameStrata('LOW')
 	left_dtp:SetParent(LocationPlusPanel)
 
+	DT:RegisterPanel(LeftCoordDtPanel, 1, 'ANCHOR_BOTTOM', 0, -4)
+	DT:UpdatePanelInfo('LeftCoordDtPanel')
+
 	-- Right coords Datatext panel
+	local right_dtp = CreateFrame('Frame', 'RightCoordDtPanel', E.UIParent)
 	right_dtp:Width(db.dtwidth)
 	right_dtp:Height(db.dtheight)
 	right_dtp:SetFrameStrata('LOW')
 	right_dtp:SetParent(LocationPlusPanel)
+
+	DT:RegisterPanel(RightCoordDtPanel, 1, 'ANCHOR_BOTTOM', 0, -4)
+	DT:UpdatePanelInfo('RightCoordDtPanel')
 end
 
 -- Update changes
@@ -524,8 +525,19 @@ function LP:AddOptions()
 	end
 end
 
+local function InjectDatatextOptions()
+	if LeftCoordDtPanel and E.Options.args.datatexts.args.panels.args.LeftCoordDtPanel then
+		E.Options.args.datatexts.args.panels.args.LeftCoordDtPanel.name = L['LocationPlus Left Panel']
+		E.Options.args.datatexts.args.panels.args.LeftCoordDtPanel.order = 1101
+	end
+
+	if RightCoordDtPanel and E.Options.args.datatexts.args.panels.args.RightCoordDtPanel then
+		E.Options.args.datatexts.args.panels.args.RightCoordDtPanel.name = L['LocationPlus Right Panel']
+		E.Options.args.datatexts.args.panels.args.RightCoordDtPanel.order = 1102
+	end
+end
+
 function LP:PLAYER_ENTERING_WORLD(...)
-	self:CreateDatatexts()
 	self:ChangeFont()
 	self:UpdateCoords()
 	self:HideCoords()
@@ -542,7 +554,9 @@ function LP:Initialize()
 	self:RegisterEvent('PLAYER_ENTERING_WORLD')
 	hooksecurefunc(DT, 'UpdatePanelInfo', LP.Update)
 	hooksecurefunc(DT, 'UpdatePanelAttributes', LP.Update)
+
 	EP:RegisterPlugin(addon, LP.AddOptions)
+	tinsert(LP.Config, InjectDatatextOptions)
 
 	if E.db.locplus.LoginMsg then
 		print(L["Location Plus "]..format("v|cff33ffff%s|r",LP.version)..L[" is loaded. Thank you for using it."])
