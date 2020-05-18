@@ -1,5 +1,6 @@
 local E, L, V, P, G = unpack(ElvUI);
 local LP = E:GetModule('LocationPlus')
+local DT = E:GetModule('DataTexts')
 
 local format, tinsert = string.format, table.insert
 local SHOW, OTHER, LEVEL_RANGE, PROFESSIONS_FISHING, EMBLEM_SYMBOL, STATUS, CURRENCY, TRADE_SKILLS, FILTERS = SHOW, OTHER, LEVEL_RANGE, PROFESSIONS_FISHING, EMBLEM_SYMBOL, STATUS, CURRENCY, TRADE_SKILLS, FILTERS
@@ -614,5 +615,7 @@ local function InjectDatatextOptions()
 	E.Options.args.datatexts.args.panels.args.LeftCoordDtPanel.order = 1101
 	E.Options.args.datatexts.args.panels.args.RightCoordDtPanel.name = L['LocationPlus Right Panel']
 	E.Options.args.datatexts.args.panels.args.RightCoordDtPanel.order = 1102
+	DT:UpdatePanelInfo('LeftCoordDtPanel')
+	DT:UpdatePanelInfo('RightCoordDtPanel')
 end
 tinsert(LP.Config, InjectDatatextOptions)
