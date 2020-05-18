@@ -611,11 +611,15 @@ end
 tinsert(LP.Config, Options)
 
 local function InjectDatatextOptions()
-	E.Options.args.datatexts.args.panels.args.LeftCoordDtPanel.name = L['LocationPlus Left Panel']
-	E.Options.args.datatexts.args.panels.args.LeftCoordDtPanel.order = 1101
-	E.Options.args.datatexts.args.panels.args.RightCoordDtPanel.name = L['LocationPlus Right Panel']
-	E.Options.args.datatexts.args.panels.args.RightCoordDtPanel.order = 1102
-	DT:UpdatePanelInfo('LeftCoordDtPanel')
-	DT:UpdatePanelInfo('RightCoordDtPanel')
+	if LeftCoordDtPanel and E.Options.args.datatexts.args.panels.args.LeftCoordDtPanel then
+		E.Options.args.datatexts.args.panels.args.LeftCoordDtPanel.name = L['LocationPlus Left Panel']
+		E.Options.args.datatexts.args.panels.args.LeftCoordDtPanel.order = 1101
+		DT:UpdatePanelInfo('LeftCoordDtPanel')
+	end
+	if RightCoordDtPanel and E.Options.args.datatexts.args.panels.args.RightCoordDtPanel then
+		E.Options.args.datatexts.args.panels.args.RightCoordDtPanel.name = L['LocationPlus Right Panel']
+		E.Options.args.datatexts.args.panels.args.RightCoordDtPanel.order = 1102
+		DT:UpdatePanelInfo('RightCoordDtPanel')
+	end
 end
 tinsert(LP.Config, InjectDatatextOptions)
