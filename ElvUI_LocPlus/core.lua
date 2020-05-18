@@ -20,6 +20,7 @@ local DT = E:GetModule('DataTexts');
 local LSM = LibStub("LibSharedMedia-3.0");
 local EP = LibStub("LibElvUIPlugin-1.0");
 local addon, ns = ...
+LP.Config = {}
 
 local format, tonumber, pairs, print = string.format, tonumber, pairs, print
 
@@ -51,7 +52,7 @@ local SPACING = 1 		-- Panel spacing
 local left_dtp = CreateFrame('Frame', 'LeftCoordDtPanel', E.UIParent)
 local right_dtp = CreateFrame('Frame', 'RightCoordDtPanel', E.UIParent)
 
-do
+function LP:CreateDatatexts()
 	DT:RegisterPanel(LeftCoordDtPanel, 1, 'ANCHOR_BOTTOM', 0, -4)
 	DT:RegisterPanel(RightCoordDtPanel, 1, 'ANCHOR_BOTTOM', 0, -4)
 end
@@ -517,7 +518,14 @@ function LP:TimerUpdate()
 	self:ScheduleRepeatingTimer('UpdateCoords', E.db.locplus.timer)
 end
 
+function LP:AddOptions()
+	for _, func in pairs(LP.Config) do
+		func()
+	end
+end
+
 function LP:PLAYER_ENTERING_WORLD(...)
+	self:CreateDatatexts()
 	self:ChangeFont()
 	self:UpdateCoords()
 	self:HideCoords()

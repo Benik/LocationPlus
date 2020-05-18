@@ -1,7 +1,7 @@
 local E, L, V, P, G = unpack(ElvUI);
 local LP = E:GetModule('LocationPlus')
 
-local format = string.format
+local format, tinsert = string.format, table.insert
 local SHOW, OTHER, LEVEL_RANGE, PROFESSIONS_FISHING, EMBLEM_SYMBOL, STATUS, CURRENCY, TRADE_SKILLS, FILTERS = SHOW, OTHER, LEVEL_RANGE, PROFESSIONS_FISHING, EMBLEM_SYMBOL, STATUS, CURRENCY, TRADE_SKILLS, FILTERS
 local COLOR, CLASS_COLORS, CUSTOM, COLOR_PICKER = COLOR, CLASS_COLORS, CUSTOM, COLOR_PICKER
 
@@ -74,7 +74,7 @@ local FISH_ICON = "|TInterface\\AddOns\\ElvUI_LocPlus\\media\\fish.tga:14:14|t"
 local PET_ICON = "|TInterface\\AddOns\\ElvUI_LocPlus\\media\\pet.tga:14:14|t"
 local LEVEL_ICON = "|TInterface\\AddOns\\ElvUI_LocPlus\\media\\levelup.tga:14:14|t"
 
-function LP:AddOptions()
+local function Options()
 	E.Options.args.locplus = {
 		order = 9000,
 		type = 'group',
@@ -606,9 +606,13 @@ function LP:AddOptions()
 			},
 		},					
 	}
+end
+tinsert(LP.Config, Options)
+
+local function InjectDatatextOptions()
 	E.Options.args.datatexts.args.panels.args.LeftCoordDtPanel.name = L['LocationPlus Left Panel']
 	E.Options.args.datatexts.args.panels.args.LeftCoordDtPanel.order = 1101
-
 	E.Options.args.datatexts.args.panels.args.RightCoordDtPanel.name = L['LocationPlus Right Panel']
 	E.Options.args.datatexts.args.panels.args.RightCoordDtPanel.order = 1102
 end
+tinsert(LP.Config, InjectDatatextOptions)
