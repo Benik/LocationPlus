@@ -64,10 +64,10 @@ P['locplus'] = {
 -- Init
 	['LoginMsg'] = true,
 }
-P.datatexts.panels.RightCoordDtPanel = {
+P.datatexts.panels.LocPlusRightDT = {
 	[1] = 'Time',
 }
-P.datatexts.panels.LeftCoordDtPanel = {
+P.datatexts.panels.LocPlusLeftDT = {
 	[1] = 'Primary Stat',
 }
 

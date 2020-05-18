@@ -38,7 +38,7 @@ local GameTooltip, WorldMapFrame = _G['GameTooltip'], _G['WorldMapFrame']
 local UNKNOWN = UNKNOWN
 local SANCTUARY_TERRITORY, ARENA, FRIENDLY, HOSTILE, CONTESTED_TERRITORY, COMBAT, AGGRO_WARNING_IN_INSTANCE = SANCTUARY_TERRITORY, ARENA, FRIENDLY, HOSTILE, CONTESTED_TERRITORY, COMBAT, AGGRO_WARNING_IN_INSTANCE
 
--- GLOBALS: LocationPlusPanel, LeftCoordDtPanel, RightCoordDtPanel, XCoordsPanel, YCoordsPanel, CUSTOM_CLASS_COLORS
+-- GLOBALS: LocationPlusPanel, LocPlusLeftDT, LocPlusRightDT, XCoordsPanel, YCoordsPanel, CUSTOM_CLASS_COLORS
 
 LP.version = GetAddOnMetadata("ElvUI_LocPlus", "Version")
 LP.Config = {}
@@ -124,10 +124,10 @@ local function LocPanel_OnClick(self, btn)
 			edit_box:Insert(message)
 		else
 			if IsControlKeyDown() then
-				LeftCoordDtPanel:SetScript("OnShow", function(self) E.db.locplus.dtshow = true; end)
-				LeftCoordDtPanel:SetScript("OnHide", function(self) E.db.locplus.dtshow = false; end)
-				ToggleFrame(LeftCoordDtPanel)
-				ToggleFrame(RightCoordDtPanel)
+				LocPlusLeftDT:SetScript("OnShow", function(self) E.db.locplus.dtshow = true; end)
+				LocPlusLeftDT:SetScript("OnHide", function(self) E.db.locplus.dtshow = false; end)
+				ToggleFrame(LocPlusLeftDT)
+				ToggleFrame(LocPlusRightDT)
 			else
 				ToggleFrame(WorldMapFrame)
 			end
@@ -203,11 +203,11 @@ end
 
 local function HideDT()
 	if E.db.locplus.dtshow then
-		RightCoordDtPanel:Show()
-		LeftCoordDtPanel:Show()
+		LocPlusRightDT:Show()
+		LocPlusLeftDT:Show()
 	else
-		RightCoordDtPanel:Hide()
-		LeftCoordDtPanel:Hide()
+		LocPlusRightDT:Hide()
+		LocPlusLeftDT:Hide()
 	end
 end
 
@@ -251,8 +251,8 @@ end
 -- datatext panels width
 function LP:DTWidth()
 	local db = E.db.locplus
-	LeftCoordDtPanel:Width(db.dtwidth)
-	RightCoordDtPanel:Width(db.dtwidth)
+	LocPlusLeftDT:Width(db.dtwidth)
+	LocPlusRightDT:Width(db.dtwidth)
 end
 
 -- all panels height
@@ -264,8 +264,8 @@ function LP:DTHeight()
 		LocationPlusPanel:Height(db.dtheight)
 	end
 
-	LeftCoordDtPanel:Height(db.dtheight)
-	RightCoordDtPanel:Height(db.dtheight)
+	LocPlusLeftDT:Height(db.dtheight)
+	LocPlusRightDT:Height(db.dtheight)
 
 	XCoordsPanel:Height(db.dtheight)
 	YCoordsPanel:Height(db.dtheight)
@@ -285,7 +285,7 @@ end
 -- Enable/Disable shadows
 function LP:ShadowPanels()
 	local db = E.db.locplus
-	local panelsToAddShadow = {LocationPlusPanel, XCoordsPanel, YCoordsPanel, LeftCoordDtPanel, RightCoordDtPanel}
+	local panelsToAddShadow = {LocationPlusPanel, XCoordsPanel, YCoordsPanel, LocPlusLeftDT, LocPlusRightDT}
 
 	for _, frame in pairs(panelsToAddShadow) do
 		frame:CreateShadow()
@@ -311,26 +311,26 @@ function LP:HideCoords()
 	XCoordsPanel:Point('RIGHT', LocationPlusPanel, 'LEFT', -SPACING, 0)
 	YCoordsPanel:Point('LEFT', LocationPlusPanel, 'RIGHT', SPACING, 0)
 
-	LeftCoordDtPanel:ClearAllPoints()
-	RightCoordDtPanel:ClearAllPoints()
+	LocPlusLeftDT:ClearAllPoints()
+	LocPlusRightDT:ClearAllPoints()
 
 	if (db.hidecoords) or (db.hidecoordsInInstance and IsInInstance()) then
 		XCoordsPanel:Hide()
 		YCoordsPanel:Hide()
-		LeftCoordDtPanel:Point('RIGHT', LocationPlusPanel, 'LEFT', -SPACING, 0)
-		RightCoordDtPanel:Point('LEFT', LocationPlusPanel, 'RIGHT', SPACING, 0)
+		LocPlusLeftDT:Point('RIGHT', LocationPlusPanel, 'LEFT', -SPACING, 0)
+		LocPlusRightDT:Point('LEFT', LocationPlusPanel, 'RIGHT', SPACING, 0)
 	else
 		XCoordsPanel:Show()
 		YCoordsPanel:Show()
-		LeftCoordDtPanel:Point('RIGHT', XCoordsPanel, 'LEFT', -SPACING, 0)
-		RightCoordDtPanel:Point('LEFT', YCoordsPanel, 'RIGHT', SPACING, 0)
+		LocPlusLeftDT:Point('RIGHT', XCoordsPanel, 'LEFT', -SPACING, 0)
+		LocPlusRightDT:Point('LEFT', YCoordsPanel, 'RIGHT', SPACING, 0)
 	end
 end
 
 -- Toggle transparency
 function LP:TransparentPanels()
 	local db = E.db.locplus
-	local panelsToAddTrans = {LocationPlusPanel, XCoordsPanel, YCoordsPanel, LeftCoordDtPanel, RightCoordDtPanel}
+	local panelsToAddTrans = {LocationPlusPanel, XCoordsPanel, YCoordsPanel, LocPlusLeftDT, LocPlusRightDT}
 
 	for _, frame in pairs(panelsToAddTrans) do
 		frame:SetTemplate('NoBackdrop')
@@ -473,24 +473,24 @@ end
 local function CreateDatatextPanels()
 	local db = E.db.locplus
 	-- Left coords Datatext panel
-	local left_dtp = CreateFrame('Frame', 'LeftCoordDtPanel', E.UIParent)
+	local left_dtp = CreateFrame('Frame', 'LocPlusLeftDT', E.UIParent)
 	left_dtp:Width(db.dtwidth)
 	left_dtp:Height(db.dtheight)
 	left_dtp:SetFrameStrata('LOW')
 	left_dtp:SetParent(LocationPlusPanel)
 
-	DT:RegisterPanel(LeftCoordDtPanel, 1, 'ANCHOR_BOTTOM', 0, -4)
-	DT:UpdatePanelInfo('LeftCoordDtPanel')
+	DT:RegisterPanel(LocPlusLeftDT, 1, 'ANCHOR_BOTTOM', 0, -4)
+	DT:UpdatePanelInfo('LocPlusLeftDT')
 
 	-- Right coords Datatext panel
-	local right_dtp = CreateFrame('Frame', 'RightCoordDtPanel', E.UIParent)
+	local right_dtp = CreateFrame('Frame', 'LocPlusRightDT', E.UIParent)
 	right_dtp:Width(db.dtwidth)
 	right_dtp:Height(db.dtheight)
 	right_dtp:SetFrameStrata('LOW')
 	right_dtp:SetParent(LocationPlusPanel)
 
-	DT:RegisterPanel(RightCoordDtPanel, 1, 'ANCHOR_BOTTOM', 0, -4)
-	DT:UpdatePanelInfo('RightCoordDtPanel')
+	DT:RegisterPanel(LocPlusRightDT, 1, 'ANCHOR_BOTTOM', 0, -4)
+	DT:UpdatePanelInfo('LocPlusRightDT')
 end
 
 -- Update changes
@@ -526,15 +526,11 @@ function LP:AddOptions()
 end
 
 local function InjectDatatextOptions()
-	if LeftCoordDtPanel and E.Options.args.datatexts.args.panels.args.LeftCoordDtPanel then
-		E.Options.args.datatexts.args.panels.args.LeftCoordDtPanel.name = L['LocationPlus Left Panel']
-		E.Options.args.datatexts.args.panels.args.LeftCoordDtPanel.order = 1101
-	end
+	E.Options.args.datatexts.args.panels.args.LocPlusLeftDT.name = L['LocationPlus Left Panel']
+	E.Options.args.datatexts.args.panels.args.LocPlusLeftDT.order = 1101
 
-	if RightCoordDtPanel and E.Options.args.datatexts.args.panels.args.RightCoordDtPanel then
-		E.Options.args.datatexts.args.panels.args.RightCoordDtPanel.name = L['LocationPlus Right Panel']
-		E.Options.args.datatexts.args.panels.args.RightCoordDtPanel.order = 1102
-	end
+	E.Options.args.datatexts.args.panels.args.LocPlusRightDT.name = L['LocationPlus Right Panel']
+	E.Options.args.datatexts.args.panels.args.LocPlusRightDT.order = 1102
 end
 
 function LP:PLAYER_ENTERING_WORLD(...)
