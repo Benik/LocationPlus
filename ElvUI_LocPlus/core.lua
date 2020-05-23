@@ -1,19 +1,3 @@
---[[
--- ElvUI Location Plus --
-a plugin for ElvUI, that adds player location and coords + 2 Datatexts
-
-- Info, requests, bugs: https://www.tukui.org/addons.php?id=6
-----------------------------------------------------------------------------------
-- Credits:
-	-Elv, Blazeflack, for showing me the best way to do this
-	-Sinaris(idea from his TukUI edit)
-	-iceeagle, grdn, for digging their great code and making this possible.
-	-Tukui and Elvui forum community.
-----------------------------------------------------------------------------------
-- ToDo:
-
-]]--
-
 local E, L, V, P, G = unpack(ElvUI);
 local LP = E:NewModule('LocationPlus', 'AceTimer-3.0', 'AceEvent-3.0');
 local DT = E:GetModule('DataTexts');
@@ -45,7 +29,7 @@ LP.Config = {}
 
 if E.db.locplus == nil then E.db.locplus = {} end
 
-local classColor = E.myclass == 'PRIEST' and E.PriestColors or (CUSTOM_CLASS_COLORS and CUSTOM_CLASS_COLORS[E.myclass] or RAID_CLASS_COLORS[E.myclass])
+local classColor = E:ClassColor(E.myclass, true)
 
 local COORDS_WIDTH = 30 -- Coord panels width
 local SPACING = 1 		-- Panel spacing
