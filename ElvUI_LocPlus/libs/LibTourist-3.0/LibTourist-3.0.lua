@@ -1,6 +1,6 @@
 --[[
 Name: LibTourist-3.0
-Revision: $Rev: 232 $
+Revision: $Rev: 238 $
 Author(s): Odica (maintainer), originally created by ckknight and Arrowmaster
 Documentation: https://www.wowace.com/projects/libtourist-3-0/pages/api-reference
 SVN: svn://svn.wowace.com/wow/libtourist-3-0/mainline/trunk
@@ -9,7 +9,7 @@ License: MIT
 ]]
 
 local MAJOR_VERSION = "LibTourist-3.0"
-local MINOR_VERSION = 90000 + tonumber(("$Revision: 232 $"):match("(%d+)"))
+local MINOR_VERSION = 90000 + tonumber(("$Revision: 238 $"):match("(%d+)"))
 
 if not LibStub then error(MAJOR_VERSION .. " requires LibStub") end
 local C_Map = C_Map
@@ -119,7 +119,6 @@ local yardHeights = {}
 local yardXOffsets = {}
 local yardYOffsets = {}
 local continentScales = {}
-local fishing = {}
 local battlepet_lows = {}
 local battlepet_highs = {}
 local cost = {}
@@ -132,6 +131,7 @@ local entrancePortals_x = {}
 local entrancePortals_y = {}
 
 local zoneMapIDtoContinentMapID = {}
+local zoneMapIDtoExpansionIndex = {}
 local zoneMapIDs = {}
 local mapZonesByContinentID = {}
 
@@ -1669,6 +1669,342 @@ local zoneTranslation = {
 	},
 }
 
+
+
+-- =========================================================================
+-- Skill info, by expansion.
+
+-- Base skill IDs
+local FISHING_SKILL = 356
+local HERBALISM_SKILL = 182
+local MINING_SKILL = 186
+local SKINNING_SKILL = 393
+
+-- Variant Skill IDs, by expansion
+local expansionSkillLineIDs = {
+    [1] = { -- Classic (Kalimdor and Eastern Kingdoms)
+			[FISHING_SKILL] = 2592,
+			[HERBALISM_SKILL] = 2556,
+			[MINING_SKILL] = 2572,
+			[SKINNING_SKILL] = 2564,
+		},
+	[2] = { -- Burning Crusade (Outland)
+			[FISHING_SKILL] = 2591,
+			[HERBALISM_SKILL] = 2555,
+			[MINING_SKILL] = 2571,
+			[SKINNING_SKILL] = 2563,
+		},
+	[3] = { -- Wrath of the Lich King (Northrend)
+			[FISHING_SKILL] = 2590,
+			[HERBALISM_SKILL] = 2554,
+			[MINING_SKILL] = 2570,
+			[SKINNING_SKILL] = 2562,
+		},
+	[4] = { -- Cataclysm
+			[FISHING_SKILL] = 2589,
+			[HERBALISM_SKILL] = 2553,
+			[MINING_SKILL] = 2569,
+			[SKINNING_SKILL] = 2561,
+		},
+	[5] = { -- Mists of Pandaria (Pandaria)
+			[FISHING_SKILL] = 2588,
+			[HERBALISM_SKILL] = 2552,
+			[MINING_SKILL] = 2568,
+			[SKINNING_SKILL] = 2560,
+		},	
+	[6] = { -- Warlords of Draenor (Draenor)
+			[FISHING_SKILL] = 2587,
+			[HERBALISM_SKILL] = 2551,
+			[MINING_SKILL] = 2567,
+			[SKINNING_SKILL] = 2559,
+		},
+	[7] = { -- Legion (Broken Isles)
+			[FISHING_SKILL] = 2586,
+			[HERBALISM_SKILL] = 2550,
+			[MINING_SKILL] = 2566,
+			[SKINNING_SKILL] = 2558,
+		},
+	[8] = { -- Battle for Azeroth (Kul Tiras and Zandalar)
+			[FISHING_SKILL] = 2585,
+			[HERBALISM_SKILL] = 2549,
+			[MINING_SKILL] = 2565,
+			[SKINNING_SKILL] = 2557,
+		},
+}
+	
+-- Because Blizz was so kind to let GetTradeSkillLineInfoByID return data for ALL skills *except* Fishing.
+local fishingExpansionSkillCategoryIDs = {
+    [1] = 1100,		-- Classic -> Fishing
+    [2] = 1102,		-- Outland Fishing
+    [3] = 1104,		-- Northrend Fishing
+    [4] = 1106,		-- Cataclysm Fishing
+    [5] = 1108,		-- Pandaria Fishing
+    [6] = 1110,		-- Draenor Fishing
+    [7] = 1112,		-- Legion Fishing
+    [8] = 1114,		-- Kul Tiras Fishing
+}
+	
+local continent_maps = {
+    [12] = 1,		-- Kalimdor
+	[986] = 1,		-- Kalimdor
+	[1209] = 1,		-- Kalimdor
+    [13] = 1,		-- Eastern Kingdoms
+	[985] = 1,		-- Eastern Kingdoms
+	[1208] = 1,		-- Eastern Kingdoms
+    [101] = 2,		-- Outland
+	[987] = 2,		-- Outland
+	[1467] = 2,		-- Outland
+    [113] = 3,		-- Northrend
+	[988] = 3,		-- Northrend
+	[1384] = 3,		-- Northrend
+    [276] = 4,      -- The Maelstrom
+	[725] = 4,      -- The Maelstrom
+	[726] = 4,      -- The Maelstrom
+	[839] = 4,      -- The Maelstrom
+	[948] = 4,      -- The Maelstrom
+    [407] = 4,		-- Darkmoon Island
+	[408] = 4,		-- Darkmoon Island
+    [424] = 5,		-- Pandaria
+	[989] = 5,		-- Pandaria
+    [572] = 6,		-- Draenor
+	[990] = 6,		-- Draenor
+    [619] = 7,		-- Broken Isles
+	[993] = 7,		-- Broken Isles
+	[994] = 7, 		-- Argus
+    [876] = 8,		-- Kul Tiras
+	[992] = 8,		-- Kul Tiras
+	[1014] = 8,		-- Kul Tiras
+    [1355] = 8,     -- Nazjatar
+	[1504] = 8,     -- Nazjatar
+	[1528] = 8,     -- Nazjatar
+	[875] = 8,     	-- Zandalar
+	[991] = 8,     	-- Zandalar
+	[1011] = 8, 	-- Zandalar
+}
+
+local special_maps = {
+    [122] = 2,		-- Isle of Quel'Danas
+	[1270] = 2,		-- Isle of Quel'Danas
+    [198] = 4,		-- Mount Hyjal
+	[1328] = 4,		-- Mount Hyjal
+    [203] = 4,		-- Vashj'ir
+	[1272] = 4,		-- Vashj'ir
+    [207] = 4,		-- Deepholm
+    [241] = 4,		-- Twilight Highlands
+	[1275] = 4,		-- Twilight Highlands
+	[1476] = 4,		-- Twilight Highlands
+    [244] = 4,		-- Tol Barad
+	[773] = 4,		-- Tol Barad
+	[774] = 4,		-- Tol Barad
+	[1276] = 4,		-- Tol Barad
+    [245] = 4,		-- Tol Barad Peninsula
+	[1277] = 4,		-- Tol Barad Peninsula
+    [249] = 4,		-- Uldum
+	[1330] = 4,		-- Uldum
+	[1527] = 4,     -- Uldum
+	[1571] = 4,     -- Uldum
+    [338] = 4,		-- Molten Front
+	[378] = 5, 		-- The Wandering Isle
+	[1408] = 6, 	-- Ashran
+	[1337] = 8, 	-- Jorundall
+	-- Other mapIDs that don't yield an expansionIndex using HBD.mapData for unkown reasons:
+	[997] = 1, 		-- Tirisfal Glades
+	[1158] = 1, 	-- Arathi Highlands
+	[1334] = 3, 	-- Wintergrasp
+	[1196] = 8, 	-- Tiragarde Sound
+	[1198] = 8, 	-- Stormsong Valley	
+	[1197] = 8, 	-- Drustvar	
+	[1195] = 8, 	-- Vol'dun
+	[1193] = 8, 	-- Zuldazar
+	[1194] = 8, 	-- Nazmir
+}
+
+-- Used during initialisation of trade skill data by FillExpansionIndexLookup
+-- Based on code by Sutorix, borrowed from LibFishing-1.0
+local function GetExpansionIndex(mapId)
+	local expansionIndex = -1
+    if mapId then
+        if special_maps[mapId] then
+            expansionIndex = special_maps[mapId]
+        elseif continent_maps[mapId] then
+			expansionIndex = continent_maps[mapId]
+		else
+			if HBD.mapData[mapId] then
+				local found  = false
+				local cMapId = mapId
+				local parent = HBD.mapData[cMapId].parent
+				-- Navigate up to find the continent
+				while (parent ~= 946 and parent ~= 947 and HBD.mapData[parent] and found == false) do
+					cMapId = parent
+					if special_maps[cMapId] then
+						expansionIndex = special_maps[cMapId]
+						found = true
+					elseif continent_maps[cMapId] then
+						expansionIndex = continent_maps[cMapId]
+						found = true
+					else				
+						parent = HBD.mapData[cMapId].parent
+					end
+				end
+			end
+		end
+    end
+	return expansionIndex
+end
+
+-- Because the data required for GetFishingSkillInfo is not available until the Fishing Skills dialog has been opened,
+-- this function briefly opens the dialog so C_TradeSkillUI gets populated with skill data.
+-- It is invoked by the Ticker started by calling Tourist:LoadFishingSkills().
+local tsiTicker
+local tsiInterval = .2
+local tsiPhase = 0
+local tsiElapsed = 0
+local tsiMaxCycles = 20
+local tsiCycle = 0
+local opened = false
+local ready = false
+local function TradeSkillInit()
+	tsiElapsed = tsiElapsed + tsiInterval
+	tsiCycle = tsiCycle + 1
+	if tsiCycle == tsiMaxCycles - 1 then tsiPhase = 3 end -- Timeout on phase 1 or 2 -> go to 3 and 4
+	trace(tostring(tsiElapsed).." sec: TradeSkillInit Phase "..tostring(tsiPhase))
+	if tsiPhase == 0 then
+		MuteSoundFile(567507) -- sound/interface/ucharactersheetopen.ogg
+		MuteSoundFile(567433) -- sound/interface/ucharactersheetclose.ogg
+		tsiPhase = 1
+	elseif tsiPhase == 1 then
+		opened = C_TradeSkillUI.OpenTradeSkill(356) -- 356 = base Fishing Skill ID
+		if opened == true then tsiPhase = 2 end
+	elseif tsiPhase == 2 then
+		ready = C_TradeSkillUI.IsTradeSkillReady()
+		if ready == true then tsiPhase = 3 end
+	elseif tsiPhase == 3 then	
+		C_TradeSkillUI.CloseTradeSkill()
+		tsiPhase = 4
+	elseif tsiPhase == 4 then
+		UnmuteSoundFile(567507)
+		UnmuteSoundFile(567433)
+		tsiTicker:Cancel()
+		tsiPhase = -1
+	end
+end
+
+-- Triggers the procedure to forcibly load the fishing skill data, required for Tourist:GetFishingInfo
+function Tourist:LoadFishingSkills()
+	tsiTicker = C_Timer.NewTicker(tsiInterval, TradeSkillInit, tsiMaxCycles)
+end
+
+
+local function GetSkillInfo(skillID, zone)
+	local skillLineDisplayName, skillLineRank, skillLineMaxRank, skillLineModifier, parentSkillLineID
+	local mapId = Tourist:GetZoneMapID(zone) or zone
+	local expansionIndex = zoneMapIDtoExpansionIndex[mapId]
+	if expansionIndex then
+		if skillID == FISHING_SKILL then
+			-- GetTradeSkillLineInfoByID returns no data for Fishing Skills :'-(
+			-- Try Categories
+			local categoryID = fishingExpansionSkillCategoryIDs[expansionIndex]
+			-- Note 1: GetCategoryInfo only returns data for learned skill categories
+			-- Note 2: GetCategoryInfo doesn't return anything until TradeSkill data is loaded (see LoadFishingSkills)
+			local category, _ = C_TradeSkillUI.GetCategoryInfo(categoryID)
+			if category then
+				skillLineDisplayName = category.name
+				skillLineMaxRank = category.skillLineMaxLevel
+				skillLineRank = category.skillLineCurrentLevel
+			else
+				--trace("GetFishingInfo: No Skill Category Info for zone "..tostring(zone).." and Cat ID "..tostring(categoryID))
+			end
+		else
+			local continentSkills = expansionSkillLineIDs[expansionIndex]
+			if continentSkills then
+				local skillLineID = continentSkills[skillID]
+				skillLineDisplayName, skillLineRank, skillLineMaxRank, skillLineModifier, parentSkillLineID = C_TradeSkillUI.GetTradeSkillLineInfoByID(skillLineID)
+			end
+		end
+	end
+	return skillLineDisplayName or "", skillLineRank or 0, skillLineMaxRank or 0, skillLineModifier or 0, parentSkillLineID
+end
+
+function Tourist:GetFishingSkillInfo(zone)
+	return GetSkillInfo(FISHING_SKILL, zone)
+end
+
+function Tourist:GetHerbalismSkillInfo(zone)
+	return GetSkillInfo(HERBALISM_SKILL, zone)
+end
+
+function Tourist:GetMiningSkillInfo(zone)
+	return GetSkillInfo(MINING_SKILL, zone)
+end
+
+function Tourist:GetSkinningSkillInfo(zone)
+	return GetSkillInfo(SKINNING_SKILL, zone)
+end
+
+
+-- Returns fishing skill info for the specified zone (localized zone name or mapID)
+-- - skillName: Name of the required fishing skill 
+-- - maxLevel: Maximum skill level that can be reached for that skill
+-- - currentSkill: Current player skill level for that fishing skill
+-- - skillEnabled: true if the player has learned the required skill
+-- Note 1: no data is available if a skill has not been learned so if skillEnabled is false, other values will be empty.
+-- Note 2: data is only available if the Fishing Skill dialog has been opened or function Tourist:LoadFishingSkills() has been called.
+-- function Tourist:GetFishingInfo_OBSOLETE(zone)
+	-- zone = Tourist:GetMapNameByIDAlt(zone) or zone
+	-- local continentIndex = continentIndex[zone]
+	-- --local skillName, maxLevel, currentSkill, skillEnabled = "", 0, -1, false
+	-- local skillLineDisplayName, skillLineRank, skillLineMaxRank, skillLineModifier, parentSkillLineID = "", 0, 0, 0, nil
+	
+	
+	-- -- Retrieve info using the Fishing Spell Category ID of the zone (see GetContinentFishingSkillCategory)
+	-- local categoryId = continentIndex[zone]
+	-- -- Note 1: GetCategoryInfo only returns data for learned skill categories
+	-- -- Note 2: GetCategoryInfo doesn't return anything until TradeSkill data is loaded (see LoadFishingSkills)
+	-- if categoryId then
+		-- local category, _ = C_TradeSkillUI.GetCategoryInfo(categoryId)
+		-- if category then
+			-- skillName = category.name
+			-- maxLevel = category.skillLineMaxLevel
+			-- currentSkill = category.skillLineCurrentLevel
+			-- skillEnabled = category.enabled
+		-- else
+			-- --trace("GetFishingInfo: No Skill Category Info for zone "..tostring(zone).." and Cat ID "..tostring(categoryId))
+		-- end
+	-- else
+		-- --trace("GetFishingInfo: No Skill Category ID for zone "..tostring(zone))
+	-- end
+	-- return skillName, maxLevel, currentSkill, skillEnabled 
+-- end
+
+function FillExpansionIndexLookup()
+	local found, notFound = 0, 0
+	for mapId, name in pairs(MapIdLookupTable) do
+		local continentIndex = GetExpansionIndex(mapId)
+		if continentIndex and continentIndex > 0 then
+			found = found + 1
+			zoneMapIDtoExpansionIndex[mapId] = continentIndex
+		else
+			notFound = notFound + 1
+			--trace("|r|cffff4422! -- Tourist:|r Continent index not found ("..tostring(continentIndex)..") for mapId "..tostring(mapId).." ("..tostring(name)..")" )				
+			--trace("["..tostring(mapId).."] = 00, -- "..tostring(name))
+		end
+	end
+	trace("Found: "..tostring(found)..", not found: "..tostring(notFound))
+end
+
+
+
+-- OBSOLETE FUNCTION, TO BE REMOVED
+-- Minimum fishing skill to fish these zones junk-free (Draenor: to catch Enormous Fish only)
+-- 8.0.1: SUSPENDED until it is clear how the fishing skills currently work, if a minimum skill is still required 
+-- and how it should be calculated. There is no WoW API for this.
+function Tourist:GetFishingLevel(zone)
+	return 0
+end
+
+-- =========================================================================
+
+
 local function CreateLocalizedZoneNameLookups()
 	local uiMapID
 	local mapInfo
@@ -2096,15 +2432,6 @@ function Tourist:GetUniqueEnglishZoneNameForLookup(zoneName, continentMapID)
 	return zoneName
 end
 
--- Minimum fishing skill to fish these zones junk-free (Draenor: to catch Enormous Fish only)
--- 8.0.1: SUSPENDED until it is clear how the fishing skills currently work, if a minimum skill is still required 
--- and how it should be calculated. There is no WoW API for this.
-function Tourist:GetFishingLevel(zone)
-	return 0
---	zone = Tourist:GetMapNameByIDAlt(zone) or zone
---	return fishing[zone]
-end
-
 -- Returns the minimum and maximum battle pet levels for the given zone, if the zone is known 
 -- and contains battle pets (otherwise returns nil)
 function Tourist:GetBattlePetLevel(zone)
@@ -2460,30 +2787,6 @@ local function GetTheMotherlodeEntrance()
 		return { BZ["Zuldazar"], 39.3, 71.4 }
 	end
 end
-
-
--- Returns an r, g and b value representing a color, depending on the given zone and the current character's faction.
-function Tourist:GetFactionColor(zone)
-	zone = Tourist:GetMapNameByIDAlt(zone) or zone
-
-	if factions[zone] == "Sanctuary" then
-		-- Blue
-		return 0.41, 0.8, 0.94
-	elseif self:IsPvPZone(zone) then
-		-- Orange
-		return 1, 0.7, 0
-	elseif factions[zone] == (isHorde and "Alliance" or "Horde") then
-		-- Red
-		return 1, 0, 0
-	elseif factions[zone] == (isHorde and "Horde" or "Alliance") then
-		-- Green
-		return 0, 1, 0
-	else
-		-- Yellow
-		return 1, 1, 0
-	end
-end
-
 
 local function retNil() 
 	return nil 
@@ -3433,11 +3736,10 @@ do
 		PLAYER_LEVEL_UP(Tourist, ...)
 	end)
 
-
 	trace("Tourist: Initializing localized zone name lookups...")
 	CreateLocalizedZoneNameLookups()
 	AddDuplicatesToLocalizedLookup()
-
+	
 	
 	-- TRANSPORT DEFINITIONS ----------------------------------------------------------------
 
@@ -4480,7 +4782,6 @@ do
 		},
 		faction = "Alliance",
 		type = "City",
-		fishing_min = 75,
 	}
 	
 	zones[BZ["Undercity"]] = {
@@ -4496,7 +4797,6 @@ do
 		},
 		faction = "Horde",
 		type = "City",
-		fishing_min = 75,
 	}	
 	
 	zones[BZ["Ironforge"]] = {
@@ -4511,7 +4811,6 @@ do
 		},
 		faction = "Alliance",
 		type = "City",
-		fishing_min = 75,
 	}
 
 	zones[BZ["Silvermoon City"]] = {
@@ -4537,7 +4836,6 @@ do
 			[BZ["Elwynn Forest"]] = true,
 		},
 		faction = "Alliance",
-		fishing_min = 25,
 	}
 
 	zones[BZ["Sunstrider Isle"]] = {
@@ -4548,7 +4846,6 @@ do
 			[BZ["Eversong Woods"]] = true,
 		},
 		faction = "Horde",
-		fishing_min = 25,
 	}
 
 	zones[BZ["Deathknell"]] = {
@@ -4559,7 +4856,6 @@ do
 			[BZ["Tirisfal Glades"]] = true,
 		},
 		faction = "Horde",
-		fishing_min = 25,
 	}	
 	
 	zones[BZ["Coldridge Valley"]] = {
@@ -4570,7 +4866,6 @@ do
 			[BZ["Dun Morogh"]] = true,
 		},
 		faction = "Alliance",
-		fishing_min = 25,
 	}
 	
 	zones[BZ["New Tinkertown"]] = {
@@ -4581,7 +4876,6 @@ do
 			[BZ["Dun Morogh"]] = true,
 		},
 		faction = "Alliance",
-		fishing_min = 25,
 	}	
 	
 	zones[BZ["Dun Morogh"]] = {
@@ -4603,7 +4897,6 @@ do
 			[6] = true,      -- Ironforge, Dun Morogh (A)
 		},
 		faction = "Alliance",
-		fishing_min = 25,
 	}	
 	
 	zones[BZ["Elwynn Forest"]] = {
@@ -4625,7 +4918,6 @@ do
 			[589] = true,    -- Eastvale Logging Camp, Elwynn (A)
 		},
 		faction = "Alliance",
-		fishing_min = 25,
 	}	
 	
 	zones[BZ["Eversong Woods"]] = {
@@ -4643,7 +4935,6 @@ do
 			[625] = true,    -- Fairbreeze Village, Eversong Woods (H)
 		},
 		faction = "Horde",
-		fishing_min = 25,
 	}	
 	
 	zones[BZ["Gilneas"]] = {
@@ -4652,7 +4943,6 @@ do
 		continent = Eastern_Kingdoms,
 		paths = {},  -- phased instance
 		faction = "Alliance",
-		fishing_min = 25,
 	}	
 	
 	zones[BZ["Gilneas City"]] = {
@@ -4672,7 +4962,6 @@ do
 		flightnodes = {
 			[646] = true,    -- Forsaken Forward Command, Gilneas (H)
 		},
-		fishing_min = 75,
 	}
 
 	zones[BZ["Ruins of Gilneas City"]] = {
@@ -4681,7 +4970,6 @@ do
 			[BZ["Silverpine Forest"]] = true,
 			[BZ["Ruins of Gilneas"]] = true,
 		},
-		fishing_min = 75,
 	}
 	
 	zones[BZ["Tirisfal Glades"]] = {
@@ -4712,7 +5000,6 @@ do
 --			[BZ["Scarlet Monastery"]] = true,   -- Duplicate name with instance (thanks, Blizz)
 --		},
 		faction = "Horde",
-		fishing_min = 25,
 	}	
 	
 	zones[BZ["Westfall"]] = {
@@ -4731,7 +5018,6 @@ do
 			[4] = true,      -- Sentinel Hill, Westfall (A)
 		},
 		faction = "Alliance",
-		fishing_min = 75,
 	}	
 	
 	zones[BZ["Ghostlands"]] = {
@@ -4749,7 +5035,6 @@ do
 			[205] = true,    -- Zul'Aman, Ghostlands (N)
 		},
 		faction = "Horde",
-		fishing_min = 75,
 	}
 
 	zones[BZ["Loch Modan"]] = {
@@ -4767,7 +5052,6 @@ do
 			[8] = true,     -- Thelsamar, Loch Modan (A)
 		},
 		faction = "Alliance",
-		fishing_min = 75,
 	}
 
 	zones[BZ["Silverpine Forest"]] = {
@@ -4788,7 +5072,6 @@ do
 			[681] = true,    -- Forsaken Rear Guard, Silverpine Forest (H)
 		},
 		faction = "Horde",
-		fishing_min = 75,
 	}
 
 	zones[BZ["Redridge Mountains"]] = {
@@ -4806,7 +5089,6 @@ do
 			[615] = true,    -- Camp Everstill, Redridge (A)
 			[5] = true,      -- Lakeshire, Redridge (A)
 		},
-		fishing_min = 75,
 	}
 	
 	zones[BZ["Duskwood"]] = {
@@ -4824,7 +5106,6 @@ do
 			[622] = true,    -- Raven Hill, Duskwood (A)
 			[12] = true,     -- Darkshire, Duskwood (A)
 		},
-		fishing_min = 150,
 	}	
 	
 	zones[BZ["Hillsbrad Foothills"]] = {
@@ -4847,7 +5128,6 @@ do
 			[668] = true,    -- Southpoint Gate, Hillsbrad (H)
 		},
 		faction = "Horde",
-		fishing_min = 150,
 	}
 
 	zones[BZ["Wetlands"]] = {
@@ -4868,7 +5148,6 @@ do
 			[554] = true,    -- Slabchisel's Survey, Wetlands (A)
 			[7] = true,      -- Menethil Harbor, Wetlands (A)
 		},
-		fishing_min = 150,
 	}
 
 	zones[BZ["Arathi Highlands"]] = {
@@ -4887,7 +5166,6 @@ do
 			[17] = true,     -- Hammerfall, Arathi (H)
 			[16] = true,     -- Refuge Pointe, Arathi (A)
 		},
-		fishing_min = 150,
 	}
 
 	zones[BZ["Stranglethorn Vale"]] = {
@@ -4912,7 +5190,6 @@ do
 			[591] = true,    -- Explorers' League Digsite, Stranglethorn (A)
 			[20] = true,     -- Grom'gol, Stranglethorn (H)
 		},
-		fishing_min = 150,
 	}
 	
 	zones[BZ["Northern Stranglethorn"]] = {
@@ -4933,7 +5210,6 @@ do
 			[195] = true,    -- Rebel Camp, Stranglethorn Vale (A)
 			[20] = true,     -- Grom'gol, Stranglethorn (H)
 		},
-		fishing_min = 150,
 	}
 
 	zones[BZ["The Cape of Stranglethorn"]] = {
@@ -4950,7 +5226,6 @@ do
 			[592] = true,    -- Hardwrench Hideaway, Stranglethorn (H)
 			[591] = true,    -- Explorers' League Digsite, Stranglethorn (A)
 		},
-		fishing_min = 225,
 	}
 
 	zones[BZ["The Hinterlands"]] = {
@@ -4968,7 +5243,6 @@ do
 			[618] = true,    -- Stormfeather Outpost, The Hinterlands (A)
 			[76] = true,     -- Revantusk Village, The Hinterlands (H)
 		},
-		fishing_min = 225,
 	}
 
 	zones[BZ["Western Plaguelands"]] = {
@@ -4990,7 +5264,6 @@ do
 			[66] = true,     -- Chillwind Camp, Western Plaguelands (A)
 			[672] = true,    -- Hearthglen, Western Plaguelands (N)
 		},
-		fishing_min = 225,
 	}
 
 	zones[BZ["Eastern Plaguelands"]] = {
@@ -5016,7 +5289,6 @@ do
 			[315] = true,     -- Acherus: The Ebon Hold (N)
 		},
 		type = "PvP Zone",
-		fishing_min = 300,
 	}
 
 	zones[BZ["Badlands"]] = {
@@ -5036,7 +5308,6 @@ do
 			[633] = true,    -- Dustwind Dig, Badlands (A)
 			[21] = true,     -- New Kargath, Badlands (H)
 		},
-		fishing_min = 300,
 	}	
 	
 	zones[BZ["Searing Gorge"]] = {
@@ -5065,7 +5336,6 @@ do
 		complexes = {
 			[BZ["Blackrock Mountain"]] = true,
 		},
-		fishing_min = 425,
 	}	
 	
 	zones[BZ["Burning Steppes"]] = {
@@ -5095,7 +5365,6 @@ do
 		complexes = {
 			[BZ["Blackrock Mountain"]] = true,
 		},
-		fishing_min = 425,
 	}	
 	
 	zones[BZ["Swamp of Sorrows"]] = {
@@ -5115,7 +5384,6 @@ do
 			[600] = true,    -- The Harborage, Swamp of Sorrows (A)
 			[56] = true,     -- Stonard, Swamp of Sorrows (H)
 		},
-		fishing_min = 425,
 	}
 
 	zones[BZ["Blasted Lands"]] = {
@@ -5134,7 +5402,6 @@ do
 			[1537] = true, 	 -- Shattered Landing, Blasted Lands (H)
 			[1538] = true,   -- Shattered Beachhead, Blasted Lands (A)	
 		},
-		fishing_min = 425,
 	}
 
 	zones[BZ["Deadwind Pass"]] = {
@@ -5147,7 +5414,6 @@ do
 			[BZ["Swamp of Sorrows"]] = true,
 			[BZ["Karazhan"]] = true,
 		},
-		fishing_min = 425,
 	}
 
 	-- DK starting zone
@@ -5176,7 +5442,6 @@ do
 			[BZ["Magisters' Terrace"]] = true,
 			[BZ["Sunwell Plateau"]] = true,
 		},
-		fishing_min = 450,
 	}
 	
 	zones[BZ["Vashj'ir"]] = {
@@ -5202,7 +5467,6 @@ do
 			[523] = true,    -- Tranquil Wash, Vashj'ir (A) S seahorse
 			[525] = true,    -- Legion's Rest, Vashj'ir (H) S seahorse
 		},
-		fishing_min = 575,
 	}
 
 	zones[BZ["Kelp'thar Forest"]] = {
@@ -5215,7 +5479,6 @@ do
 		flightnodes = {
 			[521] = true,    -- Smuggler's Scar, Vashj'ir (N) seahorse
 		},
-		fishing_min = 575,
 	}
 
 	zones[BZ["Shimmering Expanse"]] = {
@@ -5239,7 +5502,6 @@ do
 			[523] = true,    -- Tranquil Wash, Vashj'ir (A) seahorse
 			[525] = true,    -- Legion's Rest, Vashj'ir (H) seahorse
 		},
-		fishing_min = 575,
 	}
 
 	zones[BZ["Abyssal Depths"]] = {
@@ -5257,7 +5519,6 @@ do
 			[524] = true,    -- Darkbreak Cove, Vashj'ir (A) seahorse
 			[526] = true,    -- Tenebrous Cavern, Vashj'ir (H) seahorse
 		},
-		fishing_min = 575,
 	}	
 	
 	zones[BZ["Twilight Highlands"]] = {
@@ -5289,7 +5550,6 @@ do
 			[664] = true,    -- Firebeard's Patrol, Twilight Highlands (A)
 			[666] = true,    -- Kirthaven, Twilight Highlands (A)
 		},
-		fishing_min = 650,
 	}	
 	
 	zones[BZ["Tol Barad"]] = {
@@ -5300,7 +5560,6 @@ do
 			[BZ["Tol Barad Peninsula"]] = true,
 		},
 		type = "PvP Zone",
-		fishing_min = 675,
 	}
 
 	zones[BZ["Tol Barad Peninsula"]] = {
@@ -5312,7 +5571,6 @@ do
 			[transports["TOLBARAD_ORGRIMMAR_PORTAL"]] = true,
 			[transports["TOLBARAD_STORMWIND_PORTAL"]] = true,
 		},
-		fishing_min = 675,
 	}	
 	
 	zones[BZ["Amani Pass"]] = {
@@ -5356,7 +5614,6 @@ do
 		},
 		faction = "Horde",
 		type = "City",
-		fishing_min = 75,
 	}
 	
 	zones[BZ["Thunder Bluff"]] = {
@@ -5370,7 +5627,6 @@ do
 		},
 		faction = "Horde",
 		type = "City",
-		fishing_min = 75,
 	}
 	
 	zones[BZ["The Exodar"]] = {
@@ -5398,7 +5654,6 @@ do
 		},
 		faction = "Alliance",
 		type = "City",
-		fishing_min = 75,
 	}
 
 
@@ -5411,7 +5666,6 @@ do
 			[BZ["Azuremyst Isle"]] = true,
 		},
 		faction = "Alliance",
-		fishing_min = 25,
 	}
 	
 	zones[BZ["Valley of Trials"]] = {
@@ -5422,7 +5676,6 @@ do
 			[BZ["Durotar"]] = true,
 		},
 		faction = "Horde",
-		fishing_min = 25,
 	}
 	
 	zones[BZ["Echo Isles"]] = {
@@ -5434,7 +5687,6 @@ do
 			[transports["ECHOISLES_ZULDAZAR_BOAT"]] = true,
 		},
 		faction = "Horde",
-		fishing_min = 25,
 	}
 
 	zones[BZ["Camp Narache"]] = {
@@ -5445,7 +5697,6 @@ do
 			[BZ["Mulgore"]] = true,
 		},
 		faction = "Horde",
-		fishing_min = 25,
 	}
 	
 	zones[BZ["Shadowglen"]] = {
@@ -5456,7 +5707,6 @@ do
 			[BZ["Teldrassil"]] = true,
 		},
 		faction = "Alliance",
-		fishing_min = 25,
 	}	
 	
 	
@@ -5475,7 +5725,6 @@ do
 			[624] = true,    -- Azure Watch, Azuremyst Isle (A)
 		},
 		faction = "Alliance",
-		fishing_min = 25,
 	}	
 	
 	zones[BZ["Durotar"]] = {
@@ -5495,7 +5744,6 @@ do
 			[23] = true,     -- Orgrimmar, Durotar (H)
 		},
 		faction = "Horde",
-		fishing_min = 25,
 	}	
 	
 	zones[BZ["Mulgore"]] = {
@@ -5512,7 +5760,6 @@ do
 			[22] = true,     -- Thunder Bluff, Mulgore (H)
 		},
 		faction = "Horde",
-		fishing_min = 25,
 	}	
 	
 	zones[BZ["Teldrassil"]] = {
@@ -5531,7 +5778,6 @@ do
 			[457] = true,    -- Darnassus, Teldrassil (A)
 		},
 		faction = "Alliance",
-		fishing_min = 25,
 	}	
 	
 	zones[BZ["Azshara"]] = {
@@ -5548,7 +5794,6 @@ do
 			[44] = true,     -- Bilgewater Harbor, Azshara (H)
 			[614] = true,    -- Northern Rocketway, Azshara (H)
 		},
-		fishing_min = 75,
 		faction = "Horde",
 	}	
 	
@@ -5561,7 +5806,6 @@ do
 			[93] = true,    -- Blood Watch, Bloodmyst Isle (A)
 		},
 		faction = "Alliance",
-		fishing_min = 75,
 	}	
 	
 	zones[BZ["Darkshore"]] = {
@@ -5576,7 +5820,6 @@ do
 			[26] = true,     -- Lor'danel, Darkshore (A)
 		},
 		faction = "Alliance",
-		fishing_min = 75,
 	}
 
 	zones[BZ["Northern Barrens"]] = {
@@ -5602,7 +5845,6 @@ do
 			[25] = true,    -- The Crossroads, Northern Barrens (H)
 		},
 		faction = "Horde",
-		fishing_min = 75,
 	}
 
 	zones[BZ["Ashenvale"]] = {
@@ -5633,7 +5875,6 @@ do
 			[354] = true,    -- The Mor'Shan Ramparts, Ashenvale (H)
 			[350] = true,    -- Hellscream's Watch, Ashenvale (H)
 		},
-		fishing_min = 150,
 	}
 
 	zones[BZ["Stonetalon Mountains"]] = {
@@ -5658,7 +5899,6 @@ do
 			[364] = true,    -- Northwatch Expedition Base Camp, Stonetalon Mountains (A)
 			[361] = true,    -- Windshear Hold, Stonetalon Mountains (A)
 		},
-		fishing_min = 150,
 	}
 	
 	zones[BZ["Desolace"]] = {
@@ -5680,7 +5920,6 @@ do
 			[366] = true,    -- Furien's Post, Desolace (H)
 			[37] = true,     -- Nijel's Point, Desolace (A)
 		},
-		fishing_min = 225,
 	}	
 	
 	zones[BZ["Southern Barrens"]] = {
@@ -5706,7 +5945,6 @@ do
 			[387] = true,    -- Honor's Stand, Southern Barrens (A)
 			[391] = true,    -- Desolation Hold, Southern Barrens (H)
 		},
-		fishing_min = 225,
 	}	
 	
 	zones[BZ["Dustwallow Marsh"]] = {
@@ -5725,7 +5963,6 @@ do
 			[179] = true,    -- Mudsprocket, Dustwallow Marsh (N)
 			[32] = true,     -- Theramore, Dustwallow Marsh (A)
 		},
-		fishing_min = 225,
 	}	
 	
 	zones[BZ["Feralas"]] = {
@@ -5754,7 +5991,6 @@ do
 		complexes = {
 			[BZ["Dire Maul"]] = true,
 		},
-		fishing_min = 225,
 	}	
 	
 	zones[BZ["Thousand Needles"]] = {
@@ -5775,7 +6011,6 @@ do
 			[513] = true,    -- Fizzle & Pozzik's Speedbarge, Thousand Needles (N)
 			[30] = true,     -- Westreach Summit, Thousand Needles (H)
 		},
-		fishing_min = 300,
 	}	
 	
 	zones[BZ["Felwood"]] = {
@@ -5794,7 +6029,6 @@ do
 			[594] = true,    -- Whisperwind Grove, Felwood (N)
 			[65] = true,     -- Talonbranch Glade, Felwood (A)
 		},
-		fishing_min = 300,
 	}	
 	
 	zones[BZ["Tanaris"]] = {
@@ -5829,7 +6063,6 @@ do
 		complexes = {
 			[BZ["Caverns of Time"]] = true,
 		},
-		fishing_min = 300,
 	}
 
 	zones[BZ["Un'Goro Crater"]] = {
@@ -5844,7 +6077,6 @@ do
 			[79] = true,     -- Marshal's Stand, Un'Goro Crater (N)
 			[386] = true,    -- Mossy Pile, Un'Goro Crater (N)
 		},
-		fishing_min = 375,
 	}
 
 	zones[BZ["Winterspring"]] = {
@@ -5860,7 +6092,6 @@ do
 			[53] = true,    -- Everlook, Winterspring (H)
 			[52] = true,    -- Everlook, Winterspring (A)
 		},
-		fishing_min = 425,
 	}	
 	
 	zones[BZ["Silithus"]] = {
@@ -5886,7 +6117,6 @@ do
 			[BZ["Ahn'Qiraj: The Fallen Kingdom"]] = true,
 		},
 		type = "PvP Zone",
-		fishing_min = 425,
 	}
 
 	zones[BZ["Moonglade"]] = {
@@ -5903,7 +6133,6 @@ do
 			[62] = true,    -- Nighthaven, Moonglade (A)
 			[63] = true,    -- Nighthaven, Moonglade (H)
 		},
-		fishing_min = 300,
 	}
 
 	zones[BZ["Mount Hyjal"]] = {
@@ -5925,7 +6154,6 @@ do
 		instances = {
 			[BZ["Firelands"]] = true,
 		},
-		fishing_min = 575,
 	}
 
 	zones[BZ["Uldum"]] = {
@@ -5947,7 +6175,6 @@ do
 			[BZ["Throne of the Four Winds"]] = true,
 			[BZ["Ny'alotha"]] = true,  -- Entrance can be either here or in Vale of Eternal Blossoms
 		},
-		fishing_min = 650,
 	}
 
 	zones[BZ["Molten Front"]] = {
@@ -6010,7 +6237,6 @@ do
 			[BZ["Hellfire Citadel"]] = true,
 		},
 		type = "PvP Zone",
-		fishing_min = 375,
 	}	
 	
 	zones[BZ["Zangarmarsh"]] = {
@@ -6040,7 +6266,6 @@ do
 			[BZ["Coilfang Reservoir"]] = true,
 		},
 		type = "PvP Zone",
-		fishing_min = 400,
 	}	
 	
 	zones[BZ["Terokkar Forest"]] = {
@@ -6070,7 +6295,6 @@ do
 			[BZ["Ring of Observance"]] = true,
 		},
 		type = "PvP Zone",
-		fishing_min = 450,
 	}
 
 	zones[BZ["Nagrand"]] = {
@@ -6090,7 +6314,6 @@ do
 			[119] = true,    -- Telaar, Nagrand (A)
 		},
 		type = "PvP Zone",
-		fishing_min = 475,
 	}
 
 	zones[BZ["Blade's Edge Mountains"]] = {
@@ -6139,7 +6362,6 @@ do
 --		complexes = {
 --			[BZ["Tempest Keep"]] = true,
 --		},
-		fishing_min = 475,
 	}
 
 	zones[BZ["Shadowmoon Valley"]] = {
@@ -6157,7 +6379,6 @@ do
 			[123] = true,    -- Shadowmoon Village, Shadowmoon Valley (H)
 			[159] = true,    -- Sanctum of the Stars, Shadowmoon Valley (N)
 		},
-		fishing_min = 375,
 	}
 	
 	
@@ -6183,7 +6404,6 @@ do
 		type = "City",
 		texture = "Dalaran",
 		faction = "Sanctuary",
-		fishing_min = 525,
 	}
 	
 	
@@ -6217,7 +6437,6 @@ do
 		complexes = {
 			[BZ["Coldarra"]] = true,
 		},
-		fishing_min = 475,
 	}	
 	
 	zones[BZ["Howling Fjord"]] = {
@@ -6246,7 +6465,6 @@ do
 			[BZ["Utgarde Keep"]] = true,
 			[BZ["Utgarde Pinnacle"]] = true,
 		},
-		fishing_min = 475,
 	}	
 	
 	zones[BZ["Dragonblight"]] = {
@@ -6282,7 +6500,6 @@ do
 			[BZ["The Obsidian Sanctum"]] = true,
 			[BZ["Strand of the Ancients"]] = true,
 		},
-		fishing_min = 475,
 	}	
 	
 	zones[BZ["Grizzly Hills"]] = {
@@ -6302,7 +6519,6 @@ do
 			[253] = true,    -- Amberpine Lodge, Grizzly Hills (A)
 		},
 		instances = BZ["Drak'Tharon Keep"],
-		fishing_min = 475,
 	}	
 	
 	zones[BZ["Zul'Drak"]] = {
@@ -6327,7 +6543,6 @@ do
 			[BZ["Gundrak"]] = true,
 			[BZ["Drak'Tharon Keep"]] = true,
 		},
-		fishing_min = 475,
 	}
 
 	zones[BZ["Sholazar Basin"]] = {
@@ -6339,7 +6554,6 @@ do
 			[308] = true,    -- River's Heart, Sholazar Basin (N)
 			[309] = true,    -- Nesingwary Base Camp, Sholazar Basin (N)
 		},
-		fishing_min = 525,
 	}
 
 	zones[BZ["Icecrown"]] = {
@@ -6371,7 +6585,6 @@ do
 			[BZ["Icecrown Citadel"]] = true,
 			[BZ["Isle of Conquest"]] = true,
 		},
-		fishing_min = 550,
 	}
 	
 	zones[BZ["The Storm Peaks"]] = {
@@ -6398,7 +6611,6 @@ do
 			[BZ["Halls of Lightning"]] = true,
 			[BZ["Ulduar"]] = true,
 		},
-		fishing_min = 550,
 	}	
 	
 	zones[BZ["Crystalsong Forest"]] = {
@@ -6416,7 +6628,6 @@ do
 			[310] = true,    -- Dalaran (N)
 			[337] = true,    -- Sunreaver's Command, Crystalsong Forest (H)
 		},
-		fishing_min = 500,
 	}	
 	
 	zones[BZ["Hrothgar's Landing"]] = {
@@ -6424,7 +6635,6 @@ do
 		high = 80,
 		paths = BZ["Icecrown"],
 		continent = Northrend,
-		fishing_min = 550,
 	}	
 	
 	zones[BZ["Wintergrasp"]] = {
@@ -6438,12 +6648,10 @@ do
 		},
 		instances = BZ["Vault of Archavon"],
 		type = "PvP Zone",
-		fishing_min = 525,
 	}	
 
 	zones[BZ["The Frozen Sea"]] = {
 		continent = Northrend,
-		fishing_min = 575,
 	}	
 	
 	-- The Maelstrom zones --
@@ -6454,7 +6662,6 @@ do
 		high = 5,
 		continent = The_Maelstrom,
 		faction = "Horde",
-		fishing_min = 25,
 	}
 
 	-- Goblin start zone
@@ -6463,7 +6670,6 @@ do
 		high = 10,
 		continent = The_Maelstrom,
 		faction = "Horde",
-		fishing_min = 25,
 	}	
 	
 	zones[BZ["The Maelstrom"].." (zone)"] = {
@@ -6487,12 +6693,10 @@ do
 			[transports["DEEPHOLM_ORGRIMMAR_PORTAL"]] = true,
 			[transports["DEEPHOLM_STORMWIND_PORTAL"]] = true,
 		},
-		fishing_min = 550,
 	}	
 	
 	zones[BZ["Darkmoon Island"]] = {
 		continent = The_Maelstrom,
-		fishing_min = 75,
 		paths = {
 			[transports["DARKMOON_MULGORE_PORTAL"]] = true,
 			[transports["DARKMOON_ELWYNNFOREST_PORTAL"]] = true,
@@ -6528,8 +6732,7 @@ do
 		low = 1,
 		high = 10,
 		continent = Pandaria,
---		fishing_min = 25,
- 		faction = "Sanctuary",  -- Not contested and not Alliance nor Horde -> no PvP -> sanctuary
+-- 		faction = "Sanctuary",  -- Not contested and not Alliance nor Horde -> no PvP -> sanctuary
 	}	
 	
 	zones[BZ["The Jade Forest"]] = {
@@ -6559,7 +6762,6 @@ do
 			[966] = true,    -- Paw'Don Village, Jade Forest (A)
 			[970] = true,    -- Emperor's Omen, Jade Forest (N)
 		},
-		fishing_min = 650,
 	}	
 	
 	zones[BZ["Valley of the Four Winds"]] = {
@@ -6583,7 +6785,6 @@ do
 			[984] = true,    -- Pang's Stead, Valley of the Four Winds (N)
 			[1052] = true,   -- Grassy Cline, Valley of the Four Winds (N)
 		},
-		fishing_min = 700,
 	}	
 	
 	zones[BZ["Krasarang Wilds"]] = {
@@ -6604,7 +6805,6 @@ do
 			[992] = true,    -- Cradle of Chi-Ji, Krasarang Wilds (N)
 			[987] = true,    -- Thunder Cleft, Krasarang Wilds (H)
 		},
-		fishing_min = 700,
 	}	
 	
 	zones[BZ["The Veiled Stair"]] = {
@@ -6622,7 +6822,6 @@ do
 		flightnodes = {
 			[1029] = true,    -- Tavern in the Mists, The Veiled Stair (N)
 		},
-		fishing_min = 750,
 	}	
 	
 	zones[BZ["Kun-Lai Summit"]] = {
@@ -6652,7 +6851,6 @@ do
 			[1017] = true,    -- Binan Village, Kun-Lai Summit (N)
 			[1018] = true,    -- Temple of the White Tiger, Kun-Lai Summit (N)
 		},
-		fishing_min = 625,
 	}
 
 	zones[BZ["Townlong Steppes"]] = {
@@ -6673,7 +6871,6 @@ do
 			[1055] = true,    -- Rensai's Watchpost, Townlong Steppes (N)
 			[1056] = true,    -- Shado-Pan Garrison, Townlong Steppes (N)
 		},
-		fishing_min = 700,
 	}
 
 	zones[BZ["Dread Wastes"]] = {
@@ -6696,7 +6893,6 @@ do
 			[1070] = true,    -- Klaxxi'vess, Dread Wastes (N)
 			[1071] = true,    -- Soggy's Gamble, Dread Wastes (N)
 		},
-		fishing_min = 625,
 	}
 
 	zones[BZ["Vale of Eternal Blossoms"]] = {
@@ -6721,7 +6917,6 @@ do
 			[1073] = true,    -- Serpent's Spine, Vale of Eternal Blossoms (N)
 			[2544] = true,	  -- Mistfall Village, Vale of Eternal Blossoms (N)
 		},
-		fishing_min = 825,
 	}
 
 	zones[BZ["Isle of Giants"]] = {
@@ -6732,7 +6927,6 @@ do
 			[1221] = true,    -- Beeble's Wreck, Isle Of Giants (A)
 			[1222] = true,    -- Bozzle's Wreck, Isle Of Giants (H)
 		},
-		fishing_min = 750,
 	}
 	
 	zones[BZ["Isle of Thunder"]] = {
@@ -6745,7 +6939,6 @@ do
 		paths = {
 			[transports["ISLEOFTHUNDER_TOWNLONGSTEPPES_PORTAL"]] = true,
 		},
-		fishing_min = 750,
 	}	
 	
 	zones[BZ["Timeless Isle"]] = {
@@ -6757,7 +6950,6 @@ do
 			[1293] = true,    -- Tushui Landing, Timeless Isle (A)
 			[1294] = true,    -- Huojin Landing, Timeless Isle (H)
 		},		
-		fishing_min = 825,
 	}	
 	
 	
@@ -6772,7 +6964,6 @@ do
 		},
 		faction = "Horde",
 		type = "City",
-        fishing_min = 950,
 	}
 
 	zones[BZ["Stormshield"]] = {
@@ -6784,7 +6975,6 @@ do
 		},
 		faction = "Alliance",
 		type = "City",
-        fishing_min = 950,
 	}
 	
 	-- Alliance garrison
@@ -6800,7 +6990,6 @@ do
 			[1476] = true,    -- Lunarfall (Alliance), Shadowmoon Valley (A)
 		},
         faction = "Alliance",
-        fishing_min = 950,
 		yards = 683.334,
 		x_offset = 11696.5098,
 		y_offset = 9101.3333,
@@ -6820,7 +7009,6 @@ do
 			[1432] = true,    -- Frostwall Garrison, Frostfire Ridge (H)
 		},
         faction = "Horde",
-        fishing_min = 950,
 		yards = 702.08,
 		x_offset = 7356.9277,
 		y_offset = 5378.4173,
@@ -6852,7 +7040,6 @@ do
 			[1388] = true,    -- Throm'Var, Frostfire Ridge (H)
 			[1387] = true,    -- Bladespire Citadel, Frostfire Ridge (H)
 		},
-		fishing_min = 950,
 	}	
 	
 	zones[BZ["Shadowmoon Valley"].." ("..BZ["Draenor"]..")"] = {
@@ -6882,7 +7069,6 @@ do
 			[1556] = true,    -- Tranquil Court, Shadowmoon Valley (A)
 			[1384] = true,    -- Exile's Rise, Shadowmoon Valley (N)
 		},
-		fishing_min = 950,
 	}	
 	
 	zones[BZ["Gorgrond"]] = {
@@ -6914,7 +7100,6 @@ do
 			[1523] = true,    -- Deeproot, Gorgrond (A)
 			[1568] = true,    -- Everbloom Wilds, Gorgrond (N)
 		},
-		fishing_min = 950,
 	}	
 	
 	zones[BZ["Talador"]] = {
@@ -6945,7 +7130,6 @@ do
 			[1448] = true,    -- Redemption Rise, Talador (A)
 			[1462] = true,    -- Terokkar Refuge, Talador (N)
 		},
-		fishing_min = 950,
 	}		
 	
 	zones[BZ["Spires of Arak"]] = {
@@ -6969,7 +7153,6 @@ do
 			[1509] = true,    -- Talon Watch, Spires of Arak (N)
 			[1508] = true,    -- Veil Terokk, Spires of Arak (N)
 		},
-		fishing_min = 950,
 	}	
 	
 	zones[BZ["Nagrand"].." ("..BZ["Draenor"]..")"] = {
@@ -6994,7 +7177,6 @@ do
 			[1507] = true,    -- Yrel's Watch, Nagrand (A)
 			[1504] = true,    -- Wor'var, Nagrand (H)
 		},
-		fishing_min = 950,
 	}
 
 	zones[BZ["Tanaan Jungle"]] = {
@@ -7021,7 +7203,6 @@ do
 			[1621] = true,    -- Vol'mar, Tanaan Jungle (H)
 			[1648] = true,    -- Sha'naari Refuge, Tanaan Jungle (N)
 		},
-		fishing_min = 950,
 	}	
 	
 	zones[BZ["Ashran"]] = {
@@ -7039,7 +7220,6 @@ do
 			[1420] = true,    -- Stormshield (Alliance), Ashran (A)
 			[1408] = true,    -- Warspear, Ashran (H)
 		},
-		fishing_min = 950,
 	}	
 	
 	
@@ -7061,7 +7241,6 @@ do
 		},		
 		faction = "Sanctuary",
 		type = "City",
-		fishing_min = 950,
 	}
 
 	zones[BZ["Thunder Totem"]] = {
@@ -7075,7 +7254,6 @@ do
 		},
 		faction = "Sanctuary",
 		type = "City",
---		fishing_min = 950,  TODO: check for fishable waters
 	}
 
 
@@ -7104,7 +7282,6 @@ do
 			[1613] = true,    -- Azurewing Repose, Azsuna (N)
 			[1870] = true,    -- Eye of Azshara, Azsuna (N)
 		},
-		fishing_min = 950,
 	}
 	
 	zones[BZ["Val'sharah"]] = {
@@ -7128,7 +7305,6 @@ do
 			[1766] = true,    -- Garden of the Moon, Val'sharah (N)
 			[1673] = true,    -- Lorlathil, Val'sharah (N)
 		},
-		fishing_min = 950,
 	}
 	
 	zones[BZ["Highmountain"]] = {
@@ -7157,7 +7333,6 @@ do
 			[1759] = true,    -- Ironhorn Enclave, Highmountain (N)
 			[1778] = true,    -- Stonehoof Watch, Highmountain (N)
 		},
-		fishing_min = 950,
 	}
 	
 	zones[BZ["Stormheim"]] = {
@@ -7184,7 +7359,6 @@ do
 			[1747] = true,    -- Skyfire Triage Camp, Stormheim (A)
 			[1744] = true,    -- Greywatch, Stormheim (A)
 		},		
-		fishing_min = 950,
 	}
 
 	zones[BZ["Broken Shore"]] = {
@@ -7200,7 +7374,6 @@ do
 			[1856] = true,    -- Vengeance Point, Broken Shore (N)
 			[1906] = true,    -- The Fel Hammer, Broken Shore (N), Demon Hunter Class Order Hall
 		},
-		fishing_min = 950,
 	}
 
 	zones[BZ["Suramar"]] = {
@@ -7224,7 +7397,6 @@ do
 			[1880] = true,    -- Irongrove Retreat, Suramar (N)
 			[1858] = true,    -- Meredil, Suramar (N)
 		},
-		fishing_min = 950,
 	}
 	
 	-- Hunter class hall. This map is reported by C_Map as a zone, unclear why
@@ -7353,6 +7525,7 @@ do
 			[2111] = true,    -- Vorrik's Sanctum, Vol'dun (H)
 			[2118] = true,    -- Temple of Akunda, Vol'dun (H)
 			[2144] = true,	  -- Goldtusk Inn, Vol'dun (H)
+			[2110] = true,	  -- Shatterstone Harbour, Vol'dun
 		},
 		faction = "Horde",
 		continent = Zandalar,
@@ -7591,7 +7764,6 @@ do
 		groupSize = 5,
 		faction = "Alliance",
 		type = "Instance",
-		fishing_min = 75,
 		entrancePortal = { BZ["Westfall"], 42.6, 72.2 },
 	}	
 	
@@ -7612,7 +7784,6 @@ do
 		paths = BZ["Northern Barrens"],
 		groupSize = 5,
 		type = "Instance",
-		fishing_min = 75,
 		entrancePortal = { BZ["Northern Barrens"], 42.1, 66.5 },
 	}	
 	
@@ -7623,7 +7794,6 @@ do
 		paths = BZ["Ashenvale"],
 		groupSize = 5,
 		type = "Instance",
-		fishing_min = 75,
 		entrancePortal = { BZ["Ashenvale"], 14.6, 15.3 },
 	}	
 	
@@ -7687,7 +7857,6 @@ do
 		paths = BZ["Desolace"],
 		groupSize = 5,
 		type = "Instance",
-		fishing_min = 300,
 		entrancePortal = { BZ["Desolace"], 29, 62.4 },
 	}	
 	
@@ -7754,7 +7923,6 @@ do
 		paths = BZ["Western Plaguelands"],
 		groupSize = 5,
 		type = "Instance",
-		fishing_min = 425,
 		entrancePortal = { BZ["Western Plaguelands"], 69.4, 72.8 },
 	}
 	
@@ -7766,7 +7934,6 @@ do
 		paths = BZ["Eastern Plaguelands"],
 		groupSize = 5,
 		type = "Instance",
-		fishing_min = 425,
 		entrancePortal = { BZ["Eastern Plaguelands"], 30.8, 14.4 },
 	}	
 	
@@ -7803,7 +7970,6 @@ do
 		paths = BZ["Swamp of Sorrows"],
 		groupSize = 5,
 		type = "Instance",
-		fishing_min = 300,
 		entrancePortal = { BZ["Swamp of Sorrows"], 70, 54 },
 	}	
 	
@@ -8059,7 +8225,6 @@ do
 		paths = BZ["Zul'Drak"],
 		groupSize = 5,
 		type = "Instance",
-		fishing_min = 475,
 		entrancePortal = { BZ["Zul'Drak"], 76.14, 21.00 },
 	}	
 	
@@ -8174,7 +8339,6 @@ do
 		paths = BZ["Icecrown"],
 		groupSize = 5,
 		type = "Instance",
-		fishing_min = 550,
 		entrancePortal = { BZ["Icecrown"], 52.60, 89.35 },
 	}	
 	
@@ -8300,7 +8464,6 @@ do
 		groupSize = 5,
 		type = "Instance",
 		entrancePortal = { BZ["Ghostlands"], 77.7, 63.2 },
-		fishing_min = 425,
 	}	
 
 	-- Note: before Cataclysm, this was a lvl 60 20-man raid
@@ -8311,7 +8474,6 @@ do
 		paths = BZ["Northern Stranglethorn"],
 		groupSize = 5,
 		type = "Instance",
---		fishing_min = 330,
 		entrancePortal = { BZ["Northern Stranglethorn"], 52.2, 17.1 },
 	}
 
@@ -8802,7 +8964,6 @@ do
 		groupSize = 40,
 		type = "Instance",
 		complex = BZ["Blackrock Mountain"],
-		fishing_min = 1,  -- lava
 		entrancePortal = { BZ["Searing Gorge"], 35.4, 84.4 },
 	}
 
@@ -8947,7 +9108,6 @@ do
 		groupSize = 10,
 		altGroupSize = 25,
 		type = "Instance",
-		fishing_min = 1,  -- acid
 		entrancePortal = { BZ["Dragonblight"], 87.30, 51.00 },
 	}
 
@@ -8959,7 +9119,6 @@ do
 		groupSize = 10,
 		altGroupSize = 25,
 		type = "Instance",
-		fishing_min = 1,  -- lava
 		entrancePortal = { BZ["Dragonblight"], 60.00, 57.00 },
 	}	
 	
@@ -8972,7 +9131,6 @@ do
 		altGroupSize = 25,
 		type = "Instance",
 		entrancePortal = { BZ["The Storm Peaks"], 41.56, 17.76 },
-		fishing_min = 550,
 	}
 
 	zones[BZ["Trial of the Crusader"]] = {
@@ -9016,7 +9174,6 @@ do
 		groupSize = 10,
 		altGroupSize = 25,
 		type = "Instance",
-		fishing_min = 650,
 		entrancePortal = { BZ["Dragonblight"], 61.00, 53.00 },
 	}	
 	
@@ -9388,7 +9545,6 @@ do
 			[BZ["Upper Blackrock Spire"]] = true,
 		},
 		type = "Complex",
-		fishing_min = 1, -- lava
 	}
 
 	zones[BZ["Hellfire Citadel"]] = {
@@ -9446,7 +9602,6 @@ do
 			[BZ["The Steamvault"]] = true,
 			[BZ["The Slave Pens"]] = true,
 		},
-		fishing_min = 400,
 		type = "Complex",
 	}
 	
@@ -9570,6 +9725,9 @@ do
 	end
 	trace("Tourist: Processed "..tostring(counter).." continents")
 	
+	trace("Tourist: Filling Expansion Index lookup...")
+	FillExpansionIndexLookup()
+	
 	trace("Tourist: Initializing zones...")
 	local doneZones = {}
 	local mapZones = {}
@@ -9589,7 +9747,7 @@ do
 			if not doneZones[continentName.."."..zoneName] then
 				uniqueZoneName = Tourist:GetUniqueZoneNameForLookup(zoneName, continentMapID)
 				if zones[uniqueZoneName] then
-					-- Set zone mapID
+					-- Set zone mapID. Note: a zone can have multiple map ID's so this might not be entirely accurate
 					zones[uniqueZoneName].zoneMapID = zoneMapID
 					-- Get zone texture ID
 					zones[uniqueZoneName].texture = C_Map.GetMapArtID(continentMapID)
@@ -9646,7 +9804,6 @@ do
 		factions[k] = v.faction
 		yardWidths[k] = v.yards
 		yardHeights[k] = v.yards and v.yards * 2/3 or nil
-		fishing[k] = v.fishing_min
 		battlepet_lows[k] = v.battlepet_low
 		battlepet_highs[k] = v.battlepet_high
 		textures[k] = v.texture
@@ -9671,7 +9828,7 @@ do
 	end
 
 	trace("Tourist: Built Flightnode lookup table: "..tostring(tablelength(FlightnodeLookupTable)).." nodes.")
-	
+
 	zones = nil
 
 	trace("Tourist: Initialized.")

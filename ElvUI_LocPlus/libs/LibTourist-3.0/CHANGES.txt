@@ -1,37 +1,60 @@
 ------------------------------------------------------------------------
-r232 | Odica | 2020-01-16 22:42:05 +0000 (Thu, 16 Jan 2020) | 8 lines
-Changed paths:
-   M /trunk/LibTourist-3.0.lua
-   M /trunk/LibTourist-3.0.toc
-
-- Upped version in TOC to 80300
-- Added 40 missing MapIDs
-- Added missing flight node: Mistfall Village, Vale of Eternal Blossoms
-- Added 8.3 raid: Ny'alotha
-- small bugfix in the function that calculates path costs for the IteratePath function
-- fixed a small bug in core method that would cause the minimum level of a zone not to be updated if the min level reported by C_Map differs from the hard coded minlevel in LibTourist.
-
-NOTE about Ny'alotha: this raid does not have a fixed entrance location, it can either be in Uldum or in the Vale of Eternal Blossoms. This is not supported by the data structure of LibTourist. Until a way can be found to dynamically detect the zone the raid's entrance is currently in, it is registered as located in Uldum. However, Vale of Eternal Blossoms also has a reference to the raid so it will show up when querying for instances in Vale of Eternal Blossoms.
-------------------------------------------------------------------------
-r231 | Odica | 2019-11-08 21:10:16 +0000 (Fri, 08 Nov 2019) | 1 line
+r238 | Odica_Jaedenar | 2020-05-10 19:06:46 +0000 (Sun, 10 May 2020) | 1 line
 Changed paths:
    M /trunk/LibTourist-3.0.lua
 
-Fixed unintended global numNodes in GatherFlightNodeData
+Added timeout mechanism to TradeSkillInit()
 ------------------------------------------------------------------------
-r230 | Odica | 2019-10-30 22:22:22 +0000 (Wed, 30 Oct 2019) | 1 line
+r237 | Odica_Jaedenar | 2020-05-09 19:26:16 +0000 (Sat, 09 May 2020) | 16 lines
 Changed paths:
-   M /trunk/lib.xml
-
-Corrected CallbackHandler path in lib.xml
-------------------------------------------------------------------------
-r229 | Odica | 2019-10-30 22:10:02 +0000 (Wed, 30 Oct 2019) | 3 lines
-Changed paths:
-   M /trunk/.pkgmeta
    M /trunk/LibTourist-3.0.lua
 
-Added 17 new mapIDs to lookup table
-Some pkgmeta fixes
+- Added a new mechanism to retrieve skill info for Herbalism, Mining and Skinning.
 
+API Change: function GetFishingInfo(zone) has been renamed to GetFishingSkillInfo(zone)
+returns: skill name, current level, max level
+
+API Change: added function GetHerbalismSkillInfo(zone)
+zone: localized zone name or mapID
+returns: skill name, current level, max level, skill modifier, parent skill ID
+
+API Change: added function GetMiningSkillInfo(zone)
+zone: localized zone name or mapID
+returns: skill name, current level, max level, skill modifier, parent skill ID
+
+API Change: added function GetSkinningSkillInfo(zone)
+zone: localized zone name or mapID
+returns: skill name, current level, max level, skill modifier, parent skill ID
+------------------------------------------------------------------------
+r236 | Odica_Jaedenar | 2020-05-07 19:46:13 +0000 (Thu, 07 May 2020) | 1 line
+Changed paths:
+   M /trunk/LibTourist-3.0.lua
+
+Fixed a bug in GetContinentFishingSkillCategory
+------------------------------------------------------------------------
+r235 | Odica_Jaedenar | 2020-05-06 22:21:29 +0000 (Wed, 06 May 2020) | 20 lines
+Changed paths:
+   M /trunk/LibTourist-3.0.lua
+
+- added missing flight node: Shatterstone Harbour, Vol'dun
+- removed duplicate function Tourist:GetFactionColor
+- removed all old fishing skill code and data
+- added new mechanism to provide fishing skill info
+ 
+API Change: added function Tourist:GetFishingInfo(zone)
+Returns fishing skill info for the specified zone (localized zone name or mapID)
+- skillName: Name of the required fishing skill 
+- maxLevel: Maximum skill level that can be reached for that skill
+- currentSkill: Current player skill level for that fishing skill
+- skillEnabled: true if the player has learned the required skill
+Note 1: no data is available if a skill has not been learned, so if skillEnabled is false, other values will be empty.
+Note 2: data is only available if the Fishing Skill dialog has been opened or Tourist:LoadFishingSkills() has been called.
+
+API Change: added function Tourist:LoadFishingSkills()
+Triggers the procedure to forcibly load the fishing skill data, required for Tourist:GetFishingInfo().
+Because the data required for GetFishingInfo is not available until the Fishing Skills dialog has been opened,
+this function briefly opens the dialog so C_TradeSkillUI gets populated with fishing skill data.
+
+Note: Function Tourist:GetFishingLevel(zone) is now OBSOLETE and will be removed in a future version.
 ------------------------------------------------------------------------
 
