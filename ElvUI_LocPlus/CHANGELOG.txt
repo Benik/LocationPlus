@@ -1,3 +1,12 @@
+[b]2.48[/b] (Jul 9, 2020)
+*Datatext fix
+*Fixed dt backdrop
+*Fixed a glitch when no backdrop is selected
+*Added Strata and Level options
+*Renamed the Datatexts. This will stop breaking old profiles but it may reset their dt assignments
+*LibTourist update
+*Added Echoes of Ny'alotha
+
 [b]2.47[/b] (Feb 6, 2020)
 LibTourist update to 8.3-beta1
 Fixed the options to follow the latest ElvUI changes
