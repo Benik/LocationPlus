@@ -132,9 +132,9 @@ end
 local function CreateLocationPanel()
 	local db = E.db.locplus
 	local loc_panel = CreateFrame('Frame', 'LocationPlusPanel', E.UIParent)
-	loc_panel:Width(db.lpwidth or 200)
-	loc_panel:Height(db.dtheight or 21)
-	loc_panel:Point('TOP', E.UIParent, 'TOP', 0, -E.mult -22)
+	loc_panel:SetWidth(db.lpwidth or 200)
+	loc_panel:SetHeight(db.dtheight or 21)
+	loc_panel:SetPoint('TOP', E.UIParent, 'TOP', 0, -E.mult -22)
 	loc_panel:SetFrameStrata(db.frameStrata or 'LOW')
 	loc_panel:SetFrameLevel(db.frameLevel or 2)
 	loc_panel:EnableMouse(true)
@@ -144,7 +144,7 @@ local function CreateLocationPanel()
 
 	-- Location Text
 	loc_panel.Text = LocationPlusPanel:CreateFontString(nil, "LOW")
-	loc_panel.Text:Point("CENTER", 0, 0)
+	loc_panel.Text:SetPoint("CENTER", 0, 0)
 	loc_panel.Text:SetAllPoints()
 	loc_panel.Text:SetJustifyH("CENTER")
 	loc_panel.Text:SetJustifyV("MIDDLE")
@@ -201,8 +201,8 @@ local function CreateCoordPanels()
 
 	-- X Coord panel
 	local coordsX = CreateFrame('Frame', "XCoordsPanel", LocationPlusPanel)
-	coordsX:Width(COORDS_WIDTH)
-	coordsX:Height(db.dtheight)
+	coordsX:SetWidth(COORDS_WIDTH)
+	coordsX:SetHeight(db.dtheight)
 	coordsX:SetFrameStrata('LOW')
 	coordsX.Text = XCoordsPanel:CreateFontString(nil, "LOW")
 	coordsX.Text:SetAllPoints()
@@ -211,8 +211,8 @@ local function CreateCoordPanels()
 
 	-- Y Coord panel
 	local coordsY = CreateFrame('Frame', "YCoordsPanel", LocationPlusPanel)
-	coordsY:Width(COORDS_WIDTH)
-	coordsY:Height(db.dtheight)
+	coordsY:SetWidth(COORDS_WIDTH)
+	coordsY:SetHeight(db.dtheight)
 	coordsY:SetFrameStrata('LOW')
 	coordsY.Text = YCoordsPanel:CreateFontString(nil, "LOW")
 	coordsY.Text:SetAllPoints()
@@ -235,24 +235,24 @@ end
 -- datatext panels width
 function LP:DTWidth()
 	local db = E.db.locplus
-	LocPlusLeftDT:Width(db.dtwidth)
-	LocPlusRightDT:Width(db.dtwidth)
+	LocPlusLeftDT:SetWidth(db.dtwidth)
+	LocPlusRightDT:SetWidth(db.dtwidth)
 end
 
 -- all panels height
 function LP:DTHeight()
 	local db = E.db.locplus
 	if db.ht then
-		LocationPlusPanel:Height((db.dtheight)+6)
+		LocationPlusPanel:SetHeight((db.dtheight)+6)
 	else
-		LocationPlusPanel:Height(db.dtheight)
+		LocationPlusPanel:SetHeight(db.dtheight)
 	end
 
-	LocPlusLeftDT:Height(db.dtheight)
-	LocPlusRightDT:Height(db.dtheight)
+	LocPlusLeftDT:SetHeight(db.dtheight)
+	LocPlusRightDT:SetHeight(db.dtheight)
 
-	XCoordsPanel:Height(db.dtheight)
-	YCoordsPanel:Height(db.dtheight)
+	XCoordsPanel:SetHeight(db.dtheight)
+	YCoordsPanel:SetHeight(db.dtheight)
 end
 
 -- Fonts
@@ -292,8 +292,8 @@ end
 -- Show/Hide coord frames
 function LP:HideCoords()
 	local db = E.db.locplus
-	XCoordsPanel:Point('RIGHT', LocationPlusPanel, 'LEFT', -SPACING, 0)
-	YCoordsPanel:Point('LEFT', LocationPlusPanel, 'RIGHT', SPACING, 0)
+	XCoordsPanel:SetPoint('RIGHT', LocationPlusPanel, 'LEFT', -SPACING, 0)
+	YCoordsPanel:SetPoint('LEFT', LocationPlusPanel, 'RIGHT', SPACING, 0)
 
 	LocPlusLeftDT:ClearAllPoints()
 	LocPlusRightDT:ClearAllPoints()
@@ -301,13 +301,13 @@ function LP:HideCoords()
 	if (db.hidecoords) or (db.hidecoordsInInstance and IsInInstance()) then
 		XCoordsPanel:Hide()
 		YCoordsPanel:Hide()
-		LocPlusLeftDT:Point('RIGHT', LocationPlusPanel, 'LEFT', -SPACING, 0)
-		LocPlusRightDT:Point('LEFT', LocationPlusPanel, 'RIGHT', SPACING, 0)
+		LocPlusLeftDT:SetPoint('RIGHT', LocationPlusPanel, 'LEFT', -SPACING, 0)
+		LocPlusRightDT:SetPoint('LEFT', LocationPlusPanel, 'RIGHT', SPACING, 0)
 	else
 		XCoordsPanel:Show()
 		YCoordsPanel:Show()
-		LocPlusLeftDT:Point('RIGHT', XCoordsPanel, 'LEFT', -SPACING, 0)
-		LocPlusRightDT:Point('LEFT', YCoordsPanel, 'RIGHT', SPACING, 0)
+		LocPlusLeftDT:SetPoint('RIGHT', XCoordsPanel, 'LEFT', -SPACING, 0)
+		LocPlusRightDT:SetPoint('LEFT', YCoordsPanel, 'RIGHT', SPACING, 0)
 	end
 end
 
@@ -389,16 +389,16 @@ function LP:UpdateLocation()
 	local autowidth = (LocationPlusPanel.Text:GetStringWidth() + 18)
 
 	if db.lpauto then
-		LocationPlusPanel:Width(autowidth)
-		LocationPlusPanel.Text:Width(autowidth)
+		LocationPlusPanel:SetWidth(autowidth)
+		LocationPlusPanel.Text:SetWidth(autowidth)
 	else
-		LocationPlusPanel:Width(fixedwidth)
+		LocationPlusPanel:SetWidth(fixedwidth)
 		if db.trunc then
-			LocationPlusPanel.Text:Width(fixedwidth - 18)
+			LocationPlusPanel.Text:SetWidth(fixedwidth - 18)
 			LocationPlusPanel.Text:SetWordWrap(false)
 		elseif autowidth > fixedwidth then
-			LocationPlusPanel:Width(autowidth)
-			LocationPlusPanel.Text:Width(autowidth)
+			LocationPlusPanel:SetWidth(autowidth)
+			LocationPlusPanel.Text:SetWidth(autowidth)
 		end
 	end
 end
@@ -431,11 +431,11 @@ end
 -- Coord panels width
 function LP:CoordsDigit()
 	if E.db.locplus.dig then
-		XCoordsPanel:Width(COORDS_WIDTH*1.5)
-		YCoordsPanel:Width(COORDS_WIDTH*1.5)
+		XCoordsPanel:SetWidth(COORDS_WIDTH*1.5)
+		YCoordsPanel:SetWidth(COORDS_WIDTH*1.5)
 	else
-		XCoordsPanel:Width(COORDS_WIDTH)
-		YCoordsPanel:Width(COORDS_WIDTH)
+		XCoordsPanel:SetWidth(COORDS_WIDTH)
+		YCoordsPanel:SetWidth(COORDS_WIDTH)
 	end
 end
 
@@ -458,8 +458,8 @@ local function CreateDatatextPanels()
 	local db = E.db.locplus
 	-- Left coords Datatext panel
 	local left_dtp = CreateFrame('Frame', 'LocPlusLeftDT', E.UIParent)
-	left_dtp:Width(db.dtwidth)
-	left_dtp:Height(db.dtheight)
+	left_dtp:SetWidth(db.dtwidth)
+	left_dtp:SetHeight(db.dtheight)
 	left_dtp:SetFrameStrata('LOW')
 	left_dtp:SetParent(LocationPlusPanel)
 
@@ -468,8 +468,8 @@ local function CreateDatatextPanels()
 
 	-- Right coords Datatext panel
 	local right_dtp = CreateFrame('Frame', 'LocPlusRightDT', E.UIParent)
-	right_dtp:Width(db.dtwidth)
-	right_dtp:Height(db.dtheight)
+	right_dtp:SetWidth(db.dtwidth)
+	right_dtp:SetHeight(db.dtheight)
 	right_dtp:SetFrameStrata('LOW')
 	right_dtp:SetParent(LocationPlusPanel)
 
