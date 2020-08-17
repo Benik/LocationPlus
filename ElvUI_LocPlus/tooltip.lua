@@ -421,7 +421,7 @@ function LP:UpdateTooltip()
 		end
 	end
 
-	-- Currency
+	--[[ Currency
 	local numEntries = GetCurrencyListSize() -- Check for entries to disable the tooltip title when no currency
 	if E.db.locplus.curr and numEntries > 0 then
 		GameTooltip:AddLine(" ")
@@ -439,7 +439,7 @@ function LP:UpdateTooltip()
 				end
 			end
 		end
-	end
+	end]]
 
 	-- Professions
 	local prof1, prof2, archy, fishing, cooking, firstAid = GetProfessions()

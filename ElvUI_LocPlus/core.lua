@@ -131,7 +131,7 @@ end
 -- Location panel
 local function CreateLocationPanel()
 	local db = E.db.locplus
-	local loc_panel = CreateFrame('Frame', 'LocationPlusPanel', E.UIParent)
+	local loc_panel = CreateFrame('Frame', 'LocationPlusPanel', E.UIParent, 'BackdropTemplate')
 	loc_panel:Width(db.lpwidth or 200)
 	loc_panel:Height(db.dtheight or 21)
 	loc_panel:Point('TOP', E.UIParent, 'TOP', 0, -E.mult -22)
@@ -200,7 +200,7 @@ local function CreateCoordPanels()
 	local db = E.db.locplus
 
 	-- X Coord panel
-	local coordsX = CreateFrame('Frame', "XCoordsPanel", LocationPlusPanel)
+	local coordsX = CreateFrame('Frame', "XCoordsPanel", LocationPlusPanel, 'BackdropTemplate')
 	coordsX:Width(COORDS_WIDTH)
 	coordsX:Height(db.dtheight)
 	coordsX:SetFrameStrata('LOW')
@@ -210,7 +210,7 @@ local function CreateCoordPanels()
 	coordsX.Text:SetJustifyV("MIDDLE")
 
 	-- Y Coord panel
-	local coordsY = CreateFrame('Frame', "YCoordsPanel", LocationPlusPanel)
+	local coordsY = CreateFrame('Frame', "YCoordsPanel", LocationPlusPanel, 'BackdropTemplate')
 	coordsY:Width(COORDS_WIDTH)
 	coordsY:Height(db.dtheight)
 	coordsY:SetFrameStrata('LOW')
@@ -457,7 +457,7 @@ end
 local function CreateDatatextPanels()
 	local db = E.db.locplus
 	-- Left coords Datatext panel
-	local left_dtp = CreateFrame('Frame', 'LocPlusLeftDT', E.UIParent)
+	local left_dtp = CreateFrame('Frame', 'LocPlusLeftDT', E.UIParent, 'BackdropTemplate')
 	left_dtp:Width(db.dtwidth)
 	left_dtp:Height(db.dtheight)
 	left_dtp:SetFrameStrata('LOW')
@@ -467,7 +467,7 @@ local function CreateDatatextPanels()
 	DT:UpdatePanelInfo('LocPlusLeftDT')
 
 	-- Right coords Datatext panel
-	local right_dtp = CreateFrame('Frame', 'LocPlusRightDT', E.UIParent)
+	local right_dtp = CreateFrame('Frame', 'LocPlusRightDT', E.UIParent, 'BackdropTemplate')
 	right_dtp:Width(db.dtwidth)
 	right_dtp:Height(db.dtheight)
 	right_dtp:SetFrameStrata('LOW')
