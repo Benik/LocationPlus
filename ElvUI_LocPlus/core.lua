@@ -521,6 +521,8 @@ function LP:PLAYER_ENTERING_WORLD(...)
 	self:ChangeFont()
 	self:UpdateCoords()
 	self:HideCoords()
+	DT:UpdatePanelInfo('LocPlusRightDT')
+	DT:UpdatePanelInfo('LocPlusLeftDT')
 end
 
 function LP:Initialize()
