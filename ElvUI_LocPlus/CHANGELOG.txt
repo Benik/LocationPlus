@@ -1,3 +1,6 @@
+[b]2.49[/b] (Oct 5, 2020)
+*Fixed Datatexts not updating correctly
+
 [b]2.48[/b] (Jul 9, 2020)
 *Datatext fix
 *Fixed dt backdrop
