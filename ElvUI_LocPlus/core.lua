@@ -489,6 +489,8 @@ function LP:Update()
 	LP:CoordsDigit()
 	LP:MouseOver()
 	LP:HideCoords()
+	_G.LocPlusLeftDT.ignoreBorderColors = nil
+	_G.LocPlusRightDT.ignoreBorderColors = nil
 end
 
 function LP:ToggleBlizZoneText()
@@ -525,6 +527,8 @@ function LP:PLAYER_ENTERING_WORLD(...)
 	self:HideCoords()
 	DT:UpdatePanelInfo('LocPlusRightDT')
 	DT:UpdatePanelInfo('LocPlusLeftDT')
+	_G.LocPlusLeftDT.ignoreBorderColors = nil
+	_G.LocPlusRightDT.ignoreBorderColors = nil
 end
 
 function LP:Initialize()
