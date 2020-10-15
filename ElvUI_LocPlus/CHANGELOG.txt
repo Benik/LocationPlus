@@ -1,3 +1,6 @@
+[b]2.50[/b] (Oct 13, 2020)
+*Ready for Shadowlands and ElvUI v12.00
+
 [b]2.49[/b] (Oct 5, 2020)
 *Fixed Datatexts not updating correctly
 
