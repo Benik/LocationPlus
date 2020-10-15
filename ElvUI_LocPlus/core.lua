@@ -326,8 +326,6 @@ function LP:TransparentPanels()
 			frame:SetTemplate('Default')
 		end
 	end
-	_G.LocPlusLeftDT.ignoreBorderColors = nil
-	_G.LocPlusRightDT.ignoreBorderColors = nil
 end
 
 function LP:StrataAndLevel()
