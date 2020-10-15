@@ -523,7 +523,7 @@ function LP:PLAYER_ENTERING_WORLD(...)
 	self:ChangeFont()
 	self:UpdateCoords()
 	self:HideCoords()
-	self:TransparentPanels()
+	self:TransparentPanels() -- probs fix the white border
 	DT:UpdatePanelInfo('LocPlusRightDT')
 	DT:UpdatePanelInfo('LocPlusLeftDT')
 end
