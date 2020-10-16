@@ -6,7 +6,8 @@ local format, tonumber, pairs, tinsert = string.format, tonumber, pairs, table.i
 
 local GetBindLocation = GetBindLocation
 local C_Map_GetBestMapForUnit = C_Map.GetBestMapForUnit
-local GetCurrencyInfo, GetCurrencyListSize = GetCurrencyInfo, GetCurrencyListSize
+local C_CurrencyInfo_GetCurrencyInfo = C_CurrencyInfo.GetCurrencyInfo
+local C_CurrencyInfo_GetCurrencyListSize = C_CurrencyInfo.GetCurrencyListSize
 local GetProfessionInfo, GetProfessions = GetProfessionInfo, GetProfessions
 local UnitLevel = UnitLevel
 local GameTooltip = _G['GameTooltip']
@@ -83,15 +84,22 @@ local currency = {
 	-- BfA
 	1560, 	-- War Resources
 	1580,	-- Seal of Wartorn Fate
-	1587,	-- War Supplies
-	1710,	-- Seafarer's Dubloon
-	--1716,	-- Honorbound Service Medal (Horde)
-	--1717,	-- 7th Legion Service Medal (Alliance)
-	1718,	-- Titan Residuum
-	1719,	-- Corrupted Memento
-	1721,	-- Prismatic Manapearl
+	--1587,	-- War Supplies
+	--1710,	-- Seafarer's Dubloon
+	--1718,	-- Titan Residuum
+	--1719,	-- Corrupted Memento
+	--1721,	-- Prismatic Manapearl
 	1755,	-- Coalescing Visions
 	1803,	-- Echoes of Ny'alotha
+
+	-- Shadowlands
+	1751,	-- Freed Soul
+	1754,	-- Argent Commendation
+	1810,	-- Willing Soul
+	1813,	-- Reservoir Anima
+	1820,	-- Infused Ruby
+	1822,	-- Renown
+	1828, 	-- Soul Ash
 }
 
 if E.myfaction == 'Alliance' then
@@ -207,6 +215,11 @@ local function GetRecomDungeons(dungeon)
 	..GetDungeonCoords(dungeon)
 	..PvPorRaidFilter(dungeon) or "",
 	("|cff%02x%02x%02x%s|r"):format(r *255, g *255, b *255,(low == high and low or ("%d-%d"):format(low, high))))
+end
+
+local function GetTokenInfo(id)
+	local info = C_CurrencyInfo_GetCurrencyInfo(id)
+	return info.name, info.quantity, info.iconFileID, info.maxQuantity
 end
 
 -- Status
@@ -421,14 +434,14 @@ function LP:UpdateTooltip()
 		end
 	end
 
-	--[[ Currency
-	local numEntries = GetCurrencyListSize() -- Check for entries to disable the tooltip title when no currency
+	-- Currency
+	local numEntries = C_CurrencyInfo_GetCurrencyListSize() -- Check for entries to disable the tooltip title when no currency
 	if E.db.locplus.curr and numEntries > 0 then
 		GameTooltip:AddLine(" ")
 		GameTooltip:AddLine(TOKENS.." :", selectioncolor)
 
 		for _, id in pairs(currency) do
-			local name, amount, icon, _, _, totalMax = GetCurrencyInfo(id)
+			local name, amount, icon, totalMax = GetTokenInfo(id)
 
 			if(name and amount > 0) then
 				icon = ("|T%s:12:12:1:0|t"):format(icon)
@@ -439,7 +452,7 @@ function LP:UpdateTooltip()
 				end
 			end
 		end
-	end]]
+	end
 
 	-- Professions
 	local prof1, prof2, archy, fishing, cooking, firstAid = GetProfessions()
