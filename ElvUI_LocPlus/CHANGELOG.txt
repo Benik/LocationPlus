@@ -1,3 +1,6 @@
+[b]2.51[/b] (Oct 18, 2020)
+Enabled Tooltip Currencies and added Shadowlands Currencies
+
 [b]2.50[/b] (Oct 13, 2020)
 *Ready for Shadowlands and ElvUI v12.00
 
