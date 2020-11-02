@@ -379,11 +379,11 @@ function LP:UpdateLocation()
 		if displaypet ~= "" then
 			displayLine = displayLine..displaypet
 		end
-	elseif db.displayOther == 'PFISH' then
+	--[[elseif db.displayOther == 'PFISH' then
 		local displayfish = LP:GetFishingLvl(true) or ""
 		if displayfish ~= "" then
 			displayLine = displayLine..displayfish
-		end
+		end]]
 	else
 		displayLine = displayLine
 	end

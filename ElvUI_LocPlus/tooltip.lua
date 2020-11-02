@@ -387,13 +387,13 @@ function LP:UpdateTooltip()
 		end
 	end
 
-	-- Fishing
+	--[[ Fishing
 	if E.db.locplus.fish then
 		local checkfish = LP:GetFishingLvl(true, true)
 		if checkfish ~= "" then
 			GameTooltip:AddDoubleLine(PROFESSIONS_FISHING.." : ", checkfish, 1, 1, 1)
 		end
-	end
+	end]]
 
 	-- Battle Pet Levels
 	if E.db.locplus.petlevel then
