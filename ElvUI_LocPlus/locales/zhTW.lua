@@ -72,6 +72,7 @@ L["Truncates the text rather than auto enlarge the location panel when the text 
 L["Truncate text"] = "縮短文本"
 L["Update Timer"] = "Update Timer" -- Requires localization
 L["Use Custom Location Color"] = "自定義區域顔色"
+L["Use DataTexts font"] = true
 L["with Entrance Coords"] = "with Entrance Coords" -- Requires localization
 L["Zone and Subzone"] = "顯示區域"
 L["Hide Coords"] = true

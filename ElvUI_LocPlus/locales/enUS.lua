@@ -74,6 +74,7 @@ L["Truncates the text rather than auto enlarge the location panel when the text 
 L["Truncate text"] = true
 L["Update Timer"] = true
 L["Use Custom Location Color"] = true
+L["Use DataTexts font"] = true
 L["with Entrance Coords"] = true
 L["Zone and Subzone"] = true
 L["Hide Coords"] = true

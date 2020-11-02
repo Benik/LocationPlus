@@ -75,6 +75,7 @@ L["Truncates the text rather than auto enlarge the location panel when the text 
 L["Truncate text"] = "Eingerückter Text"
 L["Update Timer"] = "Aktualisierungstimer"
 L["Use Custom Location Color"] = "Benutzerdefinierte Standort-Farbe verwenden"
+L["Use DataTexts font"] = true
 L["with Entrance Coords"] = "mit Eingangskoordinaten"
 L["Zone and Subzone"] = "Zone und Unterzone"
 L["Zone Dungeons"] = "Gebiets Instanzen"
