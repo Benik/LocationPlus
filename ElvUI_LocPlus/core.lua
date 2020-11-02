@@ -258,11 +258,28 @@ end
 -- Fonts
 function LP:ChangeFont()
 	local db = E.db.locplus
-	E["media"].lpFont = LSM:Fetch("font", db.lpfont)
+	local panels = {LocationPlusPanel, XCoordsPanel, YCoordsPanel}
 
-	local panelsToFont = {LocationPlusPanel, XCoordsPanel, YCoordsPanel}
-	for _, frame in pairs(panelsToFont) do
-		frame.Text:FontTemplate(E["media"].lpFont, db.lpfontsize, db.lpfontflags)
+	for _, frame in pairs(panels) do
+		if db.useDTfont then
+			frame.Text:FontTemplate(LSM:Fetch('font', E.db.datatexts.font), E.db.datatexts.fontSize, E.db.datatexts.fontOutline)
+		else
+			frame.Text:FontTemplate(LSM:Fetch("font", db.lpfont), db.lpfontsize, db.lpfontflags)
+		end
+	end
+
+	local dts = {LocPlusLeftDT, LocPlusRightDT}
+	for panelName, panel in pairs(dts) do
+		for i = 1, panel.numPoints do
+			if panel.dataPanels[i] then
+				if db.useDTfont then
+					panel.dataPanels[i].text:FontTemplate(LSM:Fetch('font', E.db.datatexts.font), E.db.datatexts.fontSize, E.db.datatexts.fontOutline)
+				else
+					panel.dataPanels[i].text:FontTemplate(LSM:Fetch("font", db.lpfont), db.lpfontsize, db.lpfontflags)
+				end
+			end
+		end
+		DT:UpdatePanelInfo(panelName, panel)
 	end
 end
 
@@ -487,6 +504,7 @@ function LP:Update()
 	LP:CoordsDigit()
 	LP:MouseOver()
 	LP:HideCoords()
+	--LP:ChangeFont()
 end
 
 function LP:ToggleBlizZoneText()
@@ -521,7 +539,6 @@ function LP:PLAYER_ENTERING_WORLD(...)
 	self:ChangeFont()
 	self:UpdateCoords()
 	self:HideCoords()
-	self:TransparentPanels() -- probs fix the white border
 	DT:UpdatePanelInfo('LocPlusRightDT')
 	DT:UpdatePanelInfo('LocPlusLeftDT')
 end
@@ -537,6 +554,7 @@ function LP:Initialize()
 	self:RegisterEvent('PLAYER_ENTERING_WORLD')
 	hooksecurefunc(DT, 'UpdatePanelInfo', LP.Update)
 	hooksecurefunc(DT, 'UpdatePanelAttributes', LP.Update)
+	hooksecurefunc(DT, 'UpdatePanelAttributes', LP.ChangeFont)
 
 	EP:RegisterPlugin(addon, LP.AddOptions)
 	tinsert(LP.Config, InjectDatatextOptions)
