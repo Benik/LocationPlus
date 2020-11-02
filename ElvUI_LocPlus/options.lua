@@ -61,6 +61,7 @@ P['locplus'] = {
 	['lpfont'] = E.db.general.font,
 	['lpfontsize'] = 12,
 	['lpfontflags'] = "NONE",
+	['useDTfont'] = true,
 -- Init
 	['LoginMsg'] = true,
 }
@@ -576,22 +577,30 @@ local function Options()
 						get = function(info) return E.db.locplus[ info[#info] ] end,
 						set = function(info, value) E.db.locplus[ info[#info] ] = value; LP:ChangeFont(); end,
 						args = {
+							useDTfont = {
+								order = 1,
+								name = L["Use DataTexts font"],
+								type = 'toggle',
+								width = 'full',
+							},
 							lpfont = {
 								type = "select", dialogControl = 'LSM30_Font',
-								order = 1,
+								order = 2,
 								name = L["Font"],
 								desc = L["Choose font for the Location and Coords panels."],
 								values = AceGUIWidgetLSMlists.font,
+								disabled = function() return E.db.locplus.useDTfont end,
 							},
 							lpfontsize = {
-								order = 2,
+								order = 3,
 								name = L["Font Size"],
 								desc = L["Set the font size."],
 								type = "range",
 								min = 6, max = 22, step = 1,
+								disabled = function() return E.db.locplus.useDTfont end,
 							},
 							lpfontflags = {
-								order = 3,
+								order = 4,
 								name = L["Font Outline"],
 								type = 'select',
 								values = {
@@ -600,6 +609,7 @@ local function Options()
 									['MONOCHROMEOUTLINE'] = 'MONOCROMEOUTLINE',
 									['THICKOUTLINE'] = 'THICKOUTLINE',
 								},
+								disabled = function() return E.db.locplus.useDTfont end,
 							},
 						},
 					},
