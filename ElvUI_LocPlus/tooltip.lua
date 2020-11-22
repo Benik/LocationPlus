@@ -219,7 +219,11 @@ end
 
 local function GetTokenInfo(id)
 	local info = C_CurrencyInfo_GetCurrencyInfo(id)
-	return info.name, info.quantity, info.iconFileID, info.maxQuantity
+	if info then
+		return info.name, info.quantity, info.iconFileID, info.maxQuantity
+	else
+		return
+	end
 end
 
 -- Status
