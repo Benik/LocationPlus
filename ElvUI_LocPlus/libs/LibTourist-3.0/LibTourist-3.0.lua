@@ -1,6 +1,6 @@
 --[[
 Name: LibTourist-3.0
-Revision: $Rev: 249 $
+Revision: $Rev: 251 $
 Author(s): Odica (maintainer), originally created by ckknight and Arrowmaster
 Documentation: https://www.wowace.com/projects/libtourist-3-0/pages/api-reference
 SVN: svn://svn.wowace.com/wow/libtourist-3-0/mainline/trunk
@@ -9,7 +9,7 @@ License: MIT
 ]]
 
 local MAJOR_VERSION = "LibTourist-3.0"
-local MINOR_VERSION = 90000 + tonumber(("$Revision: 249 $"):match("(%d+)"))
+local MINOR_VERSION = 90000 + tonumber(("$Revision: 251 $"):match("(%d+)"))
 
 if not LibStub then error(MAJOR_VERSION .. " requires LibStub") end
 local C_Map = C_Map
@@ -8461,7 +8461,7 @@ do
 			[BZ["Boralus"]] = true,
 			[BZ["Drustvar"]] = true,
 			[BZ["Stormsong Valley"]] = true,
-			[BZ["Tol Dagor"]] = true,
+--			[BZ["Tol Dagor"]] = true,
 			[BZ["Freehold"]] = true,
 			[BZ["Siege of Boralus"]] = true,
 		},		
@@ -8557,6 +8557,7 @@ do
 --		},
 --		continent = ??,    -- No continent
 		expansion = Shadowlands,
+		faction = (isHorde and "Horde" or "Alliance"),  -- Always friendly: zone exists for both factions separately
 	}	
 	
 	-- Starting zone dungeon
@@ -8564,12 +8565,13 @@ do
 		low = 7,
 		high = 10,
 		paths = BZ["Exile's Reach"],
-		groupSize = 1,
-		altGroupSize = 5,
+		groupMinSize = 1,
+		groupMaxSize = 5,
 		type = "Instance",
 	  --entrancePortal = { BZ["Exile's Reach"], 0, 0 }, -- No entrance portal (must use group finder)
 --		continent = ??,   -- No continent
 		expansion = Shadowlands,
+		faction = (isHorde and "Horde" or "Alliance"),  -- Always friendly: zone exists for both factions separately		
 	}	
 	
 	-- 10565
@@ -9967,7 +9969,7 @@ do
 		ct_low = 10,
 		continent = Kul_Tiras,
 		expansion = Battle_for_Azeroth,
-		paths = BZ["Tiragarde Sound"],
+--		paths = BZ["Tiragarde Sound"],
 		groupSize = 5,
 		type = "Instance",
 		entrancePortal = { BZ["Tiragarde Sound"], 99.1, 47.3 }, 
