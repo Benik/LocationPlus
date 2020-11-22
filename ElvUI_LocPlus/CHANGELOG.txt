@@ -1,3 +1,9 @@
+[b]2.53[/b] (Nov 23, 2020)
+*LibTourist update
+*toc update to 9.02
+*Fixed tokens tooltip error
+*Update zhCN locales. Credit: aaaaaaoa
+
 [b]2.52[/b] (Nov 2, 2020)
 *LibTourist update for 9.01. Fishing level is disabled. It may be removed
 *Fixed font attributes not updating. This should fix #8
