@@ -161,7 +161,7 @@ local function CreateLocationPanel()
 				UIFrameFadeIn(self, 0.2, self:GetAlpha(), 1)
 			end
 			self:Show()
-		elseif dbcombat then
+		elseif db.combat then
 			if event == "PLAYER_REGEN_DISABLED" then
 				UIFrameFadeOut(self, 0.2, self:GetAlpha(), 0)
 				self.fadeInfo.finishedFunc = LocPanelOnFade
