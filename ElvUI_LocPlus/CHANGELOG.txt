@@ -1,3 +1,8 @@
+[b]2.54[/b] (Dec 22, 2020)
+*Updated Shadowlands currency
+*RightClick the Location panel during "ToggleUI" will bring up LocationPlus options
+*Fixed hide in combat
+
 [b]2.53[/b] (Nov 23, 2020)
 *LibTourist update
 *toc update to 9.02
