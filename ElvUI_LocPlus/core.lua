@@ -182,7 +182,7 @@ local function CreateLocationPanel()
 	loc_panel:RegisterEvent("PET_BATTLE_OPENING_START")
 
 	-- Mover
-	E:CreateMover(LocationPlusPanel, "LocationMover", L["LocationPlus "])
+	E:CreateMover(LocationPlusPanel, "LocationMover", L["LocationPlus "], nil, nil, nil, nil, nil, 'locplus')
 end
 
 local function HideDT()
