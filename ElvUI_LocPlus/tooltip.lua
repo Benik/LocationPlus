@@ -82,24 +82,28 @@ local currency = {
 	--1533,	-- Wakening Essence
 
 	-- BfA
-	1560, 	-- War Resources
-	1580,	-- Seal of Wartorn Fate
+	--1560, -- War Resources
+	--1580,	-- Seal of Wartorn Fate
 	--1587,	-- War Supplies
 	--1710,	-- Seafarer's Dubloon
 	--1718,	-- Titan Residuum
 	--1719,	-- Corrupted Memento
 	--1721,	-- Prismatic Manapearl
-	1755,	-- Coalescing Visions
-	1803,	-- Echoes of Ny'alotha
+	--1755,	-- Coalescing Visions
+	--1803,	-- Echoes of Ny'alotha
 
 	-- Shadowlands
 	1751,	-- Freed Soul
 	1754,	-- Argent Commendation
+	1767,   -- Stygia
 	1810,	-- Willing Soul
 	1813,	-- Reservoir Anima
+	1816,   -- Sinstone Fragments
 	1820,	-- Infused Ruby
 	1822,	-- Renown
 	1828, 	-- Soul Ash
+	1885,   -- Grateful Offering
+	1792,	-- Honor
 }
 
 if E.myfaction == 'Alliance' then
