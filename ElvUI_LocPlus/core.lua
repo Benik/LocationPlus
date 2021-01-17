@@ -501,7 +501,6 @@ function LP:Update()
 	LP:CoordsDigit()
 	LP:MouseOver()
 	LP:HideCoords()
-	--LP:ChangeFont()
 end
 
 function LP:ToggleBlizZoneText()

@@ -106,11 +106,11 @@ local currency = {
 	1792,	-- Honor
 }
 
-if E.myfaction == 'Alliance' then
+--[[if E.myfaction == 'Alliance' then
 	tinsert(currency, 1717)
 elseif E.myfaction == 'Horde' then
 	tinsert(currency, 1716)
-end
+end]]
 
 -----------------------
 -- Tooltip functions --
@@ -395,14 +395,6 @@ function LP:UpdateTooltip()
 		end
 	end
 
-	--[[ Fishing
-	if E.db.locplus.fish then
-		local checkfish = LP:GetFishingLvl(true, true)
-		if checkfish ~= "" then
-			GameTooltip:AddDoubleLine(PROFESSIONS_FISHING.." : ", checkfish, 1, 1, 1)
-		end
-	end]]
-
 	-- Battle Pet Levels
 	if E.db.locplus.petlevel then
 		local checkbpet = LP:GetBattlePetLvl(zoneText, true)
@@ -453,6 +445,12 @@ function LP:UpdateTooltip()
 
 			if(name and amount > 0) then
 				icon = ("|T%s:12:12:1:0|t"):format(icon)
+
+				if id == 1822 then -- Renown "cheat"
+					amount = amount + 1
+					totalMax = totalMax + 1
+				end
+
 				if totalMax == 0 then
 					GameTooltip:AddDoubleLine(icon..format(" %s : ", name), format("%s", amount ), 1, 1, 1, selectioncolor)
 				else
