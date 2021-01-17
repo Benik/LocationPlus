@@ -80,13 +80,13 @@ local function Options()
 	E.Options.args.locplus = {
 		order = 9000,
 		type = 'group',
-		name = L["Location Plus"],
+		name = LP.Title,
 		childGroups = "tab",
 		args = {
 			name = {
 				order = 1,
 				type = "header",
-				name = L["Location Plus "]..format("v|cff33ffff%s|r",LP.version)..L[" by Benik (EU-Emerald Dream)"],
+				name = LP.Title..format("v|cffffa500%s|r",LP.version)..L[" by Benik (EU-Emerald Dream)"],
 			},		
 			desc = {
 				order = 2,

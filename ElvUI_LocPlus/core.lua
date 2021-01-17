@@ -24,6 +24,7 @@ local SANCTUARY_TERRITORY, ARENA, FRIENDLY, HOSTILE, CONTESTED_TERRITORY, COMBAT
 
 -- GLOBALS: LocationPlusPanel, LocPlusLeftDT, LocPlusRightDT, XCoordsPanel, YCoordsPanel, CUSTOM_CLASS_COLORS
 
+LP.Title = format('|cffffa500%s|r|cffffffff%s|r ', 'Location', 'Plus')
 LP.version = GetAddOnMetadata("ElvUI_LocPlus", "Version")
 LP.Config = {}
 
@@ -556,7 +557,7 @@ function LP:Initialize()
 	tinsert(LP.Config, InjectDatatextOptions)
 
 	if E.db.locplus.LoginMsg then
-		print(L["Location Plus "]..format("v|cff33ffff%s|r",LP.version)..L[" is loaded. Thank you for using it."])
+		print(LP.Title..format("v|cffffa500%s|r",LP.version)..L[" is loaded. Thank you for using it."])
 	end
 end
 
