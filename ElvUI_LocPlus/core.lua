@@ -379,11 +379,6 @@ function LP:UpdateLocation()
 		if displaypet ~= "" then
 			displayLine = displayLine..displaypet
 		end
-	--[[elseif db.displayOther == 'PFISH' then
-		local displayfish = LP:GetFishingLvl(true) or ""
-		if displayfish ~= "" then
-			displayLine = displayLine..displayfish
-		end]]
 	else
 		displayLine = displayLine
 	end
@@ -391,14 +386,16 @@ function LP:UpdateLocation()
 	LocationPlusPanel.Text:SetText(displayLine)
 
 	-- Coloring
+	local r, g, b
 	if displayLine ~= "" then
 		if db.customColor == 1 then
-			LocationPlusPanel.Text:SetTextColor(LP:GetStatus(true))
+			r, g, b = LP:GetStatus(true)
 		elseif db.customColor == 2 then
-			LocationPlusPanel.Text:SetTextColor(classColor.r, classColor.g, classColor.b)
+			r, g, b = classColor.r, classColor.g, classColor.b
 		else
-			LocationPlusPanel.Text:SetTextColor(unpackColor(db.userColor))
+			r, g, b = unpackColor(db.userColor)
 		end
+		LocationPlusPanel.Text:SetTextColor(r, g, b)
 	end
 
 	-- Sizing
@@ -458,16 +455,16 @@ end
 
 function LP:CoordsColor()
 	local db = E.db.locplus
+	local r, g ,b
 	if db.customCoordsColor == 1 then
-		XCoordsPanel.Text:SetTextColor(unpackColor(db.userColor))
-		YCoordsPanel.Text:SetTextColor(unpackColor(db.userColor))
+		r, g, b = unpackColor(db.userColor)
 	elseif db.customCoordsColor == 2 then
-		XCoordsPanel.Text:SetTextColor(classColor.r, classColor.g, classColor.b)
-		YCoordsPanel.Text:SetTextColor(classColor.r, classColor.g, classColor.b)
+		r, g, b = unpackColor(classColor.r, classColor.g, classColor.b)
 	else
-		XCoordsPanel.Text:SetTextColor(unpackColor(db.userCoordsColor))
-		YCoordsPanel.Text:SetTextColor(unpackColor(db.userCoordsColor))
+		r, g, b = unpackColor(db.userCoordsColor)
 	end
+	XCoordsPanel.Text:SetTextColor(r, g, b)
+	YCoordsPanel.Text:SetTextColor(r, g, b)
 end
 
 -- Datatext panels
