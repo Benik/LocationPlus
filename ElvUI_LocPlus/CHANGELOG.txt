@@ -1,3 +1,7 @@
+[b]2.55[/b] (Jan 24, 2020)
+*Remove fishing
+*Colors tlc
+
 [b]2.54[/b] (Dec 22, 2020)
 *Updated Shadowlands currency
 *RightClick the Location panel during "ToggleUI" will bring up LocationPlus options
