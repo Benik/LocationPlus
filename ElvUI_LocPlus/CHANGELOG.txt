@@ -1,3 +1,6 @@
+[b]2.56[/b] (Jan 25, 2020)
+*Fixed Coords Class color error
+
 [b]2.55[/b] (Jan 24, 2020)
 *Remove fishing
 *Colors tlc
