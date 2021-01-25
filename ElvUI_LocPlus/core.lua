@@ -460,7 +460,7 @@ function LP:CoordsColor()
 	if db.customCoordsColor == 1 then
 		r, g, b = unpackColor(db.userColor)
 	elseif db.customCoordsColor == 2 then
-		r, g, b = unpackColor(classColor.r, classColor.g, classColor.b)
+		r, g, b = classColor.r, classColor.g, classColor.b
 	else
 		r, g, b = unpackColor(db.userCoordsColor)
 	end
