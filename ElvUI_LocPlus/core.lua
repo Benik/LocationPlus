@@ -299,19 +299,24 @@ function LP:ShadowPanels()
 	end
 
 	if db.shadow then
-		SPACING = 2
+		SPACING = db.spacingAuto and 2 or db.spacingManual
 	else
-		SPACING = 1
+		SPACING = db.spacingAuto and 1 or db.spacingManual
 	end
 
 	self:HideCoords()
 end
 
+function LP:UpdateSpacing()
+	LP:ShadowPanels()
+	LP:HideCoords()
+end
+
 -- Show/Hide coord frames
 function LP:HideCoords()
 	local db = E.db.locplus
-	XCoordsPanel:Point('RIGHT', LocationPlusPanel, 'LEFT', -SPACING, 0)
-	YCoordsPanel:Point('LEFT', LocationPlusPanel, 'RIGHT', SPACING, 0)
+	XCoordsPanel:Point('RIGHT', LocationPlusPanel, 'LEFT', db.spacingAuto and -SPACING or -db.spacingManual, 0)
+	YCoordsPanel:Point('LEFT', LocationPlusPanel, 'RIGHT', db.spacingAuto and SPACING or db.spacingManual, 0)
 
 	LocPlusLeftDT:ClearAllPoints()
 	LocPlusRightDT:ClearAllPoints()
@@ -319,13 +324,13 @@ function LP:HideCoords()
 	if (db.hidecoords) or (db.hidecoordsInInstance and IsInInstance()) then
 		XCoordsPanel:Hide()
 		YCoordsPanel:Hide()
-		LocPlusLeftDT:Point('RIGHT', LocationPlusPanel, 'LEFT', -SPACING, 0)
-		LocPlusRightDT:Point('LEFT', LocationPlusPanel, 'RIGHT', SPACING, 0)
+		LocPlusLeftDT:Point('RIGHT', LocationPlusPanel, 'LEFT', db.spacingAuto and -SPACING or -db.spacingManual, 0)
+		LocPlusRightDT:Point('LEFT', LocationPlusPanel, 'RIGHT', db.spacingAuto and SPACING or db.spacingManual, 0)
 	else
 		XCoordsPanel:Show()
 		YCoordsPanel:Show()
-		LocPlusLeftDT:Point('RIGHT', XCoordsPanel, 'LEFT', -SPACING, 0)
-		LocPlusRightDT:Point('LEFT', YCoordsPanel, 'RIGHT', SPACING, 0)
+		LocPlusLeftDT:Point('RIGHT', XCoordsPanel, 'LEFT', db.spacingAuto and -SPACING or -db.spacingManual, 0)
+		LocPlusRightDT:Point('LEFT', YCoordsPanel, 'RIGHT', db.spacingAuto and SPACING or db.spacingManual, 0)
 	end
 end
 
