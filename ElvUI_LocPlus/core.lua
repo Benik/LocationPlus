@@ -187,13 +187,8 @@ local function CreateLocationPanel()
 end
 
 local function HideDT()
-	if E.db.locplus.dtshow then
-		LocPlusRightDT:Show()
-		LocPlusLeftDT:Show()
-	else
-		LocPlusRightDT:Hide()
-		LocPlusLeftDT:Hide()
-	end
+	LocPlusRightDT:SetShown(E.db.locplus.dtshow)
+	LocPlusLeftDT:SetShown(E.db.locplus.dtshow)
 end
 
 -- Coord panels
@@ -291,11 +286,7 @@ function LP:ShadowPanels()
 
 	for _, frame in pairs(panelsToAddShadow) do
 		frame:CreateShadow()
-		if db.shadow then
-			frame.shadow:Show()
-		else
-			frame.shadow:Hide()
-		end
+		frame.shadow:SetShown(db.shadow)
 	end
 
 	if db.shadow then
@@ -305,11 +296,6 @@ function LP:ShadowPanels()
 	end
 
 	self:HideCoords()
-end
-
-function LP:UpdateSpacing()
-	LP:ShadowPanels()
-	LP:HideCoords()
 end
 
 -- Show/Hide coord frames
@@ -332,6 +318,12 @@ function LP:HideCoords()
 		LocPlusLeftDT:Point('RIGHT', XCoordsPanel, 'LEFT', db.spacingAuto and -SPACING or -db.spacingManual, 0)
 		LocPlusRightDT:Point('LEFT', YCoordsPanel, 'RIGHT', db.spacingAuto and SPACING or db.spacingManual, 0)
 	end
+end
+
+-- Update Spacing
+function LP:UpdateSpacing()
+	LP:ShadowPanels()
+	LP:HideCoords()
 end
 
 -- Toggle transparency
