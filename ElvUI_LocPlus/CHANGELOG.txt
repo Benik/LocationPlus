@@ -1,7 +1,11 @@
-[b]2.56[/b] (Jan 25, 2020)
+[b]2.57[/b] (Mar 24, 2021)
+*Added the new conquest points currency
+*Added Spacing option between the panels
+
+[b]2.56[/b] (Jan 25, 2021)
 *Fixed Coords Class color error
 
-[b]2.55[/b] (Jan 24, 2020)
+[b]2.55[/b] (Jan 24, 2021)
 *Remove fishing
 *Colors tlc
 
