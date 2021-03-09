@@ -1,4 +1,7 @@
-[b]2.57[/b] (Mar 24, 2021)
+[b]2.58[/b] (Mar 9, 2021)
+*toc update for patch 9.05
+
+[b]2.57[/b] (Mar 4, 2021)
 *Added the new conquest points currency
 *Added Spacing option between the panels
 
