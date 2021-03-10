@@ -105,6 +105,7 @@ local currency = {
 	1885,   -- Grateful Offering
 	1792,	-- Honor
 	1602,	-- New Conquest Points
+	1191,	-- Valor
 }
 
 --[[if E.myfaction == 'Alliance' then
