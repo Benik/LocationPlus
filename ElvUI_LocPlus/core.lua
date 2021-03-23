@@ -349,7 +349,16 @@ function LP:StrataAndLevel()
 	LocationPlusPanel:SetFrameLevel(db.frameLevel)
 end
 
+function LP:PLAYER_REGEN_ENABLED()
+	self:UpdateLocation()
+	self:UnregisterEvent("PLAYER_REGEN_ENABLED")
+end
+
 function LP:UpdateLocation()
+	if _G.InCombatLockdown() or (_G.UnitAffectingCombat("player") or _G.UnitAffectingCombat("pet")) then
+		self:RegisterEvent("PLAYER_REGEN_ENABLED")
+		return
+	end
 	local db = E.db.locplus
 	local subZoneText = GetMinimapZoneText() or ""
 	local zoneText = GetRealZoneText() or UNKNOWN;
