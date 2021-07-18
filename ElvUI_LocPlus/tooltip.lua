@@ -102,10 +102,13 @@ local currency = {
 	1820,	-- Infused Ruby
 	1822,	-- Renown
 	1828, 	-- Soul Ash
+	1906,	-- Sould Cinders
 	1885,   -- Grateful Offering
 	1792,	-- Honor
 	1602,	-- New Conquest Points
 	1191,	-- Valor
+	1977,	-- Stygian Ember
+	1904,	-- Tower Knowledge
 }
 
 --[[if E.myfaction == 'Alliance' then
