@@ -1,12 +1,8 @@
 ------------------------------------------------------------------------
-r251 | Odica_Jaedenar | 2020-11-19 21:02:09 +0000 (Thu, 19 Nov 2020) | 4 lines
+r259 | Odica_Jaedenar | 2021-07-06 21:01:25 +0000 (Tue, 06 Jul 2021) | 1 line
 Changed paths:
    M /trunk/LibTourist-3.0.lua
-   M /trunk/LibTourist-3.0.toc
 
-- Updated TOC version to 90002
-- Exile's Reach and Darkmaul Citadel are now Friendly for both Horde and Alliance, instead of contested
-- Corrected group size for Darkmaul Citadel
-- Removed road connection between Tiragarde Sound and Tol Dagor
+- Added Elysian Hold, Seat of the Primus, Heart of the Forest and Sinfall (Covenant Sanctums)
 ------------------------------------------------------------------------
 

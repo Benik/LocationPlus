@@ -1,7 +1,7 @@
 --[[
 Name: LibTourist-3.0
-Revision: $Rev: 251 $
-Author(s): Odica (maintainer), originally created by ckknight and Arrowmaster
+Revision: $Rev: 259 $
+Author(s): Odica (owner), originally created by ckknight and Arrowmaster
 Documentation: https://www.wowace.com/projects/libtourist-3-0/pages/api-reference
 SVN: svn://svn.wowace.com/wow/libtourist-3-0/mainline/trunk
 Description: A library to provide information about zones and instances.
@@ -9,7 +9,7 @@ License: MIT
 ]]
 
 local MAJOR_VERSION = "LibTourist-3.0"
-local MINOR_VERSION = 90000 + tonumber(("$Revision: 251 $"):match("(%d+)"))
+local MINOR_VERSION = 90000 + tonumber(("$Revision: 259 $"):match("(%d+)"))
 
 if not LibStub then error(MAJOR_VERSION .. " requires LibStub") end
 local C_Map = C_Map
@@ -29,7 +29,7 @@ local HBD = LibStub("HereBeDragons-2.0")
 function Tourist:GetHBD() return HBD end
 
 local function trace(msg)
---	DEFAULT_CHAT_FRAME:AddMessage(msg)
+--	DEFAULT_CHAT_FRAME:AddMessage("[LT] "..tostring(msg))
 end
 
 --trace("|r|cffff4422! -- Tourist:|r Warning: This is an alpha version with limited functionality." )		
@@ -103,37 +103,68 @@ local X_Y_ZEPPELIN = "%s - %s Zeppelin"
 local X_Y_BOAT = "%s - %s Boat"
 local X_Y_PORTAL = "%s - %s Portal"
 local X_Y_TELEPORT = "%s - %s Teleport"
+local X_Y_WAYSTONE = "%s - %s Waystone"
 
 if GetLocale() == "zhCN" then
 	X_Y_ZEPPELIN = "%s - %s 飞艇"
 	X_Y_BOAT = "%s - %s 船"
 	X_Y_PORTAL = "%s - %s 传送门"
 	X_Y_TELEPORT = "%s - %s 传送门"
+	X_Y_WAYSTONE = "%s - %s 路石"
 elseif GetLocale() == "zhTW" then
 	X_Y_ZEPPELIN = "%s - %s 飛艇"
 	X_Y_BOAT = "%s - %s 船"
 	X_Y_PORTAL = "%s - %s 傳送門"
 	X_Y_TELEPORT = "%s - %s 傳送門"
+	X_Y_WAYSTONE = "%s - %s 路石"
 elseif GetLocale() == "frFR" then
 	X_Y_ZEPPELIN = "Zeppelin %s - %s"
 	X_Y_BOAT = "Bateau %s - %s"
 	X_Y_PORTAL = "Portail %s - %s"
 	X_Y_TELEPORT = "Téléport %s - %s"
+	X_Y_WAYSTONE = "Pierre de chemin %s - %s"
 elseif GetLocale() == "koKR" then
 	X_Y_ZEPPELIN = "%s - %s 비행선"
 	X_Y_BOAT = "%s - %s 배"
 	X_Y_PORTAL = "%s - %s 차원문"
 	X_Y_TELEPORT = "%s - %s 차원문"
+	X_Y_WAYSTONE = "%s - %s 웨이 스톤"
 elseif GetLocale() == "deDE" then
 	X_Y_ZEPPELIN = "%s - %s Zeppelin"
 	X_Y_BOAT = "%s - %s Schiff"
 	X_Y_PORTAL = "%s - %s Portal"
-	X_Y_TELEPORT = "%s - %s Teleport"	
+	X_Y_TELEPORT = "%s - %s Teleport"
+	X_Y_WAYSTONE = "%s - %s Wegstein"
 elseif GetLocale() == "esES" then
 	X_Y_ZEPPELIN = "%s - %s Zepelín"
 	X_Y_BOAT = "%s - %s Barco"
 	X_Y_PORTAL = "%s - %s Portal"
 	X_Y_TELEPORT = "%s - %s Teletransportador"
+	X_Y_WAYSTONE = "%s - %s Piedra de camino"
+elseif GetLocale() == "esMX" then
+	X_Y_ZEPPELIN = "%s - %s Zepelín"
+	X_Y_BOAT = "%s - %s Barco"
+	X_Y_PORTAL = "%s - %s Portal"
+	X_Y_TELEPORT = "%s - %s Teletransportador"
+	X_Y_WAYSTONE = "%s - %s Piedra de camino"
+elseif GetLocale() == "itIT" then
+	X_Y_ZEPPELIN = "%s - %s Zeppelin"
+	X_Y_BOAT = "%s - %s Barca"
+	X_Y_PORTAL = "%s - %s Portale"
+	X_Y_TELEPORT = "%s - %s Teletrasporto"	
+	X_Y_WAYSTONE = "%s - %s Pietra del cammino"
+elseif GetLocale() == "ptBR" then
+	X_Y_ZEPPELIN = "%s - %s Zepelim"
+	X_Y_BOAT = "%s - %s Barco"
+	X_Y_PORTAL = "%s - %s Portal"
+	X_Y_TELEPORT = "%s - %s Teleporte"
+	X_Y_WAYSTONE = "%s - %s Pedra caminho"
+elseif GetLocale() == "ruRU" then
+	X_Y_ZEPPELIN = "%s - %s дирижабль"
+	X_Y_BOAT = "%s - %s Лодка"
+	X_Y_PORTAL = "%s - %s Портал"
+	X_Y_TELEPORT = "%s - %s Телепорт"		
+	X_Y_WAYSTONE = "%s - %s Путевой камень"
 end
 
 local recZones = {}
@@ -1457,10 +1488,10 @@ local MapIdLookupTable = {
 	[1645] = "Torghast",
 	[1647] = "The Shadowlands",
 	[1648] = "The Maw",
-	[1649] = "MAL_Micro_A",
-	[1650] = "MAL_Micro_B",
-	[1651] = "MAL_Micro_C",
-	[1652] = "MAL_Micro_D",
+	[1649] = "Etheric Vault",  -- "MAL_Micro_A",
+	[1650] = "Sightless Hold",  -- "MAL_Micro_B",
+	[1651] = "Molten Forge",  -- "MAL_Micro_C",
+	[1652] = "Vault of Souls",  -- "MAL_Micro_D",
 	[1656] = "Torghast - Map Floor 10 [Deprecated]",
 	[1658] = "Alpha_TG_R02",
 	[1659] = "Alpha_TG_R03",
@@ -1494,7 +1525,7 @@ local MapIdLookupTable = {
 	[1687] = "Theater of Pain",
 	[1688] = "Revendreth",
 	[1689] = "Maldraxxus",
-	[1690] = "Bastion_Micro_A",
+	[1690] = "Aspirant's Quarters",  -- "Bastion_Micro_A",
 	[1691] = "Shattered Grove",
 	[1692] = "Spires Of Ascension",
 	[1693] = "Spires Of Ascension",
@@ -1513,14 +1544,14 @@ local MapIdLookupTable = {
 	[1709] = "Ardenweald",
 	[1711] = "Ascension Coliseum",
 	[1712] = "Torghast",
-	[1713] = "Bastion_Micro_C",
-	[1714] = "Bastion_Micro_B",
+	[1713] = "Path of Wisdom",  -- "Bastion_Micro_C",
+	[1714] = "Third Chamber of Kalliope",  -- "Bastion_Micro_B",
 	[1715] = "Vestibule Of Eternity",
 	[1716] = "Torghast - Map Floor 22",
 	[1717] = "Chill's Reach",
 	[1720] = "Covenant_Ard_Torghast",
 	[1721] = "Torghast",
-	[1724] = "Necropolis_Vortrexxis",
+	[1724] = "Vortrexxis",  -- "Necropolis_Vortrexxis",
 	[1725] = "Necropolis_Zerekriss",
 	[1726] = "The North Sea",
 	[1727] = "The North Sea",
@@ -1603,17 +1634,17 @@ local MapIdLookupTable = {
 	[1812] = "Torghast",
 	[1813] = "Bastion",
 	[1814] = "Maldraxxus",
-	[1816] = "Ardenweald_Micro_A",
-	[1818] = "Ardenweald_Micro_C",
-	[1819] = "Ardenweald_Mushroom_A",
-	[1820] = "Maw_Micro_PitOfAnguish_A",
-	[1821] = "Maw_Micro_PitOfAnguish_B",
-	[1822] = "Maw_Micro_Tremaculum",
-	[1823] = "Maw_Micro_Domination",
-	[1824] = "Ardenweald_Micro_D",
-	[1825] = "Ardenweald_Mushroom_B",
-	[1826] = "Ardenweald_Mushroom_C",
-	[1827] = "Ardenweald_Mushroom_D",
+	[1816] = "Claw's Edge",  -- "Ardenweald_Micro_A",
+	[1818] = "Tirna Vaal",  -- "Ardenweald_Micro_C",
+	[1819] = "Fungal Terminus",  -- "Ardenweald_Mushroom_A",
+	[1820] = "Pit of Anguish",  -- "Maw_Micro_PitOfAnguish_A",
+	[1821] = "Pit of Anguish",  -- "Maw_Micro_PitOfAnguish_B",
+	[1822] = "Extractor's Sanatorium",  -- "Maw_Micro_Tremaculum",
+	[1823] = "Altar of Domination",  -- "Maw_Micro_Domination",
+	[1824] = "Matriarch's Den",  -- "Ardenweald_Micro_D",
+	[1825] = "The Root Cellar",  -- "Ardenweald_Mushroom_B",
+	[1826] = "The Root Cellar",  -- "Ardenweald_Mushroom_C",
+	[1827] = "The Root Cellar",  -- "Ardenweald_Mushroom_D",
 	[1828] = "Ardenweald_Mushroom_E",
 	[1829] = "Ardenweald_Micro_B",
 	[1833] = "Torghast",
@@ -1695,6 +1726,67 @@ local MapIdLookupTable = {
 	[1910] = "Torghast - Map Floor 91",
 	[1911] = "Torghast - Entrance",
 	[1912] = "The Runecarver",
+	[1913] = "Torghast",
+	[1914] = "Torghast",
+	[1917] = "De Other Side",
+	[1920] = "Torghast",
+	[1921] = "Torghast",
+	[1922] = "Draenor",
+    [1923] = "Pandaria",
+	[1958] = "Firelands",
+	[1959] = "Firelands",
+    [1960] = "The Maw",
+    [1961] = "Korthia",
+    [1962] = "Torghast",
+    [1963] = "Torghast",
+    [1964] = "Torghast",
+    [1965] = "Torghast",
+    [1966] = "Torghast",
+    [1967] = "Torghast",
+    [1968] = "Torghast",
+    [1969] = "Torghast",
+    [1971] = "Skyhold",
+    [1974] = "Torghast",
+    [1975] = "Torghast",
+    [1976] = "Torghast",
+    [1977] = "Torghast",
+    [1979] = "Torghast",
+    [1980] = "Torghast",
+    [1981] = "Torghast",
+    [1982] = "Torghast",
+    [1983] = "Torghast",
+    [1984] = "Torghast",
+    [1985] = "Torghast",
+    [1986] = "Torghast",
+    [1987] = "Torghast",
+    [1988] = "Torghast",
+    [1989] = "Tazavesh, the Veiled Market",
+    [1990] = "Tazavesh, the Veiled Market",
+    [1991] = "Tazavesh, the Veiled Market",
+    [1992] = "Tazavesh, the Veiled Market",
+    [1993] = "Tazavesh, the Veiled Market",
+    [1995] = "Tazavesh, the Veiled Market",
+    [1996] = "Tazavesh, the Veiled Market",
+    [1997] = "Tazavesh, the Veiled Market",
+    [1998] = "Sanctum of Domination",
+    [1999] = "Sanctum of Domination",
+    [2000] = "Sanctum of Domination",
+    [2001] = "Sanctum of Domination",
+    [2002] = "Sanctum of Domination",
+    [2003] = "Sanctum of Domination",
+    [2004] = "Sanctum of Domination",
+    [2005] = "Ardenweald",
+    [2006] = "Cavern of Contemplation",
+    [2007] = "Gromit Hollow",
+    [2008] = "Chamber of the Sigil",
+    [2009] = "TG106_Floor_MM",
+    [2010] = "Torghast",
+    [2011] = "Torghast",
+    [2012] = "Torghast",
+    [2016] = "Tazavesh, the Veiled Market",
+    [2017] = "Spires of Ascension",
+    [2018] = "Spires of Ascension",
+    [2019] = "Torghast",
 }
 
 
@@ -2083,121 +2175,10 @@ local fishingExpansionSkillCategoryIDs = {
     [8] = 1114,		-- Kul Tiras Fishing
 	[9] = 1391,		-- Shadowlands Fishing
 }
-	
--- Used by GetExpansionIndex2
--- local continent_maps = {
-    -- [12] = 1,		-- Kalimdor
-	-- [986] = 1,		-- Kalimdor
-	-- [1209] = 1,		-- Kalimdor
-    -- [13] = 1,		-- Eastern Kingdoms
-	-- [985] = 1,		-- Eastern Kingdoms
-	-- [1208] = 1,		-- Eastern Kingdoms
-    -- [101] = 2,		-- Outland
-	-- [987] = 2,		-- Outland
-	-- [1467] = 2,		-- Outland
-    -- [113] = 3,		-- Northrend
-	-- [988] = 3,		-- Northrend
-	-- [1384] = 3,		-- Northrend
-    -- [276] = 4,      -- The Maelstrom
-	-- [725] = 4,      -- The Maelstrom
-	-- [726] = 4,      -- The Maelstrom
-	-- [839] = 4,      -- The Maelstrom
-	-- [948] = 4,      -- The Maelstrom
-    -- [407] = 4,		-- Darkmoon Island
-	-- [408] = 4,		-- Darkmoon Island
-    -- [424] = 5,		-- Pandaria
-	-- [989] = 5,		-- Pandaria
-    -- [572] = 6,		-- Draenor
-	-- [990] = 6,		-- Draenor
-    -- [619] = 7,		-- Broken Isles
-	-- [993] = 7,		-- Broken Isles
-	-- [994] = 7, 		-- Argus
-    -- [876] = 8,		-- Kul Tiras
-	-- [992] = 8,		-- Kul Tiras
-	-- [1014] = 8,		-- Kul Tiras
-    -- [1355] = 8,     -- Nazjatar
-	-- [1504] = 8,     -- Nazjatar
-	-- [1528] = 8,     -- Nazjatar
-	-- [875] = 8,     	-- Zandalar
-	-- [991] = 8,     	-- Zandalar
-	-- [1011] = 8, 	-- Zandalar
--- }
-
--- Used by GetExpansionIndex2
--- local special_maps = {
-    -- [122] = 2,		-- Isle of Quel'Danas
-	-- [1270] = 2,		-- Isle of Quel'Danas
-    -- [198] = 4,		-- Mount Hyjal
-	-- [1328] = 4,		-- Mount Hyjal
-    -- [203] = 4,		-- Vashj'ir
-	-- [1272] = 4,		-- Vashj'ir
-    -- [207] = 4,		-- Deepholm
-    -- [241] = 4,		-- Twilight Highlands
-	-- [1275] = 4,		-- Twilight Highlands
-	-- [1476] = 4,		-- Twilight Highlands
-    -- [244] = 4,		-- Tol Barad
-	-- [773] = 4,		-- Tol Barad
-	-- [774] = 4,		-- Tol Barad
-	-- [1276] = 4,		-- Tol Barad
-    -- [245] = 4,		-- Tol Barad Peninsula
-	-- [1277] = 4,		-- Tol Barad Peninsula
-    -- [249] = 4,		-- Uldum
-	-- [1330] = 4,		-- Uldum
-	-- [1527] = 4,     -- Uldum
-	-- [1571] = 4,     -- Uldum
-    -- [338] = 4,		-- Molten Front
-	-- [378] = 5, 		-- The Wandering Isle
-	-- [1408] = 6, 	-- Ashran
-	-- [1337] = 8, 	-- Jorundall
-	-- -- Other mapIDs that don't yield an expansionIndex using HBD.mapData for unkown reasons:
-	-- [997] = 1, 		-- Tirisfal Glades
-	-- [1158] = 1, 	-- Arathi Highlands
-	-- [1334] = 3, 	-- Wintergrasp
-	-- [1196] = 8, 	-- Tiragarde Sound
-	-- [1198] = 8, 	-- Stormsong Valley	
-	-- [1197] = 8, 	-- Drustvar	
-	-- [1195] = 8, 	-- Vol'dun
-	-- [1193] = 8, 	-- Zuldazar
-	-- [1194] = 8, 	-- Nazmir
--- }
-
--- Used during initialisation of trade skill data by FillExpansionIndexLookup
--- Based on code by Sutorix, borrowed from LibFishing-1.0
--- 9.0.1: replaced by GetExpansionIndex
--- local function GetExpansionIndex2(mapId)
-	-- local expansionIndex = -1
-    -- if mapId then
-        -- if special_maps[mapId] then
-            -- expansionIndex = special_maps[mapId]
-        -- elseif continent_maps[mapId] then
-			-- expansionIndex = continent_maps[mapId]
-		-- else
-			-- if HBD.mapData[mapId] then
-				-- local found  = false
-				-- local cMapId = mapId
-				-- local parent = HBD.mapData[cMapId].parent
-				-- -- Navigate up to find the continent
-				-- while (parent ~= 946 and parent ~= 947 and HBD.mapData[parent] and found == false) do
-					-- cMapId = parent
-					-- if special_maps[cMapId] then
-						-- expansionIndex = special_maps[cMapId]
-						-- found = true
-					-- elseif continent_maps[cMapId] then
-						-- expansionIndex = continent_maps[cMapId]
-						-- found = true
-					-- else				
-						-- parent = HBD.mapData[cMapId].parent
-					-- end
-				-- end
-			-- end
-		-- end
-    -- end
-	-- return expansionIndex
--- end
 
 -- 9.0.1: New function using new expansion lookup
 local function GetExpansionIndex(zone)
-	local expansionIndex = -1
+	local expansionIndex = nil
 	if zone then
 		local zoneName = Tourist:GetMapNameByIDAlt(zone) or zone
 		if zoneName then
@@ -2301,23 +2282,6 @@ function Tourist:GetSkinningSkillInfo(zone)
 end
 
 
--- function FillExpansionIndexLookup()
-	-- local found, notFound = 0, 0
-	-- for mapId, name in pairs(MapIdLookupTable) do
-		-- local expansionIndex = GetExpansionIndex(mapId)
-		-- if expansionIndex and expansionIndex > 0 then
-			-- found = found + 1
-			-- zoneMapIDtoExpansionIndex[mapId] = expansionIndex
-		-- else
-			-- notFound = notFound + 1
-			-- --trace("|r|cffff4422! -- Tourist:|r Expansion index not found ("..tostring(expansionIndex)..") for mapId "..tostring(mapId).." ("..tostring(name)..")" )				
-		-- end
-	-- end
-	-- trace("Expansion found: "..tostring(found)..", not found: "..tostring(notFound))
--- end
-
-
-
 
 -- OBSOLETE FUNCTION, REMOVED @ WoW 9.0.1
 -- Minimum fishing skill to fish these zones junk-free (Draenor: to catch Enormous Fish only)
@@ -2388,9 +2352,6 @@ local function AddDuplicatesToLocalizedLookup()
 	
 	BZ[Tourist:GetUniqueEnglishZoneNameForLookup("Dalaran", BROKEN_ISLES_MAP_ID)] = Tourist:GetUniqueZoneNameForLookup("Dalaran", BROKEN_ISLES_MAP_ID)
 	BZR[Tourist:GetUniqueZoneNameForLookup("Dalaran", BROKEN_ISLES_MAP_ID)] = Tourist:GetUniqueEnglishZoneNameForLookup("Dalaran", BROKEN_ISLES_MAP_ID)
-	
---	BZ[Tourist:GetUniqueEnglishZoneNameForLookup("The Violet Hold", BROKEN_ISLES_MAP_ID)] = Tourist:GetUniqueZoneNameForLookup("The Violet Hold", BROKEN_ISLES_MAP_ID)
---	BZR[Tourist:GetUniqueZoneNameForLookup("The Violet Hold", BROKEN_ISLES_MAP_ID)] = Tourist:GetUniqueEnglishZoneNameForLookup("The Violet Hold", BROKEN_ISLES_MAP_ID)
 end
 
 local function tablelength(T)
@@ -2875,30 +2836,6 @@ function Tourist:GetLevel(zone)
 		-- Find the most suitable bracket. Shadowlands assumption: still 5-level brackets
 		if playerLvl >= MAX_PLAYER_LEVEL then
 			return MAX_PLAYER_LEVEL, MAX_PLAYER_LEVEL, nil
-		-- elseif playerLvl >= 115 then
-			-- return 115, 119, nil
-		-- elseif playerLvl >= 110 then
-			-- return 110, 114, nil
-		-- elseif playerLvl >= 105 then
-			-- return 105, 109, nil
-		-- elseif playerLvl >= 100 then
-			-- return 100, 104, nil			
-		-- elseif playerLvl >= 95 then
-			-- return 95, 99, nil
-		-- elseif playerLvl >= 90 then
-			-- return 90, 94, nil
-		-- elseif playerLvl >= 85 then
-			-- return 85, 89, nil
-		-- elseif playerLvl >= 80 then
-			-- return 80, 84, nil
-		-- elseif playerLvl >= 75 then
-			-- return 75, 79, nil
-		-- elseif playerLvl >= 70 then
-			-- return 70, 74, nil
-		-- elseif playerLvl >= 65 then
-			-- return 65, 69, nil
-		-- elseif playerLvl >= 60 then
-			-- return 60, 64, nil
 		elseif playerLvl >= 55 then
 			return 55, 59, nil
 		elseif playerLvl >= 50 then
@@ -4154,31 +4091,58 @@ do
 
 	-- Boats
 	transports["BOOTYBAY_RATCHET_BOAT"] = string.format(X_Y_BOAT, BZ["The Cape of Stranglethorn"], BZ["Northern Barrens"])
+	transports["RATCHET_BOOTYBAY_BOAT"] = string.format(X_Y_BOAT, BZ["Northern Barrens"], BZ["The Cape of Stranglethorn"])
+	
 	transports["MENETHIL_HOWLINGFJORD_BOAT"] = string.format(X_Y_BOAT, BZ["Wetlands"], BZ["Howling Fjord"])
+	transports["HOWLINGFJORD_MENETHIL_BOAT"] = string.format(X_Y_BOAT, BZ["Howling Fjord"], BZ["Wetlands"])
+	
 	transports["MENETHIL_THERAMORE_BOAT"] = string.format(X_Y_BOAT, BZ["Wetlands"], BZ["Dustwallow Marsh"])
-	transports["MOAKI_KAMAGUA_BOAT"] = string.format(X_Y_BOAT, BZ["Dragonblight"], BZ["Howling Fjord"])
-	transports["MOAKI_UNUPE_BOAT"] = string.format(X_Y_BOAT, BZ["Dragonblight"], BZ["Borean Tundra"])
+	transports["THERAMORE_MENETHIL_BOAT"] = string.format(X_Y_BOAT, BZ["Dustwallow Marsh"], BZ["Wetlands"])
+	
+	transports["DRAGONBLIGHT_HOWLINGFJORD_BOAT"] = string.format(X_Y_BOAT, BZ["Dragonblight"], BZ["Howling Fjord"])
+	transports["HOWLINGFJORD_DRAGONBLIGHT_BOAT"] = string.format(X_Y_BOAT, BZ["Howling Fjord"], BZ["Dragonblight"])
+	
+	transports["DRAGONBLIGHT_BOREANTUNDRA_BOAT"] = string.format(X_Y_BOAT, BZ["Dragonblight"], BZ["Borean Tundra"])
+	transports["BOREANTUNDRA_DRAGONBLIGHT_BOAT"] = string.format(X_Y_BOAT, BZ["Borean Tundra"], BZ["Dragonblight"])
+	
 	transports["STORMWIND_BOREANTUNDRA_BOAT"] = string.format(X_Y_BOAT, BZ["Stormwind City"], BZ["Borean Tundra"])
+	transports["BOREANTUNDRA_STORMWIND_BOAT"] = string.format(X_Y_BOAT, BZ["Borean Tundra"], BZ["Stormwind City"])
+
 --	transports["TELDRASSIL_AZUREMYST_BOAT"] = string.format(X_Y_BOAT, BZ["Teldrassil"], BZ["Azuremyst Isle"])  -- 8.0: portal
 --	transports["TELDRASSIL_STORMWIND_BOAT"] = string.format(X_Y_BOAT, BZ["Teldrassil"], BZ["Stormwind City"])  -- 8.0: portal
+
 	transports["STORMWIND_TIRAGARDESOUND_BOAT"] = string.format(X_Y_BOAT, BZ["Stormwind City"], BZ["Tiragarde Sound"])
+	transports["TIRAGARDESOUND_STORMWIND_BOAT"] = string.format(X_Y_BOAT, BZ["Tiragarde Sound"], BZ["Stormwind City"])
+	
 	transports["ECHOISLES_ZULDAZAR_BOAT"] = string.format(X_Y_BOAT, BZ["Echo Isles"], BZ["Zuldazar"])
+	transports["ZULDAZAR_ECHOISLES_BOAT"] = string.format(X_Y_BOAT, BZ["Zuldazar"], BZ["Echo Isles"])
 	
 	-- Zeppelins
-	transports["ORGRIMMAR_BOREANTUNDRA_ZEPPELIN"] = string.format(X_Y_ZEPPELIN, BZ["Orgrimmar"], BZ["Borean Tundra"])
-	transports["ORGRIMMAR_GROMGOL_ZEPPELIN"] = string.format(X_Y_ZEPPELIN, BZ["Orgrimmar"], BZ["Northern Stranglethorn"])
+	
+	transports["ORGRIMMAR_STRANGLETHORN_ZEPPELIN"] = string.format(X_Y_ZEPPELIN, BZ["Orgrimmar"], BZ["Northern Stranglethorn"])
+	transports["STRANGLETHORN_ORGRIMMAR_ZEPPELIN"] = string.format(X_Y_ZEPPELIN, BZ["Northern Stranglethorn"], BZ["Orgrimmar"])
+	
 	transports["ORGRIMMAR_THUNDERBLUFF_ZEPPELIN"] = string.format(X_Y_ZEPPELIN, BZ["Orgrimmar"], BZ["Thunder Bluff"])
+	transports["THUNDERBLUFF_ORGRIMMAR_ZEPPELIN"] = string.format(X_Y_ZEPPELIN, BZ["Thunder Bluff"], BZ["Orgrimmar"])
+	
 --	transports["ORGRIMMAR_UNDERCITY_ZEPPELIN"] = string.format(X_Y_ZEPPELIN, BZ["Orgrimmar"], BZ["Undercity"])  -- 8.0: portal
 --	transports["UNDERCITY_GROMGOL_ZEPPELIN"] = string.format(X_Y_ZEPPELIN, BZ["Undercity"], BZ["Northern Stranglethorn"])  -- 8.0: portal
 --	transports["UNDERCITY_HOWLINGFJORD_ZEPPELIN"] = string.format(X_Y_ZEPPELIN, BZ["Undercity"], BZ["Howling Fjord"])  -- 8.0: portal
+
+	transports["ORGRIMMAR_BOREANTUNDRA_ZEPPELIN"] = string.format(X_Y_ZEPPELIN, BZ["Orgrimmar"], BZ["Borean Tundra"])
+	transports["BOREANTUNDRA_ORGRIMMAR_ZEPPELIN"] = string.format(X_Y_ZEPPELIN, BZ["Borean Tundra"], BZ["Orgrimmar"])
 	
 	-- Teleports
 	transports["SILVERMOON_UNDERCITY_TELEPORT"] = string.format(X_Y_TELEPORT, BZ["Silvermoon City"], BZ["Undercity"])
+	transports["UNDERCITY_SILVERMOON_TELEPORT"] = string.format(X_Y_TELEPORT, BZ["Undercity"], BZ["Silvermoon City"])
+	
 	transports["DALARAN_CRYSTALSONG_TELEPORT"] = string.format(X_Y_TELEPORT, BZ["Dalaran"], BZ["Crystalsong Forest"])
+	transports["CRYSTALSONG_DALARAN_TELEPORT"] = string.format(X_Y_TELEPORT, BZ["Crystalsong Forest"], BZ["Dalaran"])
 	
 	-- Portals
 	transports["AZSUNA_ORGRIMMAR_PORTAL"] = string.format(X_Y_PORTAL, BZ["Azsuna"], BZ["Orgrimmar"])
 	transports["AZSUNA_STORMWIND_PORTAL"] = string.format(X_Y_PORTAL, BZ["Azsuna"], BZ["Stormwind City"])
+	transports["AZUREMYST_TELDRASSIL_PORTAL"] = string.format(X_Y_PORTAL, BZ["Azuremyst Isle"], BZ["Teldrassil"])  -- 8.0: former boat
 	transports["DALARAN_ORGRIMMAR_PORTAL"] = string.format(X_Y_PORTAL, BZ["Dalaran"], BZ["Orgrimmar"])
 	transports["DALARAN_STORMWIND_PORTAL"] = string.format(X_Y_PORTAL, BZ["Dalaran"], BZ["Stormwind City"])
 	transports["DALARANBROKENISLES_ORGRIMMAR_PORTAL"] = string.format(X_Y_PORTAL, BZ["Dalaran"].." ("..BZ["Broken Isles"]..")", BZ["Orgrimmar"])
@@ -4194,6 +4158,7 @@ do
 	transports["FROSTWALL_WARSPEAR_PORTAL"] = string.format(X_Y_PORTAL, BZ["Frostwall"], BZ["Warspear"])
 	transports["HELLFIRE_ORGRIMMAR_PORTAL"] = string.format(X_Y_PORTAL, BZ["Hellfire Peninsula"], BZ["Orgrimmar"])
 	transports["HELLFIRE_STORMWIND_PORTAL"] = string.format(X_Y_PORTAL, BZ["Hellfire Peninsula"], BZ["Stormwind City"])
+	transports["HOWLINGFJORD_TIRISFAL_PORTAL"] = string.format(X_Y_PORTAL, BZ["Howling Fjord"], BZ["Tirisfal Glades"]) -- 8.0: former zeppelin
 	transports["ISLEOFTHUNDER_TOWNLONGSTEPPES_PORTAL"] = string.format(X_Y_PORTAL, BZ["Isle of Thunder"], BZ["Townlong Steppes"])
 	transports["JADEFOREST_ORGRIMMAR_PORTAL"] = string.format(X_Y_PORTAL, BZ["The Jade Forest"], BZ["Orgrimmar"])
 	transports["JADEFOREST_STORMWIND_PORTAL"] = string.format(X_Y_PORTAL, BZ["The Jade Forest"], BZ["Stormwind City"])
@@ -4211,7 +4176,7 @@ do
 	transports["ORGRIMMAR_TOLBARAD_PORTAL"] = string.format(X_Y_PORTAL, BZ["Orgrimmar"], BZ["Tol Barad Peninsula"])
 	transports["ORGRIMMAR_TWILIGHTHIGHLANDS_PORTAL"] = string.format(X_Y_PORTAL, BZ["Orgrimmar"], BZ["Twilight Highlands"])
 	transports["ORGRIMMAR_ULDUM_PORTAL"] = string.format(X_Y_PORTAL, BZ["Orgrimmar"], BZ["Uldum"])
-	transports["ORGRIMMAR_UNDERCITY_PORTAL"] = string.format(X_Y_PORTAL, BZ["Orgrimmar"], BZ["Undercity"]) -- 8.0: former zeppelin
+	transports["ORGRIMMAR_TIRISFAL_PORTAL"] = string.format(X_Y_PORTAL, BZ["Orgrimmar"], BZ["Tirisfal Glades"]) -- 8.0: former zeppelin
 	transports["ORGRIMMAR_VASHJIR_PORTAL"] = string.format(X_Y_PORTAL, BZ["Orgrimmar"], BZ["Vashj'ir"])
 	transports["ORGRIMMAR_WARSPEAR_PORTAL"] = string.format(X_Y_PORTAL, BZ["Orgrimmar"], BZ["Warspear"])
 	transports["ORGRIMMAR_ZULDAZAR_PORTAL"] = string.format(X_Y_PORTAL, BZ["Orgrimmar"], BZ["Dazar'alor"])
@@ -4238,22 +4203,25 @@ do
 	transports["STORMWIND_TWILIGHTHIGHLANDS_PORTAL"] = string.format(X_Y_PORTAL, BZ["Stormwind City"], BZ["Twilight Highlands"])
 	transports["STORMWIND_ULDUM_PORTAL"] = string.format(X_Y_PORTAL, BZ["Stormwind City"], BZ["Uldum"])
 	transports["STORMWIND_VASHJIR_PORTAL"] = string.format(X_Y_PORTAL, BZ["Stormwind City"], BZ["Vashj'ir"])
+	transports["STRANGLETHORN_TIRISFAL_PORTAL"] = string.format(X_Y_PORTAL, BZ["Northern Stranglethorn"], BZ["Tirisfal Glades"]) -- 8.0: former zeppelin
 	transports["TANAANJUNGLE_STORMSHIELD_PORTAL"] = string.format(X_Y_PORTAL, BZ["Tanaan Jungle"], BZ["Stormshield"])
 	transports["TANAANJUNGLE_WARSPEAR_PORTAL"] = string.format(X_Y_PORTAL, BZ["Tanaan Jungle"], BZ["Warspear"])
 	transports["TELDRASSIL_AZUREMYST_PORTAL"] = string.format(X_Y_PORTAL, BZ["Teldrassil"], BZ["Azuremyst Isle"])  -- 8.0: former boat
+	transports["TELDRASSIL_STORMWIND_PORTAL"] = string.format(X_Y_PORTAL, BZ["Teldrassil"], BZ["Stormwind City"])  -- 8.0: former boat
 	transports["TIRAGARDESOUND_EXODAR_PORTAL"] = string.format(X_Y_PORTAL, BZ["Boralus"], BZ["The Exodar"])
 	transports["TIRAGARDESOUND_IRONFORGE_PORTAL"] = string.format(X_Y_PORTAL, BZ["Boralus"], BZ["Ironforge"])
 	transports["TIRAGARDESOUND_SILITHUS_PORTAL"] = string.format(X_Y_PORTAL, BZ["Boralus"], BZ["Silithus"])
 	transports["TIRAGARDESOUND_STORMWIND_PORTAL"] = string.format(X_Y_PORTAL, BZ["Boralus"], BZ["Stormwind City"])
+	transports["TIRISFAL_HOWLINGFJORD_PORTAL"] = string.format(X_Y_PORTAL, BZ["Tirisfal Glades"], BZ["Howling Fjord"]) -- 8.0: former zeppelin
+	transports["TIRISFAL_ORGRIMMAR_PORTAL"] = string.format(X_Y_PORTAL, BZ["Tirisfal Glades"], BZ["Orgrimmar"]) -- 8.0: former zeppelin
+	transports["TIRISFAL_STRANGLETHORN_PORTAL"] = string.format(X_Y_PORTAL, BZ["Tirisfal Glades"], BZ["Northern Stranglethorn"]) -- 8.0: former zeppelin
 	transports["TOLBARAD_ORGRIMMAR_PORTAL"] = string.format(X_Y_PORTAL, BZ["Tol Barad Peninsula"], BZ["Orgrimmar"])
 	transports["TOLBARAD_STORMWIND_PORTAL"] = string.format(X_Y_PORTAL, BZ["Tol Barad Peninsula"], BZ["Stormwind City"])
 	transports["TOWNLONGSTEPPES_ISLEOFTHUNDER_PORTAL"] = string.format(X_Y_PORTAL, BZ["Townlong Steppes"], BZ["Isle of Thunder"])
 	transports["TWILIGHTHIGHLANDS_ORGRIMMAR_PORTAL"] = string.format(X_Y_PORTAL, BZ["Twilight Highlands"], BZ["Orgrimmar"])
 	transports["TWILIGHTHIGHLANDS_STORMWIND_PORTAL"] = string.format(X_Y_PORTAL, BZ["Twilight Highlands"], BZ["Stormwind City"])
 	transports["TWOMOONS_ORGRIMMAR_PORTAL"] = string.format(X_Y_PORTAL, BZ["Shrine of Two Moons"], BZ["Orgrimmar"])
-	transports["UNDERCITY_GROMGOL_PORTAL"] = string.format(X_Y_PORTAL, BZ["Undercity"], BZ["Northern Stranglethorn"]) -- 8.0: former zeppelin
 	transports["UNDERCITY_HELLFIRE_PORTAL"] = string.format(X_Y_PORTAL, BZ["Undercity"], BZ["Hellfire Peninsula"])
-	transports["UNDERCITY_HOWLINGFJORD_PORTAL"] = string.format(X_Y_PORTAL, BZ["Undercity"], BZ["Howling Fjord"]) -- 8.0: former zeppelin
 	transports["WARSPEAR_ORGRIMMAR_PORTAL"] = string.format(X_Y_PORTAL, BZ["Warspear"], BZ["Orgrimmar"])
 	transports["WARSPEAR_TANAANJUNGLE_PORTAL"] = string.format(X_Y_PORTAL, BZ["Warspear"], BZ["Tanaan Jungle"])
 	transports["ZULDAZAR_ORGRIMMAR_PORTAL"] = string.format(X_Y_PORTAL, BZ["Dazar'alor"], BZ["Orgrimmar"])
@@ -4265,6 +4233,15 @@ do
 	transports["NAZJATAR_ZULDAZAR_PORTAL"] = string.format(X_Y_PORTAL, BZ["Nazjatar"], BZ["Dazar'alor"])
 	transports["TIRAGARDESOUND_NAZJATAR_PORTAL"] = string.format(X_Y_PORTAL, BZ["Boralus"], BZ["Nazjatar"])
 	transports["NAZJATAR_TIRAGARDESOUND_PORTAL"] = string.format(X_Y_PORTAL, BZ["Nazjatar"], BZ["Boralus"])
+
+	transports["ORGRIMMAR_ORIBOS_PORTAL"] = string.format(X_Y_PORTAL, BZ["Orgrimmar"], BZ["Oribos"])
+	transports["ORIBOS_ORGRIMMAR_PORTAL"] = string.format(X_Y_PORTAL, BZ["Oribos"], BZ["Orgrimmar"])
+	transports["STORMWIND_ORIBOS_PORTAL"] = string.format(X_Y_PORTAL, BZ["Stormwind City"], BZ["Oribos"])
+	transports["ORIBOS_STORMWIND_PORTAL"] = string.format(X_Y_PORTAL, BZ["Oribos"], BZ["Stormwind City"])
+	transports["ORIBOS_MAW_PORTAL"] = string.format(X_Y_PORTAL, BZ["Oribos"], BZ["The Maw"])
+	transports["MAW_ORIBOS_WAYSTONE"] = string.format(X_Y_WAYSTONE, BZ["The Maw"], BZ["Oribos"])
+	transports["ORIBOS_KORTHIA_WAYSTONE"] = string.format(X_Y_WAYSTONE, BZ["Oribos"], BZ["Korthia"])
+	transports["KORTHIA_ORIBOS_WAYSTONE"] = string.format(X_Y_WAYSTONE, BZ["Korthia"], BZ["Oribos"])
 
 
 	
@@ -4359,26 +4336,48 @@ do
 
 	zones[transports["STORMWIND_BOREANTUNDRA_BOAT"]] = {
 		paths = {
-			[BZ["Stormwind City"]] = true,
 			[BZ["Borean Tundra"]] = true,
 		},
 		faction = "Alliance",
 		type = "Transport",
 	}
 
+	zones[transports["BOREANTUNDRA_STORMWIND_BOAT"]] = {
+		paths = {
+			[BZ["Stormwind City"]] = true,
+		},
+		faction = "Alliance",
+		type = "Transport",
+	}
+
+
 	zones[transports["ORGRIMMAR_BOREANTUNDRA_ZEPPELIN"]] = {
 		paths = {
-			[BZ["Orgrimmar"]] = true,
 			[BZ["Borean Tundra"]] = true,
 		},
 		faction = "Horde",
 		type = "Transport",
 	}
 
-	zones[transports["UNDERCITY_HOWLINGFJORD_PORTAL"]] = {
+	zones[transports["BOREANTUNDRA_ORGRIMMAR_ZEPPELIN"]] = {
+		paths = {
+			[BZ["Orgrimmar"]] = true,
+		},
+		faction = "Horde",
+		type = "Transport",
+	}
+
+	zones[transports["TIRISFAL_HOWLINGFJORD_PORTAL"]] = {
+		paths = {
+			[BZ["Howling Fjord"]] = true,
+		},
+		faction = "Horde",
+		type = "Transport",
+	}
+
+	zones[transports["HOWLINGFJORD_TIRISFAL_PORTAL"]] = {
 		paths = {
 			[BZ["Tirisfal Glades"]] = true,
-			[BZ["Howling Fjord"]] = true,
 		},
 		faction = "Horde",
 		type = "Transport",
@@ -4559,8 +4558,15 @@ do
 
 	zones[transports["STORMWIND_TELDRASSIL_PORTAL"]] = {
 		paths = {
-			[BZ["Stormwind City"]] = true,
 			[BZ["Teldrassil"]] = true,
+		},
+		faction = "Alliance",
+		type = "Transport",
+	}
+
+	zones[transports["TELDRASSIL_STORMWIND_PORTAL"]] = {
+		paths = {
+			[BZ["Stormwind City"]] = true,
 		},
 		faction = "Alliance",
 		type = "Transport",
@@ -4568,8 +4574,15 @@ do
 
 	zones[transports["TELDRASSIL_AZUREMYST_PORTAL"]] = {
 		paths = {
-			[BZ["Teldrassil"]] = true,
 			[BZ["Azuremyst Isle"]] = true,
+		},
+		faction = "Alliance",
+		type = "Transport",
+	}
+
+	zones[transports["AZUREMYST_TELDRASSIL_PORTAL"]] = {
+		paths = {
+			[BZ["Teldrassil"]] = true,
 		},
 		faction = "Alliance",
 		type = "Transport",
@@ -4577,16 +4590,30 @@ do
 
 	zones[transports["BOOTYBAY_RATCHET_BOAT"]] = {
 		paths = {
-			[BZ["The Cape of Stranglethorn"]] = true,
 			[BZ["Northern Barrens"]] = true,
 		},
 		type = "Transport",
 	}
 
+	zones[transports["RATCHET_BOOTYBAY_BOAT"]] = {
+		paths = {
+			[BZ["The Cape of Stranglethorn"]] = true,
+		},
+		type = "Transport",
+	}
+
+
 	zones[transports["MENETHIL_HOWLINGFJORD_BOAT"]] = {
 		paths = {
-			[BZ["Wetlands"]] = true,
 			[BZ["Howling Fjord"]] = true,
+		},
+		faction = "Alliance",
+		type = "Transport",
+	}
+
+	zones[transports["HOWLINGFJORD_MENETHIL_BOAT"]] = {
+		paths = {
+			[BZ["Wetlands"]] = true,
 		},
 		faction = "Alliance",
 		type = "Transport",
@@ -4594,26 +4621,47 @@ do
 
 	zones[transports["MENETHIL_THERAMORE_BOAT"]] = {
 		paths = {
-			[BZ["Wetlands"]] = true,
 			[BZ["Dustwallow Marsh"]] = true,
 		},
 		faction = "Alliance",
 		type = "Transport",
 	}
 
-	zones[transports["ORGRIMMAR_GROMGOL_ZEPPELIN"]] = {
+	zones[transports["THERAMORE_MENETHIL_BOAT"]] = {
 		paths = {
-			[BZ["Orgrimmar"]] = true,
+			[BZ["Wetlands"]] = true,
+		},
+		faction = "Alliance",
+		type = "Transport",
+	}
+
+	zones[transports["ORGRIMMAR_STRANGLETHORN_ZEPPELIN"]] = {
+		paths = {
 			[BZ["Northern Stranglethorn"]] = true,
 		},
 		faction = "Horde",
 		type = "Transport",
 	}
 
-	zones[transports["ORGRIMMAR_UNDERCITY_PORTAL"]] = {
+	zones[transports["STRANGLETHORN_ORGRIMMAR_ZEPPELIN"]] = {
 		paths = {
 			[BZ["Orgrimmar"]] = true,
+		},
+		faction = "Horde",
+		type = "Transport",
+	}
+
+	zones[transports["ORGRIMMAR_TIRISFAL_PORTAL"]] = {
+		paths = {
 			[BZ["Tirisfal Glades"]] = true,
+		},
+		faction = "Horde",
+		type = "Transport",
+	}
+
+	zones[transports["TIRISFAL_ORGRIMMAR_PORTAL"]] = {
+		paths = {
+			[BZ["Orgrimmar"]] = true,
 		},
 		faction = "Horde",
 		type = "Transport",
@@ -4621,8 +4669,15 @@ do
 
 	zones[transports["ORGRIMMAR_THUNDERBLUFF_ZEPPELIN"]] = {
 		paths = {
-			[BZ["Orgrimmar"]] = true,
 			[BZ["Thunder Bluff"]] = true,
+		},
+		faction = "Horde",
+		type = "Transport",
+	}
+
+	zones[transports["THUNDERBLUFF_ORGRIMMAR_ZEPPELIN"]] = {
+		paths = {
+			[BZ["Orgrimmar"]] = true,
 		},
 		faction = "Horde",
 		type = "Transport",
@@ -4645,18 +4700,30 @@ do
 		type = "Transport",
 	}
 
-	zones[transports["MOAKI_UNUPE_BOAT"]] = {
+	zones[transports["DRAGONBLIGHT_BOREANTUNDRA_BOAT"]] = {
 		paths = {
-			[BZ["Dragonblight"]] = true,
 			[BZ["Borean Tundra"]] = true,
 		},
 		type = "Transport",
 	}
 
-	zones[transports["MOAKI_KAMAGUA_BOAT"]] = {
+	zones[transports["BOREANTUNDRA_DRAGONBLIGHT_BOAT"]] = {
 		paths = {
 			[BZ["Dragonblight"]] = true,
+		},
+		type = "Transport",
+	}
+
+	zones[transports["DRAGONBLIGHT_HOWLINGFJORD_BOAT"]] = {
+		paths = {
 			[BZ["Howling Fjord"]] = true,
+		},
+		type = "Transport",
+	}
+
+	zones[transports["HOWLINGFJORD_DRAGONBLIGHT_BOAT"]] = {
+		paths = {
+			[BZ["Dragonblight"]] = true,
 		},
 		type = "Transport",
 	}
@@ -4679,19 +4746,33 @@ do
 		type = "Transport",
 	}
 
-	zones[transports["UNDERCITY_GROMGOL_PORTAL"]] = {
+	zones[transports["TIRISFAL_STRANGLETHORN_PORTAL"]] = {
 		paths = {
 			[BZ["Northern Stranglethorn"]] = true,
-			[BZ["Tirisfal Glades"]] = true,
 		},
 		faction = "Horde",
 		type = "Transport",
 	}
 
+	zones[transports["STRANGLETHORN_TIRISFAL_PORTAL"]] = {
+		paths = {
+			[BZ["Tirisfal Glades"]] = true,
+		},
+		faction = "Horde",
+		type = "Transport",
+	}	
+
 	zones[transports["SILVERMOON_UNDERCITY_TELEPORT"]] = {
 		paths = {
-			[BZ["Silvermoon City"]] = true,
 			[BZ["Undercity"]] = true,
+		},
+		faction = "Horde",
+		type = "Transport",
+	}
+
+	zones[transports["UNDERCITY_SILVERMOON_TELEPORT"]] = {
+		paths = {
+			[BZ["Silvermoon City"]] = true,
 		},
 		faction = "Horde",
 		type = "Transport",
@@ -4699,8 +4780,14 @@ do
 
 	zones[transports["DALARAN_CRYSTALSONG_TELEPORT"]] = {
 		paths = {
-			[BZ["Dalaran"]] = true,
 			[BZ["Crystalsong Forest"]] = true,
+		},
+		type = "Transport",
+	}
+
+	zones[transports["CRYSTALSONG_DALARAN_TELEPORT"]] = {
+		paths = {
+			[BZ["Dalaran"]] = true,
 		},
 		type = "Transport",
 	}
@@ -5025,8 +5112,15 @@ do
 
 	zones[transports["ECHOISLES_ZULDAZAR_BOAT"]] = {
 		paths = {
-			[BZ["Echo Isles"]] = true,
 			[BZ["Zuldazar"]] = true,
+		},
+		faction = "Horde",
+		type = "Transport",
+	}
+
+	zones[transports["ZULDAZAR_ECHOISLES_BOAT"]] = {
+		paths = {
+			[BZ["Echo Isles"]] = true,
 		},
 		faction = "Horde",
 		type = "Transport",
@@ -5034,8 +5128,15 @@ do
 
 	zones[transports["STORMWIND_TIRAGARDESOUND_BOAT"]] = {
 		paths = {
-			[BZ["Stormwind City"]] = true,
 			[BZ["Tiragarde Sound"]] = true,
+		},
+		faction = "Alliance",
+		type = "Transport",
+	}
+
+	zones[transports["TIRAGARDESOUND_STORMWIND_BOAT"]] = {
+		paths = {
+			[BZ["Stormwind City"]] = true,
 		},
 		faction = "Alliance",
 		type = "Transport",
@@ -5171,6 +5272,69 @@ do
 		faction = "Horde",
 		type = "Transport",
 	}
+
+
+	-- Shadowlands
+
+	zones[transports["ORGRIMMAR_ORIBOS_PORTAL"]] = {
+		paths = {
+			[BZ["Oribos"]] = true,
+		},
+		faction = "Horde",
+		type = "Transport",
+	}
+
+	zones[transports["ORIBOS_ORGRIMMAR_PORTAL"]] = {
+		paths = {
+			[BZ["Orgrimmar"]] = true,
+		},
+		faction = "Horde",
+		type = "Transport",
+	}
+
+	zones[transports["STORMWIND_ORIBOS_PORTAL"]] = {
+		paths = {
+			[BZ["Oribos"]] = true,
+		},
+		faction = "Alliance",
+		type = "Transport",
+	}
+
+	zones[transports["ORIBOS_STORMWIND_PORTAL"]] = {
+		paths = {
+			[BZ["Stormwind City"]] = true,
+		},
+		faction = "Alliance",
+		type = "Transport",
+	}
+
+	zones[transports["ORIBOS_MAW_PORTAL"]] = {
+		paths = {
+			[BZ["The Maw"]] = true,
+		},
+		type = "Transport",
+	}
+
+	zones[transports["MAW_ORIBOS_WAYSTONE"]] = {
+		paths = {
+			[BZ["The Maw"]] = true,
+		},
+		type = "Transport",
+	}
+
+	zones[transports["ORIBOS_KORTHIA_WAYSTONE"]] = {
+		paths = {
+			[BZ["Korthia"]] = true,
+		},
+		type = "Transport",
+	}
+
+	zones[transports["KORTHIA_ORIBOS_WAYSTONE"]] = {
+		paths = {
+			[BZ["Korthia"]] = true,
+		},
+		type = "Transport",
+	}
 	
 	
 	-- ZONES, INSTANCES AND COMPLEXES ---------------------------------------------------------
@@ -5206,6 +5370,7 @@ do
 			[transports["STORMWIND_SHATTRATH_PORTAL"]] = true,
 			[transports["STORMWIND_DALARAN_PORTAL"]] = true,
 			[transports["STORMWIND_AZSUNA_PORTAL"]] = true,
+			[transports["STORMWIND_ORIBOS_PORTAL"]] = true,
 		},
 		flightnodes = {
 			[2] = true,      -- Stormwind, Elwynn (A)
@@ -5220,7 +5385,7 @@ do
 		instances = BZ["Ruins of Lordaeron"],
 		paths = {
 			[BZ["Tirisfal Glades"]] = true,
-			[transports["SILVERMOON_UNDERCITY_TELEPORT"]] = true,
+			[transports["UNDERCITY_SILVERMOON_TELEPORT"]] = true,
 			[transports["UNDERCITY_HELLFIRE_PORTAL"]] = true,
 		},
 		flightnodes = {
@@ -5440,9 +5605,9 @@ do
 			[BZ["Undercity"]] = true,
 			[BZ["Scarlet Monastery"]] = true,
 			[BZ["Scarlet Halls"]] = true,
-			[transports["UNDERCITY_GROMGOL_PORTAL"]] = true,
-			[transports["ORGRIMMAR_UNDERCITY_PORTAL"]] = true,
-			[transports["UNDERCITY_HOWLINGFJORD_PORTAL"]] = true,
+			[transports["TIRISFAL_STRANGLETHORN_PORTAL"]] = true,
+			[transports["TIRISFAL_ORGRIMMAR_PORTAL"]] = true,
+			[transports["TIRISFAL_HOWLINGFJORD_PORTAL"]] = true,
 			[BZ["Silverpine Forest"]] = true,
 			[BZ["Deathknell"]] = true,
 		},
@@ -5651,8 +5816,8 @@ do
 		paths = {
 			[BZ["Duskwood"]] = true,
 			[BZ["Zul'Gurub"]] = true,
-			[transports["ORGRIMMAR_GROMGOL_ZEPPELIN"]] = true,
-			[transports["UNDERCITY_GROMGOL_PORTAL"]] = true,
+			[transports["STRANGLETHORN_ORGRIMMAR_ZEPPELIN"]] = true,
+			[transports["STRANGLETHORN_TIRISFAL_PORTAL"]] = true,
 			[transports["BOOTYBAY_RATCHET_BOAT"]] = true,
 		},
 		flightnodes = {
@@ -5678,8 +5843,8 @@ do
 			[BZ["The Cape of Stranglethorn"]] = true,
 			[BZ["Duskwood"]] = true,
 			[BZ["Zul'Gurub"]] = true,
-			[transports["ORGRIMMAR_GROMGOL_ZEPPELIN"]] = true,
-			[transports["UNDERCITY_GROMGOL_PORTAL"]] = true,
+			[transports["STRANGLETHORN_ORGRIMMAR_ZEPPELIN"]] = true,
+			[transports["TIRISFAL_STRANGLETHORN_PORTAL"]] = true,
 		},
 		flightnodes = {
 			[593] = true,    -- Bambala, Stranglethorn (H)
@@ -6108,8 +6273,8 @@ do
 			[BZ["Durotar"]] = true,
 			[BZ["Ragefire Chasm"]] = true,
 			[BZ["Azshara"]] = true,
-			[transports["ORGRIMMAR_UNDERCITY_PORTAL"]] = true,
-			[transports["ORGRIMMAR_GROMGOL_ZEPPELIN"]] = true,
+			[transports["ORGRIMMAR_TIRISFAL_PORTAL"]] = true,
+			[transports["ORGRIMMAR_STRANGLETHORN_ZEPPELIN"]] = true,
 			[transports["ORGRIMMAR_BOREANTUNDRA_ZEPPELIN"]] = true,
 			[transports["ORGRIMMAR_THUNDERBLUFF_ZEPPELIN"]] = true,
 			[transports["ORGRIMMAR_TWILIGHTHIGHLANDS_PORTAL"]] = true,
@@ -6125,6 +6290,7 @@ do
 			[transports["ORGRIMMAR_SHATTRATH_PORTAL"]] = true,
 			[transports["ORGRIMMAR_DALARAN_PORTAL"]] = true,
 			[transports["ORGRIMMAR_AZSUNA_PORTAL"]] = true,
+			[transports["ORGRIMMAR_ORIBOS_PORTAL"]] = true,
 		},
 		flightnodes = {
 			[23] = true,     -- Orgrimmar, Durotar (H)
@@ -6138,7 +6304,7 @@ do
 		expansion = Classic,
 		paths = {
 			[BZ["Mulgore"]] = true,
-			[transports["ORGRIMMAR_THUNDERBLUFF_ZEPPELIN"]] = true,
+			[transports["THUNDERBLUFF_ORGRIMMAR_ZEPPELIN"]] = true,
 		},
 		flightnodes = {
 			[22] = true,     -- Thunder Bluff, Mulgore (H)
@@ -6248,7 +6414,7 @@ do
 			[BZ["The Exodar"]] = true,
 			[BZ["Ammen Vale"]] = true,
 			[BZ["Bloodmyst Isle"]] = true,
-			[transports["TELDRASSIL_AZUREMYST_PORTAL"]] = true,
+			[transports["AZUREMYST_TELDRASSIL_PORTAL"]] = true,
 		},
 		flightnodes = {
 			[94] = true,     -- The Exodar (A)
@@ -6306,7 +6472,7 @@ do
 			[BZ["Darnassus"]] = true,
 			[BZ["Shadowglen"]] = true,
 			[transports["TELDRASSIL_AZUREMYST_PORTAL"]] = true,
-			[transports["STORMWIND_TELDRASSIL_PORTAL"]] = true,
+			[transports["TELDRASSIL_STORMWIND_PORTAL"]] = true,
 		},
 		flightnodes = {
 			[27] = true,     -- Rut'theran Village, Teldrassil (A)
@@ -6379,7 +6545,7 @@ do
 			[BZ["Ashenvale"]] = true,
 			[BZ["Durotar"]] = true,
 			[BZ["Wailing Caverns"]] = true,
-			[transports["BOOTYBAY_RATCHET_BOAT"]] = true,
+			[transports["RATCHET_BOOTYBAY_BOAT"]] = true,
 			[BZ["Warsong Gulch"]] = isHorde and true or nil,
 			[BZ["Stonetalon Mountains"]] = true,
 		},
@@ -6510,7 +6676,7 @@ do
 			[BZ["Onyxia's Lair"]] = true,
 			[BZ["Southern Barrens"]] = true,
 			[BZ["Thousand Needles"]] = true,
-			[transports["MENETHIL_THERAMORE_BOAT"]] = true,
+			[transports["THERAMORE_MENETHIL_BOAT"]] = true,
 		},
 		flightnodes = {
 			[55] = true,     -- Brackenwall Village, Dustwallow Marsh (H)
@@ -7064,9 +7230,9 @@ do
 			[BZ["Coldarra"]] = true,
 			[BZ["Dragonblight"]] = true,
 			[BZ["Sholazar Basin"]] = true,
-			[transports["STORMWIND_BOREANTUNDRA_BOAT"]] = true,
-			[transports["ORGRIMMAR_BOREANTUNDRA_ZEPPELIN"]] = true,
-			[transports["MOAKI_UNUPE_BOAT"]] = true,
+			[transports["BOREANTUNDRA_STORMWIND_BOAT"]] = true,
+			[transports["BOREANTUNDRA_ORGRIMMAR_ZEPPELIN"]] = true,
+			[transports["BOREANTUNDRA_DRAGONBLIGHT_BOAT"]] = true,
 		},
 		flightnodes = {
 			[245] = true,    -- Valiance Keep, Borean Tundra (A)
@@ -7096,9 +7262,9 @@ do
 		expansion = Wrath_of_the_Lich_King,
 		paths = {
 			[BZ["Grizzly Hills"]] = true,
-			[transports["MENETHIL_HOWLINGFJORD_BOAT"]] = true,
-			[transports["UNDERCITY_HOWLINGFJORD_PORTAL"]] = true,
-			[transports["MOAKI_KAMAGUA_BOAT"]] = true,
+			[transports["HOWLINGFJORD_MENETHIL_BOAT"]] = true,
+			[transports["HOWLINGFJORD_TIRISFAL_PORTAL"]] = true,
+			[transports["HOWLINGFJORD_DRAGONBLIGHT_BOAT"]] = true,
 			[BZ["Utgarde Keep"]] = true,
 			[BZ["Utgarde Pinnacle"]] = true,
 		},
@@ -7129,8 +7295,8 @@ do
 			[BZ["Grizzly Hills"]] = true,
 			[BZ["Zul'Drak"]] = true,
 			[BZ["Crystalsong Forest"]] = true,
-			[transports["MOAKI_UNUPE_BOAT"]] = true,
-			[transports["MOAKI_KAMAGUA_BOAT"]] = true,
+			[transports["DRAGONBLIGHT_BOREANTUNDRA_BOAT"]] = true,
+			[transports["DRAGONBLIGHT_HOWLINGFJORD_BOAT"]] = true,
 			[BZ["Azjol-Nerub"]] = true,
 			[BZ["Ahn'kahet: The Old Kingdom"]] = true,
 			[BZ["Naxxramas"]] = true,
@@ -7283,7 +7449,7 @@ do
 		continent = Northrend,
 		expansion = Wrath_of_the_Lich_King,
 		paths = {
-			[transports["DALARAN_CRYSTALSONG_TELEPORT"]] = true,
+			[transports["CRYSTALSONG_DALARAN_TELEPORT"]] = true,
 			[BZ["Dragonblight"]] = true,
 			[BZ["Zul'Drak"]] = true,
 			[BZ["The Storm Peaks"]] = true,
@@ -8230,7 +8396,7 @@ do
 		paths = {
 			[BZ["Zuldazar"]] = true,
 			[BZ["The MOTHERLODE!!"]] = true,
-			[transports["ECHOISLES_ZULDAZAR_BOAT"]] = true,
+			[transports["ZULDAZAR_ECHOISLES_BOAT"]] = true,
 			[transports["ZULDAZAR_ORGRIMMAR_PORTAL"]] = true,
 			[transports["ZULDAZAR_THUNDERBLUFF_PORTAL"]] = true,
 			[transports["ZULDAZAR_SILVERMOON_PORTAL"]] = true,
@@ -8364,7 +8530,7 @@ do
 --		},	
 		paths = {
 			[BZ["Tiragarde Sound"]] = true,
-			[transports["STORMWIND_TIRAGARDESOUND_BOAT"]] = true,
+			[transports["TIRAGARDESOUND_STORMWIND_BOAT"]] = true,
 			[transports["TIRAGARDESOUND_STORMWIND_PORTAL"]] = true,
 			[transports["TIRAGARDESOUND_EXODAR_PORTAL"]] = true,
 			[transports["TIRAGARDESOUND_IRONFORGE_PORTAL"]] = true,
@@ -8551,10 +8717,10 @@ do
 			[BZ["Darkmaul Citadel"]] = true,
 		},
 		-- Unlear what these flight nodes are. Alliance only, with only one flight path, connecting them to each other. Don't show up on map.
---		flightnodes = {
---			[2401] = true,     	-- Ogre Citadel, Exile's Reach Island
---			[2402] = true,     	-- Alliance Outpost, Exile's Reach 
---		},
+		flightnodes = {
+			[2401] = true,     	-- Ogre Citadel, Exile's Reach Island
+			[2402] = true,     	-- Alliance Outpost, Exile's Reach 
+		},
 --		continent = ??,    -- No continent
 		expansion = Shadowlands,
 		faction = (isHorde and "Horde" or "Alliance"),  -- Always friendly: zone exists for both factions separately
@@ -8576,12 +8742,15 @@ do
 	
 	-- 10565
 	zones[BZ["Oribos"]] = {
---		paths = {
---			[transports["STORMWIND_TELDRASSIL_PORTAL"]] = true,
---		},
---		flightnodes = {
---			[2395] = true,     	-- Oribos
---		},
+		paths = {
+			[transports["ORIBOS_ORGRIMMAR_PORTAL"]] = true,
+			[transports["ORIBOS_STORMWIND_PORTAL"]] = true,
+			[transports["ORIBOS_MAW_PORTAL"]] = true,
+			[transports["ORIBOS_KORTHIA_WAYSTONE"]] = true,
+		},
+		flightnodes = {
+			[2395] = true,     	-- Oribos
+		},
 		type = "City",
 		continent = The_Shadowlands,
 		expansion = Shadowlands,
@@ -8596,6 +8765,7 @@ do
 			[BZ["Spires of Ascension"]] = true,
 		},
 		paths = {
+			[BZ["Elysian Hold"]] = true,
 			[BZ["The Necrotic Wake"]] = true,
 			[BZ["Spires of Ascension"]] = true,
 		},		
@@ -8620,6 +8790,20 @@ do
 		expansion = Shadowlands,
 	}
 
+	-- Kyrain Covenant Sanctum
+	zones[BZ["Elysian Hold"]] = {
+		paths = {
+			[BZ["Bastion"]] = true,
+		},		
+		flightnodes = {
+			[2528] = true, 		-- Elysian Hold, Bastion
+			[2625] = true, 		-- Elysian Hold, Bastion
+		},
+		faction = "Sanctuary",
+		continent = The_Shadowlands,
+		expansion = Shadowlands,
+	}
+
 	-- 11462
 	zones[BZ["Maldraxxus"]] = {
 		low = 52,
@@ -8629,6 +8813,7 @@ do
 			[BZ["Theater of Pain"]] = true,
 		},
 		paths = {
+			[BZ["Seat of the Primus"]] = true,
 			[BZ["Plaguefall"]] = true,
 			[BZ["Theater of Pain"]] = true,
 		},
@@ -8646,6 +8831,16 @@ do
 		expansion = Shadowlands,
 	}
 
+	-- Necrolord Covenant Sanctum
+	zones[BZ["Seat of the Primus"]] = {
+		paths = {
+			[BZ["Maldraxxus"]] = true,
+		},		
+		faction = "Sanctuary",
+		continent = The_Shadowlands,
+		expansion = Shadowlands,
+	}
+
 	-- 11510
 	zones[BZ["Ardenweald"]] = {
 		low = 55,
@@ -8655,6 +8850,7 @@ do
 			[BZ["De Other Side"]] = true,
 		},
 		paths = {
+			[BZ["Heart of the Forest"]] = true,
 			[BZ["Mists of Tirna Scithe"]] = true,
 			[BZ["De Other Side"]] = true,
 		},
@@ -8673,6 +8869,19 @@ do
 		expansion = Shadowlands,
 	}
 
+	-- Night Fae Covenant Sanctum
+	zones[BZ["Heart of the Forest"]] = {
+		paths = {
+			[BZ["Ardenweald"]] = true,
+		},		
+		flightnodes = {
+			[2587] = true,     	-- Heart of the Forest, Ardenweald
+		},
+		faction = "Sanctuary",
+		continent = The_Shadowlands,
+		expansion = Shadowlands,
+	}
+
 	-- 10413
 	zones[BZ["Revendreth"]] = {
 		low = 57,
@@ -8680,10 +8889,13 @@ do
 		instances = {
 			[BZ["Halls of Atonement"]] = true,
 			[BZ["Sanguine Depths"]] = true,
+			[BZ["Castle Nathria"]] = true,
 		},
 		paths = {
+			[BZ["Sinfall"]] = true,
 			[BZ["Halls of Atonement"]] = true,
 			[BZ["Sanguine Depths"]] = true,
+			[BZ["Castle Nathria"]] = true,
 		},
 		flightnodes = {
 			[2537] = true,     	-- Charred Ramparts, Revendreth
@@ -8701,16 +8913,42 @@ do
 		expansion = Shadowlands,
 	}
 
+	-- Venthyr Covenant Sanctum
+	zones[BZ["Sinfall"]] = {
+		paths = {
+			[BZ["Revendreth"]] = true,
+		},		
+		flightnodes = {
+			[2548] = true, 		-- Sinfall, Revendreth
+		},
+		faction = "Sanctuary",
+		continent = The_Shadowlands,
+		expansion = Shadowlands,
+	}
+
 
 	zones[BZ["The Maw"]] = {
 		low = 60,
 		high = 60,
 		continent = The_Shadowlands,
 		expansion = Shadowlands,
+		paths = {
+			[transports["MAW_ORIBOS_WAYSTONE"]] = true,
+			[BZ["Korthia"]] = true,
+		},		
 	}
 
-
-
+	-- Korthia, City of Secrets
+	zones[BZ["Korthia"]] = {
+		low = 60,
+		high = 60,
+		continent = The_Shadowlands,
+		expansion = Shadowlands,
+		paths = {
+			[transports["KORTHIA_ORIBOS_WAYSTONE"]] = true,
+			[BZ["The Maw"]] = true,
+		},			
+	}
 
 
 
@@ -10140,7 +10378,7 @@ do
 		continent = The_Shadowlands,
 		expansion = Shadowlands,
 		paths = BZ["Bastion"],
-		altGroupSize = 5,
+		groupSize = 5,
 		type = "Instance",
 		--entrancePortal = { BZ["Bastion"], 0, 0 }, -- TODO
 	}
@@ -10152,7 +10390,7 @@ do
 		continent = The_Shadowlands,
 		expansion = Shadowlands,
 		paths = BZ["Bastion"],
-		altGroupSize = 5,
+		groupSize = 5,
 		type = "Instance",
 --		--entrancePortal = { BZ["Bastion"], 0, 0 }, -- TODO
 	}
@@ -10164,7 +10402,7 @@ do
 		continent = The_Shadowlands,
 		expansion = Shadowlands,
 		paths = BZ["Maldraxxus"],
-		altGroupSize = 5,
+		groupSize = 5,
 		type = "Instance",
 		--entrancePortal = { BZ["Maldraxxus"], 0, 0 }, -- TODO
 	}
@@ -10176,7 +10414,7 @@ do
 		continent = The_Shadowlands,
 		expansion = Shadowlands,
 		paths = BZ["Maldraxxus"],
-		altGroupSize = 5,
+		groupSize = 5,
 		type = "Instance",
 		--entrancePortal = { BZ["Maldraxxus"], 0, 0 }, -- TODO
 	}
@@ -10188,7 +10426,7 @@ do
 		continent = The_Shadowlands,
 		expansion = Shadowlands,
 		paths = BZ["Ardenweald"],
-		altGroupSize = 5,
+		groupSize = 5,
 		type = "Instance",
 		--entrancePortal = { BZ["Ardenweald"], 0, 0 }, -- TODO
 	}
@@ -10200,7 +10438,7 @@ do
 		continent = The_Shadowlands,
 		expansion = Shadowlands,
 		paths = BZ["Ardenweald"],
-		altGroupSize = 5,
+		groupSize = 5,
 		type = "Instance",
 		--entrancePortal = { BZ["Ardenweald"], 0, 0 }, -- TODO
 	}
@@ -10212,7 +10450,7 @@ do
 		continent = The_Shadowlands,
 		expansion = Shadowlands,
 		paths = BZ["Ardenweald"],
-		altGroupSize = 5,
+		groupSize = 5,
 		type = "Instance",
 		--entrancePortal = { BZ["Ardenweald"], 0, 0 }, -- TODO
 	}
@@ -10224,7 +10462,7 @@ do
 		continent = The_Shadowlands,
 		expansion = Shadowlands,
 		paths = BZ["Revendreth"],
-		altGroupSize = 5,
+		groupSize = 5,
 		type = "Instance",
 		--entrancePortal = { BZ["Revendreth"], 0, 0 }, -- TODO
 	}
@@ -10236,7 +10474,7 @@ do
 		continent = The_Shadowlands,
 		expansion = Shadowlands,
 		paths = BZ["Revendreth"],
-		altGroupSize = 5,
+		groupSize = 5,
 		type = "Instance",
 		--entrancePortal = { BZ["Revendreth"], 0, 0 }, -- TODO
 	}
@@ -10714,6 +10952,21 @@ do
 		--entrancePortal = { BZ["Antoran Wastes"], 0, 0 }, TODO
 	}
 
+	
+	-- Shadowlands raids
+	
+	zones[BZ["Castle Nathria"]] = {
+		low = 60,
+		high = 60,
+		continent = The_Shadowlands,
+		expansion = Shadowlands,
+		paths = BZ["Revendreth"],
+		groupMinSize = 10,
+		groupMaxSize = 30,
+		type = "Instance",
+		entrancePortal = { BZ["Revendreth"], 45.7, 41.4 }, 
+	}
+	
 	
 	
 	-- ==============BATTLEGROUNDS================
