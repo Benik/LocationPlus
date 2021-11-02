@@ -1,3 +1,6 @@
+[b]2.62[/b] (Nov 2, 2021)
+*toc bump for patch 9.1.5
+
 [b]2.61[/b] (Aug 4, 2021)
 *Update tooltip.lua - 9.1 currencies. Credit: BuG
 *LibTourist update
