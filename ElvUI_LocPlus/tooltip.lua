@@ -109,6 +109,9 @@ local currency = {
 	1191,	-- Valor
 	1977,	-- Stygian Ember
 	1904,	-- Tower Knowledge
+	1931,	-- Cataloged Research
+	1979,	-- Cyphers of the First Ones
+	2009,	-- Cosmic Flux
 }
 
 --[[if E.myfaction == 'Alliance' then
