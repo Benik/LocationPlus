@@ -1,5 +1,6 @@
 [b]2.63[/b] (Feb 26, 2022)
 *Added the new Shadowlands Currencies. Credit: @bug
+*LibTourist update
 *toc bump for patch 9.2
 
 [b]2.62[/b] (Nov 2, 2021)
