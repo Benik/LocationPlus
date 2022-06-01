@@ -1,3 +1,6 @@
+[b]4.17[/b] (Jun 1st, 2022)
+*toc update for patch 9.2.5
+
 [b]2.63[/b] (Feb 26, 2022)
 *Added the new Shadowlands Currencies. Credit: @bug
 *LibTourist update
