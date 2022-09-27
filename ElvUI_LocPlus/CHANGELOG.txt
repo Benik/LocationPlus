@@ -1,4 +1,7 @@
-[b]4.17[/b] (Jun 1st, 2022)
+[b]2.65[/b] (Sep 27, 2022)
+*One addon for all game versions
+
+[b]2.64[/b] (Jun 1st, 2022)
 *toc update for patch 9.2.5
 
 [b]2.63[/b] (Feb 26, 2022)
