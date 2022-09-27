@@ -1,6 +1,13 @@
 local E, L, V, P, G = unpack(ElvUI);
 local LP = E:GetModule('LocationPlus')
-local T = LibStub('LibTourist-3.0');
+local T
+
+if E.Retail then T = LibStub('LibTourist-3.0')
+	--elseif
+		--E.Wrath then T = LibStub('LibTouristClassic-1.0-wrath')
+	elseif
+	E.Wrath or E.Classic then T = LibStub('LibTouristClassic-1.0')
+end
 
 local format, tonumber, pairs, tinsert = string.format, tonumber, pairs, table.insert
 
@@ -153,7 +160,7 @@ end
 	isPvP = nil;
 	isRaid = nil;
 
-	if(T:IsArena(zone) or T:IsBattleground(zone)) then
+	if(not E.Classic and T:IsArena(zone) or T:IsBattleground(zone)) then
 		if E.db.locplus.tthidepvp then
 			return;
 		end
@@ -348,6 +355,8 @@ end
 
 -- PetBattle Range
 function LP:GetBattlePetLvl(zoneText, ontt)
+	if not E.Retail then return end
+
 	local mapID = C_Map_GetBestMapForUnit("player")
 	local zoneText = T:GetMapNameByIDAlt(mapID) or UNKNOWN;
 	local uniqueZone = T:GetUniqueZoneNameForLookup(zoneText, continentID)
@@ -404,10 +413,12 @@ function LP:UpdateTooltip()
 	end
 
 	-- Battle Pet Levels
-	if E.db.locplus.petlevel then
-		local checkbpet = LP:GetBattlePetLvl(zoneText, true)
-		if checkbpet ~= "" then
-			GameTooltip:AddDoubleLine(L["Battle Pet level"].. " :", checkbpet, 1, 1, 1, selectioncolor)
+	if E.Retail then
+		if E.db.locplus.petlevel then
+			local checkbpet = LP:GetBattlePetLvl(zoneText, true)
+			if checkbpet ~= "" then
+				GameTooltip:AddDoubleLine(L["Battle Pet level"].. " :", checkbpet, 1, 1, 1, selectioncolor)
+			end
 		end
 	end
 
@@ -443,47 +454,49 @@ function LP:UpdateTooltip()
 	end
 
 	-- Currency
-	local numEntries = C_CurrencyInfo_GetCurrencyListSize() -- Check for entries to disable the tooltip title when no currency
-	if E.db.locplus.curr and numEntries > 0 then
-		GameTooltip:AddLine(" ")
-		GameTooltip:AddLine(TOKENS.." :", selectioncolor)
+	if E.Retail then
+		local numEntries = C_CurrencyInfo_GetCurrencyListSize() -- Check for entries to disable the tooltip title when no currency
+		if E.db.locplus.curr and numEntries > 0 then
+			GameTooltip:AddLine(" ")
+			GameTooltip:AddLine(TOKENS.." :", selectioncolor)
 
-		for _, id in pairs(currency) do
-			local name, amount, icon, totalMax = GetTokenInfo(id)
+			for _, id in pairs(currency) do
+				local name, amount, icon, totalMax = GetTokenInfo(id)
 
-			if(name and amount > 0) then
-				icon = ("|T%s:12:12:1:0|t"):format(icon)
+				if(name and amount > 0) then
+					icon = ("|T%s:12:12:1:0|t"):format(icon)
 
-				if id == 1822 then -- Renown "cheat"
-					amount = amount + 1
-					totalMax = totalMax + 1
-				end
+					if id == 1822 then -- Renown "cheat"
+						amount = amount + 1
+						totalMax = totalMax + 1
+					end
 
-				if totalMax == 0 then
-					GameTooltip:AddDoubleLine(icon..format(" %s : ", name), format("%s", amount ), 1, 1, 1, selectioncolor)
-				else
-					GameTooltip:AddDoubleLine(icon..format(" %s : ", name), format("%s / %s", amount, totalMax ), 1, 1, 1, selectioncolor)
+					if totalMax == 0 then
+						GameTooltip:AddDoubleLine(icon..format(" %s : ", name), format("%s", amount ), 1, 1, 1, selectioncolor)
+					else
+						GameTooltip:AddDoubleLine(icon..format(" %s : ", name), format("%s / %s", amount, totalMax ), 1, 1, 1, selectioncolor)
+					end
 				end
 			end
 		end
-	end
 
-	-- Professions
-	local prof1, prof2, archy, fishing, cooking, firstAid = GetProfessions()
-	if E.db.locplus.prof and (prof1 or prof2 or archy or fishing or cooking or firstAid) then	
-		GameTooltip:AddLine(" ")
-		GameTooltip:AddLine(TRADE_SKILLS.." :", selectioncolor)
-		
-		local proftable = { GetProfessions() }
-		for _, id in pairs(proftable) do
-			local name, icon, rank, maxRank, _, _, _, rankModifier = GetProfessionInfo(id)
+		-- Professions
+		local prof1, prof2, archy, fishing, cooking, firstAid = GetProfessions()
+		if E.db.locplus.prof and (prof1 or prof2 or archy or fishing or cooking or firstAid) then	
+			GameTooltip:AddLine(" ")
+			GameTooltip:AddLine(TRADE_SKILLS.." :", selectioncolor)
+			
+			local proftable = { GetProfessions() }
+			for _, id in pairs(proftable) do
+				local name, icon, rank, maxRank, _, _, _, rankModifier = GetProfessionInfo(id)
 
-			if rank < maxRank or (not E.db.locplus.profcap) then
-				icon = ("|T%s:12:12:1:0|t"):format(icon)
-				if (rankModifier and rankModifier > 0) then
-					GameTooltip:AddDoubleLine(format("%s %s :", icon, name), (format("%s |cFF6b8df4+ %s|r / %s", rank, rankModifier, maxRank)), 1, 1, 1, selectioncolor)				
-				else
-					GameTooltip:AddDoubleLine(format("%s %s :", icon, name), (format("%s / %s", rank, maxRank)), 1, 1, 1, selectioncolor)
+				if rank < maxRank or (not E.db.locplus.profcap) then
+					icon = ("|T%s:12:12:1:0|t"):format(icon)
+					if (rankModifier and rankModifier > 0) then
+						GameTooltip:AddDoubleLine(format("%s %s :", icon, name), (format("%s |cFF6b8df4+ %s|r / %s", rank, rankModifier, maxRank)), 1, 1, 1, selectioncolor)				
+					else
+						GameTooltip:AddDoubleLine(format("%s %s :", icon, name), (format("%s / %s", rank, maxRank)), 1, 1, 1, selectioncolor)
+					end
 				end
 			end
 		end

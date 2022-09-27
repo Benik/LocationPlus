@@ -1,0 +1,12 @@
+tag dca9a25e5752b6ab85391c94d536d4e5e1511cbd WoW-1.13.4-beta2
+Author:	Odica Jaedenar <odica.jaedenar@gmail.com>
+Date:	Sat Apr 18 00:10:13 2020 +0200
+
+Tagged as WoW-1.13.4-beta2
+
+commit 5851e66209cc42a0302b6b0f0645be31a4c04f99
+Author: Odica Jaedenar <odica.jaedenar@gmail.com>
+Date:   Sat Apr 18 00:08:18 2020 +0200
+
+    Added Zul'Gurub raid
+

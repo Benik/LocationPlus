@@ -78,6 +78,16 @@ local FISH_ICON = "|TInterface\\AddOns\\ElvUI_LocPlus\\media\\fish.tga:14:14|t"
 local PET_ICON = "|TInterface\\AddOns\\ElvUI_LocPlus\\media\\pet.tga:14:14|t"
 local LEVEL_ICON = "|TInterface\\AddOns\\ElvUI_LocPlus\\media\\levelup.tga:14:14|t"
 
+displayOtherValues = {
+	['NONE'] = L['None'],
+	['RLEVEL'] = LEVEL_ICON.." "..LEVEL_RANGE,
+	['PFISH'] = FISH_ICON.." "..PROFESSIONS_FISHING,
+}
+
+if E.Retail then
+	tinsert(displayOtherValues, {['PET'] = PET_ICON.." "..L['Battle Pet Level']})
+end
+
 local function Options()
 	E.Options.args.locplus = {
 		order = 9000,
@@ -177,12 +187,7 @@ local function Options()
 						name = OTHER,
 						type = 'select',
 						desc = L["Show additional info in the Location Panel."],
-							values = {
-								['NONE'] = L['None'],
-								['RLEVEL'] = LEVEL_ICON.." "..LEVEL_RANGE,
-								['PET'] = PET_ICON.." "..L['Battle Pet Level'],
-								['PFISH'] = FISH_ICON.." "..PROFESSIONS_FISHING,
-							},			
+						values = displayOtherValues,			
 					},
 					showicon = {
 						order = 6,
@@ -276,7 +281,8 @@ local function Options()
 								name = L["Battle Pet level"],
 								desc = L["Enable/Disable battle pet level on the area."],
 								type = 'toggle',
-								disabled = function() return not E.db.locplus.tt end,			
+								disabled = function() return not E.db.locplus.tt end,
+								hidden = function() return not E.Retail end,
 							},
 							spacer2 = {
 								order = 5,
@@ -325,21 +331,24 @@ local function Options()
 								desc = L["Enable/Disable the currencies, on Tooltip."],
 								type = 'toggle',
 								width = "full",
-								disabled = function() return not E.db.locplus.tt end,			
+								disabled = function() return not E.db.locplus.tt end,
+								hidden = function() return not E.Retail end,
 							},
 							prof = {
 								order = 12,
 								name = TRADE_SKILLS,
 								desc = L["Enable/Disable the professions, on Tooltip."],
 								type = 'toggle',
-								disabled = function() return not E.db.locplus.tt end,			
+								disabled = function() return not E.db.locplus.tt end,
+								hidden = function() return not E.Retail end,
 							},
 							profcap = {
 								order = 13,
 								name = L["Hide capped"],
 								desc = L["Hides a profession when the player reaches its highest level."],
 								type = 'toggle',
-								disabled = function() return not E.db.locplus.tt or not E.db.locplus.prof end,			
+								disabled = function() return not E.db.locplus.tt or not E.db.locplus.prof end,
+								hidden = function() return not E.Retail end,
 							},
 						},
 					},
