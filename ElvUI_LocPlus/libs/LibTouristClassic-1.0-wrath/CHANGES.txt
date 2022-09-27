@@ -1,0 +1,15 @@
+tag 97cf14b81f61d620e5266d4c541a80b30935dd28 WoW-2.5.1-release1
+Author:	Odica Jaedenar <odica.jaedenar@gmail.com>
+Date:	Fri Jun 4 17:13:42 2021 +0200
+
+Tagged as WoW-2.5.1-release1
+
+commit 05d292bb3a77380158fc6519564b571d0a3783fe
+Author: Odica Jaedenar <odica.jaedenar@gmail.com>
+Date:   Fri Jun 4 17:12:18 2021 +0200
+
+    - added missing translations (esMX, itIT, ruRU and ptBR) for transports (like "Boat" and "Zeppelin")
+    - added Caverns of Time
+    - added The Black Morass, Old Hillsbrad Foothills and Hyjal Summit
+    - added Magisters' Terrace and Sunwell Plateau
+

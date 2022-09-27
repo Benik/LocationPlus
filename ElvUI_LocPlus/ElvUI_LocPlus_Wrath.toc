@@ -1,10 +1,10 @@
-﻿## Interface: 90207
+﻿## Interface: 30400
 ## Author: Benik
 ## Version: 2.65
-## Title: |cff1784d1ElvUI|r Location Plus
+## Title: |cff1784d1ElvUI|r Location Plus |cfd9b9b9bWrath|r
 ## Notes: a plugin for ElvUI 12+, that adds location, coords, 2 Datatexts and a tooltip full of info.
 ## RequiredDeps: ElvUI
-## OptionalDeps: LibTourist-3.0
+## OptionalDeps: LibTourist-1.0-wrath
 ## DefaultState: Enabled
 ## X-Tukui-ProjectID: 6
 ## X-Tukui-ProjectFolders: ElvUI_LocPlus
@@ -13,6 +13,6 @@
 ## X-Curse-Project-ID: elvui-location-plus
 ## X-Curse-Repository-ID: wow/elvui-location-plus/mainline
 
-libs\load_libs.xml
+libs\load_libs_wrath.xml
 locales\load_locales.xml
 init.xml

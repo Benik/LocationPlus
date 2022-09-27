@@ -381,7 +381,7 @@ function LP:UpdateLocation()
 		if displaylvl ~= "" then
 			displayLine = displayLine..displaylvl
 		end
-	elseif db.displayOther == 'PET' then
+	elseif E.Retail and db.displayOther == 'PET' then
 		local displaypet = LP:GetBattlePetLvl(zoneText) or ""
 		if displaypet ~= "" then
 			displayLine = displayLine..displaypet
