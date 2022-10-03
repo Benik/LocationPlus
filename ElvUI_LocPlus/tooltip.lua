@@ -292,37 +292,21 @@ function LP:GetStatus(color)
 end
 
 -- Get Fishing Level
-function LP:GetFishingLvl(minFish, ontt)
-	if not E.Retail then return end
+function LP:GetFishingLvl(ontt)
+	if E.Retail then return end
+
 	local mapID = C_Map_GetBestMapForUnit("player")
 	local zoneText = T:GetMapNameByIDAlt(mapID) or UNKNOWN;
-	local uniqueZone = T:GetUniqueZoneNameForLookup(zoneText, continentID)
-	local minFish = T:GetFishingLevel(zoneText)
-	local _, _, _, fishing = GetProfessions()
-	local r, g, b = 1, 0, 0
-	local r1, g1, b1 = 1, 0, 0
-	local dfish
-	
+	local minFish, maxFish = T:GetFishingLevel(zoneText)
+
 	if minFish then
-		if fishing ~= nil then
-			local _, _, rank = GetProfessionInfo(fishing)
-			if minFish < rank then
-				r, g, b = 0, 1, 0
-				r1, g1, b1 = 0, 1, 0
-			elseif minFish == rank then
-				r, g, b = 1, 1, 0
-				r1, g1, b1 = 1, 1, 0
-			end
-		end
-		
-		dfish = format("|cff%02x%02x%02x%d|r", r*255, g*255, b*255, minFish)
 		if ontt then
-			return dfish
+			return minFish, maxFish
 		else
 			if E.db.locplus.showicon then
-				return format(" (%s) ", dfish)..FISH_ICON
+				return format(" (%s-%s) ", minFish, maxFish)..FISH_ICON
 			else
-				return format(" (%s) ", dfish)
+				return format(" (%s-%s) ", minFish, maxFish)
 			end
 		end
 	else
@@ -414,6 +398,14 @@ function LP:UpdateTooltip()
 		local checklvl = LP:GetLevelRange(zoneText, true)
 		if checklvl ~= "" then
 			GameTooltip:AddDoubleLine(LEVEL_RANGE.." : ", checklvl, 1, 1, 1)
+		end
+	end
+
+	-- Fishing
+	if not E.Retail then
+		if E.db.locplus.fish then
+			local minFish, maxFish = LP:GetFishingLvl(true)
+			GameTooltip:AddDoubleLine(PROFESSIONS_FISHING.." : ", format("%s-%s", minFish, maxFish), 1, 1, 1)
 		end
 	end
 

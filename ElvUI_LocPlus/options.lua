@@ -274,7 +274,8 @@ local function Options()
 								name = L["Area Fishing level"],
 								desc = L["Enable/Disable fishing level on the area."],
 								type = 'toggle',
-								disabled = function() return not E.db.locplus.tt end,			
+								disabled = function() return not E.db.locplus.tt end,
+								hidden = function() return E.Retail end,			
 							},
 							petlevel = {
 								order = 4,
