@@ -78,15 +78,12 @@ local FISH_ICON = "|TInterface\\AddOns\\ElvUI_LocPlus\\media\\fish.tga:14:14|t"
 local PET_ICON = "|TInterface\\AddOns\\ElvUI_LocPlus\\media\\pet.tga:14:14|t"
 local LEVEL_ICON = "|TInterface\\AddOns\\ElvUI_LocPlus\\media\\levelup.tga:14:14|t"
 
-displayOtherValues = {
+local displayOtherValues = {
 	['NONE'] = L['None'],
 	['RLEVEL'] = LEVEL_ICON.." "..LEVEL_RANGE,
 	['PFISH'] = FISH_ICON.." "..PROFESSIONS_FISHING,
+	['PET'] = PET_ICON..' '..L['Battle Pet Level']
 }
-
-if E.Retail then
-	tinsert(displayOtherValues, {['PET'] = PET_ICON.." "..L['Battle Pet Level']})
-end
 
 local function Options()
 	E.Options.args.locplus = {
@@ -186,7 +183,7 @@ local function Options()
 						order = 5,
 						name = OTHER,
 						type = 'select',
-						desc = L["Show additional info in the Location Panel."],
+						desc = L["Show additional info in the Location Panel. Level Range and Fishing are for Classic versions. Battle Pet Level for Retail"],
 						values = displayOtherValues,			
 					},
 					showicon = {
