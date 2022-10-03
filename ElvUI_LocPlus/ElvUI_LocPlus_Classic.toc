@@ -4,7 +4,7 @@
 ## Title: |cff1784d1ElvUI|r Location Plus |cfd9b9b9bClassic|r
 ## Notes: a plugin for ElvUI 12+, that adds location, coords, 2 Datatexts and a tooltip full of info.
 ## RequiredDeps: ElvUI
-## OptionalDeps: LibTouristClassic-1.0
+## OptionalDeps: LibTourist-3.0, LibTouristClassic-1.0, LibTouristClassicEra
 ## DefaultState: Enabled
 ## X-Tukui-ProjectID: 6
 ## X-Tukui-ProjectFolders: ElvUI_LocPlus
