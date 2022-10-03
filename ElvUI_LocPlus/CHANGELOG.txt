@@ -1,3 +1,9 @@
+[b]2.66[/b] (Oct 3, 2022)
+*Added Fishing level for Classic and Wrath
+*Added Professions for Classic and Wrath
+*toc updates
+*Added the correct LibTourist for each game version
+
 [b]2.65[/b] (Sep 27, 2022)
 *One addon for all game versions
 

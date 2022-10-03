@@ -78,15 +78,12 @@ local FISH_ICON = "|TInterface\\AddOns\\ElvUI_LocPlus\\media\\fish.tga:14:14|t"
 local PET_ICON = "|TInterface\\AddOns\\ElvUI_LocPlus\\media\\pet.tga:14:14|t"
 local LEVEL_ICON = "|TInterface\\AddOns\\ElvUI_LocPlus\\media\\levelup.tga:14:14|t"
 
-displayOtherValues = {
+local displayOtherValues = {
 	['NONE'] = L['None'],
 	['RLEVEL'] = LEVEL_ICON.." "..LEVEL_RANGE,
 	['PFISH'] = FISH_ICON.." "..PROFESSIONS_FISHING,
+	['PET'] = PET_ICON..' '..L['Battle Pet Level']
 }
-
-if E.Retail then
-	tinsert(displayOtherValues, {['PET'] = PET_ICON.." "..L['Battle Pet Level']})
-end
 
 local function Options()
 	E.Options.args.locplus = {
@@ -186,7 +183,7 @@ local function Options()
 						order = 5,
 						name = OTHER,
 						type = 'select',
-						desc = L["Show additional info in the Location Panel."],
+						desc = L["Show additional info in the Location Panel. Level Range and Fishing are for Classic versions. Battle Pet Level for Retail"],
 						values = displayOtherValues,			
 					},
 					showicon = {
@@ -274,7 +271,8 @@ local function Options()
 								name = L["Area Fishing level"],
 								desc = L["Enable/Disable fishing level on the area."],
 								type = 'toggle',
-								disabled = function() return not E.db.locplus.tt end,			
+								disabled = function() return not E.db.locplus.tt end,
+								hidden = function() return E.Retail end,			
 							},
 							petlevel = {
 								order = 4,
@@ -340,7 +338,6 @@ local function Options()
 								desc = L["Enable/Disable the professions, on Tooltip."],
 								type = 'toggle',
 								disabled = function() return not E.db.locplus.tt end,
-								hidden = function() return not E.Retail end,
 							},
 							profcap = {
 								order = 13,
@@ -348,7 +345,6 @@ local function Options()
 								desc = L["Hides a profession when the player reaches its highest level."],
 								type = 'toggle',
 								disabled = function() return not E.db.locplus.tt or not E.db.locplus.prof end,
-								hidden = function() return not E.Retail end,
 							},
 						},
 					},

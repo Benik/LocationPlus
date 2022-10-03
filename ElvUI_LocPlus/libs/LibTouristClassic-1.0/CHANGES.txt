@@ -1,12 +1,14 @@
-tag dca9a25e5752b6ab85391c94d536d4e5e1511cbd WoW-1.13.4-beta2
+tag 58d3fcfdb5803ac5cbb9cfb319f786c88376348f WoW-3.4.0-release1
 Author:	Odica Jaedenar <odica.jaedenar@gmail.com>
-Date:	Sat Apr 18 00:10:13 2020 +0200
+Date:	Mon Sep 5 19:28:27 2022 +0200
 
-Tagged as WoW-1.13.4-beta2
+Tagged as WoW-3.4.0-release1
 
-commit 5851e66209cc42a0302b6b0f0645be31a4c04f99
+commit d688e641c24784dcee82aa1f76746632d0157d08
 Author: Odica Jaedenar <odica.jaedenar@gmail.com>
-Date:   Sat Apr 18 00:08:18 2020 +0200
+Date:   Mon Sep 5 19:27:13 2022 +0200
 
-    Added Zul'Gurub raid
+    - added translations for WotLK herbs, mining nodes and ores
+    - added translations for all herbs, mining nodes and ores for esMX, itIT and ptBR
+    - added translations for 'Coldarra'
 
