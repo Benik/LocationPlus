@@ -340,7 +340,6 @@ local function Options()
 								desc = L["Enable/Disable the professions, on Tooltip."],
 								type = 'toggle',
 								disabled = function() return not E.db.locplus.tt end,
-								hidden = function() return not E.Retail end,
 							},
 							profcap = {
 								order = 13,
@@ -348,7 +347,6 @@ local function Options()
 								desc = L["Hides a profession when the player reaches its highest level."],
 								type = 'toggle',
 								disabled = function() return not E.db.locplus.tt or not E.db.locplus.prof end,
-								hidden = function() return not E.Retail end,
 							},
 						},
 					},

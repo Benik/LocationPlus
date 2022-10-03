@@ -2,11 +2,15 @@ local E, L, V, P, G = unpack(ElvUI);
 local LP = E:GetModule('LocationPlus')
 local T
 
-if E.Retail then T = LibStub('LibTourist-3.0')
-	--elseif
-		--E.Wrath then T = LibStub('LibTouristClassic-1.0-wrath')
+if E.Retail then
+	T = LibStub('LibTourist-3.0')
+	print("RETAIL")
 	elseif
-	E.Wrath or E.Classic then T = LibStub('LibTouristClassic-1.0')
+		E.Wrath then T = LibStub('LibTouristClassic-1.0')
+			print("Wrath")
+	elseif
+		E.Classic then T = LibStub('LibTouristClassicEra')
+			print("Classic")
 end
 
 local format, tonumber, pairs, tinsert = string.format, tonumber, pairs, table.insert
@@ -289,10 +293,11 @@ end
 
 -- Get Fishing Level
 function LP:GetFishingLvl(minFish, ontt)
+	if not E.Retail then return end
 	local mapID = C_Map_GetBestMapForUnit("player")
 	local zoneText = T:GetMapNameByIDAlt(mapID) or UNKNOWN;
 	local uniqueZone = T:GetUniqueZoneNameForLookup(zoneText, continentID)
-	local minFish = T:GetFishingLevel(uniqueZone)
+	local minFish = T:GetFishingLevel(zoneText)
 	local _, _, _, fishing = GetProfessions()
 	local r, g, b = 1, 0, 0
 	local r1, g1, b1 = 1, 0, 0
@@ -496,6 +501,39 @@ function LP:UpdateTooltip()
 						GameTooltip:AddDoubleLine(format("%s %s :", icon, name), (format("%s |cFF6b8df4+ %s|r / %s", rank, rankModifier, maxRank)), 1, 1, 1, selectioncolor)				
 					else
 						GameTooltip:AddDoubleLine(format("%s %s :", icon, name), (format("%s / %s", rank, maxRank)), 1, 1, 1, selectioncolor)
+					end
+				end
+			end
+		end
+	end
+
+	if E.Wrath or E.Classic then
+		if E.db.locplus.prof then
+			GameTooltip:AddLine(" ")
+			GameTooltip:AddLine(TRADE_SKILLS.." :", selectioncolor)
+
+			local SecondarySkill = SECONDARY_SKILLS:gsub(":", '')
+			local hasSecondary = false
+			for skillIndex = 1, GetNumSkillLines() do
+				local skillName, isHeader, _, skillRank, _, skillModifier, skillMaxRank, isAbandonable = GetSkillLineInfo(skillIndex)
+		
+				if hasSecondary and isHeader then
+					hasSecondary = false
+				end
+		
+				if (skillName and isAbandonable) or hasSecondary then
+					if skillName and (skillRank < skillMaxRank or (not E.db.locplus.profcap)) then
+						if (skillModifier and skillModifier > 0) then
+							GameTooltip:AddDoubleLine(format("%s :", skillName), (format("%s |cFF6b8df4+ %s|r / %s", skillRank, skillModifier, skillMaxRank)), 1, 1, 1, selectioncolor)				
+						else
+							GameTooltip:AddDoubleLine(format("%s :", skillName), (format("%s / %s", skillRank, skillMaxRank)), 1, 1, 1, selectioncolor)
+						end
+					end
+				end
+
+				if isHeader then
+					if skillName == SecondarySkill then
+						hasSecondary = true
 					end
 				end
 			end
