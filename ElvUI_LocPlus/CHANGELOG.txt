@@ -1,3 +1,6 @@
+[b]2.67[/b] (Oct 5, 2022)
+*Removed BCC toc and fixed tukui addon id
+
 [b]2.66[/b] (Oct 3, 2022)
 *Added Fishing level for Classic and Wrath
 *Added Professions for Classic and Wrath
