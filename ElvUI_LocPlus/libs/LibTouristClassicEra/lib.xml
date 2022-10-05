@@ -3,5 +3,5 @@
 	<Script file="LibStub\LibStub.lua" />
 	<Include file="CallbackHandler-1.0\CallbackHandler-1.0.xml" />
 	<Script file="HereBeDragons\HereBeDragons-2.0.lua" />
-	<Script file="LibTouristClassic-1.0.lua" />
+	<Script file="LibTouristClassicEra.lua" />
 </Ui>

@@ -1,6 +1,6 @@
 --[[
 Name: LibTouristClassic-1.0
-Revision: $Rev: 239 $
+Revision: $Rev: 251 $
 Author(s): Odica, Mishikal1; based on LibTourist-3.0
 Documentation: https://www.wowace.com/projects/libtourist-1-0/pages/api-reference
 Git: https://repos.wowace.com/wow/libtourist-classic libtourist-classic
@@ -9,7 +9,7 @@ License: MIT
 ]]
 
 local MAJOR_VERSION = "LibTouristClassic-1.0"
-local MINOR_VERSION = 90000 + tonumber(("$Revision: 239 $"):match("(%d+)"))
+local MINOR_VERSION = 90000 + tonumber(("$Revision: 248 $"):match("(%d+)"))
 
 if not LibStub then error(MAJOR_VERSION .. " requires LibStub") end
 local C_Map = C_Map
@@ -54,6 +54,8 @@ local isWestern = GetLocale() == "enUS" or GetLocale() == "deDE" or GetLocale() 
 local Azeroth = "Azeroth"
 local Kalimdor = "Kalimdor"
 local Eastern_Kingdoms = "Eastern Kingdoms"
+local Outland = "Outland"
+local Northrend = "Northrend"
 
 local X_Y_ZEPPELIN = "%s - %s Zeppelin"
 local X_Y_BOAT = "%s - %s Boat"
@@ -90,6 +92,21 @@ elseif GetLocale() == "esES" then
 	X_Y_BOAT = "%s - %s Barco"
 	X_Y_PORTAL = "%s - %s Portal"
 	X_Y_TELEPORT = "%s - %s Teletransportador"
+elseif GetLocale() == "esMX" then
+	X_Y_ZEPPELIN = "%s - %s Zepelín"
+	X_Y_BOAT = "%s - %s Barco"
+	X_Y_PORTAL = "%s - %s Portal"
+	X_Y_TELEPORT = "%s - %s Teletransportador"
+elseif GetLocale() == "itIT" then
+	X_Y_ZEPPELIN = "%s - %s Zeppelin"
+	X_Y_BOAT = "%s - %s Barca"
+	X_Y_PORTAL = "%s - %s Portale"
+	X_Y_TELEPORT = "%s - %s Teletrasporto"	
+elseif GetLocale() == "ptBR" then
+	X_Y_ZEPPELIN = "%s - %s Zepelim"
+	X_Y_BOAT = "%s - %s Barco"
+	X_Y_PORTAL = "%s - %s Portal"
+	X_Y_TELEPORT = "%s - %s Teleporte"
 end
 
 local recZones = {}
@@ -130,31 +147,106 @@ local gatheringFlightnodes = false
 local flightnodeDataGathered = false
 
 local GAME_LOCALE = GetLocale()
-local COSMIC_MAP_ID = 947
+local COSMIC_MAP_ID = 946
 
 
 local flightNodeIgnoreList = {
-	[57] = "Fishing Village, Teldrassil",
-	[54] = "Transport, Feathermoon - Feralas",
-	[35] = "Transport, Orgrimmar Zepplins",
-	[34] = "Transport, Booty Bay - Ratchet",
-	[87] = "Crown Guard Tower, Eastern Plaguelands",
-	[86] = "Eastwall Tower, Eastern Plaguelands",
-	[85] = "Northpass Tower, Eastern Plaguelands",
-	[84] = "Plaguewood Tower, Eastern Plaguelands",
-	[78] = "Naxxramas",
-	[51] = "Transport, Rut'theran - Auberdine",
-	[50] = "Transport, Menethil Ships",
-	[47] = "Transport, Grom'gol - Orgrimmar",
-	[46] = "Southshore Ferry, Hillsbrad",
-	[36] = "Generic, World target",
-	[24] = "Generic, World target for Zeppelin Paths",
-	[15] = "Eastern Plaguelands",
-	[9] = "Booty Bay, Stranglethorn",
-	[3] = "Programmer Isle",
-	[1] = "Northshire Abbey",
 	[59] = "Dun Baldar, Alterac Valley",
 	[60] = "Frostwolf Keep, Alterac Valley",
+	[108] = "Nagrand - PvP - Attack Run End 3",
+	[142] = "Hellfire Peninsula - Reaver's Fall",
+	[212] = "Quest - Sunwell Daily - Ship Bombing - End",
+	[113] = "Quest - Nethrandamus Start",
+	[131] = "Quest - Horde Hellfire Start",
+	[136] = "Quest - Hellfire, Aerial Mission (Horde) End",
+	[211] = "Quest - Sunwell Daily - Ship Bombing - Start",
+	[104] = "Nagrand - PvP - Attack Run End 1",
+	[152] = "Quest - Netherstorm - Manaforge Ultris (Start)",
+	[137] = "Quest - Hellfire, Aerial Mission (Alliance) Start",
+	[145] = "Quest - Netherstorm - Stealth Flight - Begin",
+	[112] = "Eversong - Duskwither Teleport End",
+	[135] = "Quest - Hellfire, Aerial Mission (Horde) Start",
+	[134] = "Quest - Hellfire Peninsula (Alliance) End",
+	[109] = "Nagrand - PvP - Attack Run Start 4",
+	[95] = "Zangarmarsh - Quest - As the Crow Flies",
+	[147] = "Hellfire Peninsula - Force Camp Beach Head",
+	[106] = "Nagrand - PvP - Attack Run End 2",
+	[169] = "Quest - Netherwing Ledge - Mine Cart Ride - South - Start",
+	[97] = "Quest - Elekk Path to Kessel",
+	[143] = "Quest - Caverns of Time (Intro Flight Path) (End)",
+	[111] = "Eversong - Duskwither Teleport",
+	[157] = "Quest - Blade's Edge - Vision Guide - Start",
+	[154] = "Quest - Netherstorm - Manaforge Ultris (Second Pass) Start",
+	[138] = "Quest - Hellfire, Aerial Mission (Alliance) End",
+	[209] = "Quest - Sunwell Daily - Dead Scar Bombing - Start",
+	[133] = "Quest - Hellfire Peninsula (Alliance Path) Start",
+	[107] = "Nagrand - PvP - Attack Run Start 3",
+	[148] = "Shatter Point, Hellfire Peninsula (Beach Assault)",
+	[153] = "Quest - Netherstorm - Manaforge Ultris (End)",
+	[110] = "Nagrand - PvP - Attack Run End 4",
+	[171] = "Skettis",
+	[144] = "Quest - Caverns of Time (Intro Flight Path) (Start)",
+	[103] = "Nagrand - PvP - Attack Run Start 1 ",
+	[132] = "Quest - Horde Hellfire End",
+	[105] = "Nagrand - PvP - Attack Run Start 2",
+	[36] = "Generic, World Target 001",
+	[168] = "Filming",
+	[170] = "Quest - Netherwing Ledge - Mine Cart Ride - South - End",
+	[172] = "Ogri'La",
+	[173] = "Quest - Yarzill Flight Start",
+	[176] = "Quest - Howling Fjord Tauren Canoe (Start)",
+	[177] = "Quest - Howling Fjord Tauren Canoe (End)",
+	[180] = "Quest - Dustwallow - Alcaz Survey Start",
+	[181] = "Quest - Dustwallow - Alcaz Survey End",
+	[186] = "Quest - Howling Fjord - Flight to the Windrunner - Start",
+	[187] = "Quest - Howling Fjord - Flight to the Windrunner - End",
+	[188] = "Quest - Howling Fjord - Test at Sea - Start",
+	[193] = "Quest - Howling Fjord - Mission: Plague This! - End",
+	[194] = "Quest - Howling Fjord - Mission: Plague This! - Start",
+	[199] = "Quest - Howling Fjord - McGoyver Start",
+	[200] = "Quest - Howling Fjord - McGoyver End",
+	[203] = "Quest - Stars' Rest -> Wintergarde",
+	[210] = "Quest - Sunwell Daily - Dead Scar Bombing - End",
+	[221] = "Amber Ledge, Borean (To Beryl)",
+	[222] = "Beryl Point, Borean",
+	[225] = "Amber Ledge, Borean (to Coldarra)",
+	[232] = "Borean Tundra - Warsong Hold Wolf Start",
+	[235] = "Transitus Shield, Coldarra (NOT USED)",
+	[236] = "Coldarra, Keristrasza to Malygos",
+	[239] = "Borean Tundra - Quest - Dusk Start",
+	[240] = "Borean Tundra - Quest - Dusk - End",
+	[242] = "Quest - Dragonblight - Spiritual Vision - Begin",
+	[261] = "Quest - Stars' Rest to Wintergarde End",
+	[262] = "Grizzly Hills, Alliance Log Ride Start 01",
+	[267] = "Grizzly Hills, Alliance Log Ride Start",
+	[269] = "Quest - Westguard Keep to Wintergarde Keep Begin",
+	[270] = "Quest - Westguard Keep to Wintergarde Keep End",
+	[271] = "Grizzly Hills, Horde Log Ride Start",
+	[273] = "Wyrmrest Temple - bottom to top, Dragonblight - Begin",
+	[275] = "Wyrmrest Temple - top to bottom, Dragonblight - Begin",
+	[277] = "Wyrmrest Temple - top to middle, Dragonblight - Begin",
+	[280] = "Wyrmrest Temple - middle to top, Dragonblight - Begin",
+	[282] = "Wyrmrest Temple - middle to bottom, Dragonblight - Begin",
+	[284] = "Wyrmrest Temple - bottom to middle, Dragonblight - Begin",
+	[285] = "Quest - Wintergarde -> Stars' Rest (Start)",
+	[287] = "Quest - Valgarde -> Westguard Keep Start",
+	[292] = "Flavor - Stormwind Harbor  - Start",
+	[301] = "Quest - Borean Tundra - Check In With Bixie - Begin",
+	[311] = "Camp Onequah, Grizzly Hills (Quest)",
+	[313] = "Westfall Brigade, Grizzly Hills (Quest)",
+	[314] = "Zim'Torga, Zul'Drak (Quest)",
+	[316] = "Ebon Hold - Acherus -> Death's Breach Start",
+	[318] = "Ebon Hold - Death's Breach -> Acherus Start",
+	[358] = "Quest - Icecrown - North Sea Kraken Bombing - Start",
+	[359] = "Quest - Icecrown - North Sea Kraken Bombing - End",
+	[392] = "CC Prologue - GT - Quest - Vent Horizon - Start",
+	[393] = "CC Prologue - GT - Quest - Vent Horizon - End",
+	[394] = "CC Prologue - GT - Battle Flight - Start",
+	[404] = "Durotar - ET - CC Prologue Spy Frog Start",
+	[405] = "Durotar - ET - CC Prologue Spy Frog End",
+	[438] = "Durotar - ET - CC Prologue Troll Taxi Bat Start",
+	[439] = "Durotar - ET - CC Prologue Troll Recruit End",
+
 }
 
 
@@ -162,8 +254,196 @@ local flightNodeIgnoreList = {
 --                                            Localization                                            --
 --------------------------------------------------------------------------------------------------------
 
+-- UIMapIDs as used by C_Map.GetMapInfo
 local MapIdLookupTable = {
+    [113] = "Northrend",
+    [114] = "Borean Tundra",
+    [115] = "Dragonblight",
+    [116] = "Grizzly Hills",
+    [117] = "Howling Fjord",
+    [118] = "Icecrown",
+    [119] = "Sholazar Basin",
+    [120] = "The Storm Peaks",
+    [121] = "Zul'Drak",
+    [123] = "Wintergrasp",
+    [124] = "Plaguelands: The Scarlet Enclave",
+    [125] = "Dalaran",
+    [126] = "Dalaran",
+    [127] = "Crystalsong Forest",
+    [128] = "Strand of the Ancients",
+    [129] = "The Nexus",
+    [130] = "The Culling of Stratholme",
+    [131] = "The Culling of Stratholme",
+    [132] = "Ahn'kahet: The Old Kingdom",
+    [133] = "Utgarde Keep",
+    [134] = "Utgarde Keep",
+    [135] = "Utgarde Keep",
+    [136] = "Utgarde Pinnacle",
+    [137] = "Utgarde Pinnacle",
+    [138] = "Halls of Lightning",
+    [139] = "Halls of Lightning",
+    [140] = "Halls of Stone",
+    [141] = "The Eye of Eternity",
+    [142] = "The Oculus",
+    [143] = "The Oculus",
+    [144] = "The Oculus",
+    [145] = "The Oculus",
+    [146] = "The Oculus",
+    [147] = "Ulduar",
+    [148] = "Ulduar",
+    [149] = "Ulduar",
+    [150] = "Ulduar",
+    [151] = "Ulduar",
+    [152] = "Ulduar",
+    [153] = "Gundrak",
+    [154] = "Gundrak",
+    [155] = "The Obsidian Sanctum",
+    [156] = "Vault of Archavon",
+    [157] = "Azjol-Nerub",
+    [158] = "Azjol-Nerub",
+    [159] = "Azjol-Nerub",
+    [160] = "Drak'Tharon Keep",
+    [161] = "Drak'Tharon Keep",
+    [162] = "Naxxramas",
+    [163] = "Naxxramas",
+    [164] = "Naxxramas",
+    [165] = "Naxxramas",
+    [166] = "Naxxramas",
+    [167] = "Naxxramas",
+    [168] = "The Violet Hold",
+    [169] = "Isle of Conquest",
+    [170] = "Hrothgar's Landing",
+    [171] = "Trial of the Champion",
+    [172] = "Trial of the Crusader",
+    [173] = "Trial of the Crusader",
+    [183] = "The Forge of Souls",
+    [184] = "Pit of Saron",
+    [185] = "Halls of Reflection",
+    [186] = "Icecrown Citadel",
+    [187] = "Icecrown Citadel",
+    [188] = "Icecrown Citadel",
+    [189] = "Icecrown Citadel",
+    [190] = "Icecrown Citadel",
+    [191] = "Icecrown Citadel",
+    [192] = "Icecrown Citadel",
+    [193] = "Icecrown Citadel",
+    [200] = "The Ruby Sanctum",
+    [213] = "Ragefire Chasm",
+    [219] = "Zul'Farrak",
+    [220] = "The Temple of Atal'Hakkar",
+    [221] = "Blackfathom Deeps",
+    [222] = "Blackfathom Deeps",
+    [223] = "Blackfathom Deeps",
+    [225] = "The Stockade",
+    [226] = "Gnomeregan",
+    [227] = "Gnomeregan",
+    [228] = "Gnomeregan",
+    [229] = "Gnomeregan",
+    [230] = "Uldaman",
+    [231] = "Uldaman",
+    [232] = "Molten Core",
+    [233] = "Zul'Gurub",
+    [234] = "Dire Maul",
+    [235] = "Dire Maul",
+    [236] = "Dire Maul",
+    [237] = "Dire Maul",
+    [238] = "Dire Maul",
+    [239] = "Dire Maul",
+    [240] = "Dire Maul",
+    [242] = "Blackrock Depths",
+    [243] = "Blackrock Depths",
+    [246] = "The Shattered Halls",
+    [247] = "Ruins of Ahn'Qiraj",
+    [248] = "Onyxia's Lair",
+    [250] = "Blackrock Spire",
+    [251] = "Blackrock Spire",
+    [252] = "Blackrock Spire",
+    [253] = "Blackrock Spire",
+    [254] = "Blackrock Spire",
+    [255] = "Blackrock Spire",
+    [256] = "Auchenai Crypts",
+    [257] = "Auchenai Crypts",
+    [258] = "Sethekk Halls",
+    [259] = "Sethekk Halls",
+    [260] = "Shadow Labyrinth",
+    [261] = "The Blood Furnace",
+    [262] = "The Underbog",
+    [263] = "The Steamvault",
+    [264] = "The Steamvault",
+    [265] = "The Slave Pens",
+    [266] = "The Botanica",
+    [267] = "The Mechanar",
+    [268] = "The Mechanar",
+    [269] = "The Arcatraz",
+    [270] = "The Arcatraz",
+    [271] = "The Arcatraz",
+    [272] = "Mana-Tombs",
+    [273] = "The Black Morass",
+    [274] = "Old Hillsbrad Foothills",
+    [279] = "Wailing Caverns",
+    [280] = "Maraudon",
+    [281] = "Maraudon",
+    [287] = "Blackwing Lair",
+    [288] = "Blackwing Lair",
+    [289] = "Blackwing Lair",
+    [290] = "Blackwing Lair",
+    [291] = "The Deadmines",
+    [292] = "The Deadmines",
+    [300] = "Razorfen Downs",
+    [301] = "Razorfen Kraul",
+    [302] = "Scarlet Monastery",
+    [303] = "Scarlet Monastery",
+    [304] = "Scarlet Monastery",
+    [305] = "Scarlet Monastery",
+    [306] = "ScholomanceOLD",
+    [307] = "ScholomanceOLD",
+    [308] = "ScholomanceOLD",
+    [309] = "ScholomanceOLD",
+    [310] = "Shadowfang Keep",
+    [311] = "Shadowfang Keep",
+    [312] = "Shadowfang Keep",
+    [313] = "Shadowfang Keep",
+    [314] = "Shadowfang Keep",
+    [315] = "Shadowfang Keep",
+    [316] = "Shadowfang Keep",
+    [317] = "Stratholme",
+    [318] = "Stratholme",
+    [319] = "Ahn'Qiraj",
+    [320] = "Ahn'Qiraj",
+    [321] = "Ahn'Qiraj",
+    [329] = "Hyjal Summit",
+    [330] = "Gruul's Lair",
+    [331] = "Magtheridon's Lair",
+    [332] = "Serpentshrine Cavern",
+    [333] = "Zul'Aman",
+    [334] = "Tempest Keep",
+    [335] = "Sunwell Plateau",
+    [336] = "Sunwell Plateau",
+    [337] = "Zul'Gurub",
+    [339] = "Black Temple",
+    [347] = "Hellfire Ramparts",
+    [350] = "Karazhan",
+    [351] = "Karazhan",
+    [352] = "Karazhan",
+    [353] = "Karazhan",
+    [354] = "Karazhan",
+    [355] = "Karazhan",
+    [356] = "Karazhan",
+    [357] = "Karazhan",
+    [358] = "Karazhan",
+    [359] = "Karazhan",
+    [360] = "Karazhan",
+    [361] = "Karazhan",
+    [362] = "Karazhan",
+    [363] = "Karazhan",
+    [364] = "Karazhan",
+    [365] = "Karazhan",
+    [366] = "Karazhan",
+    [946] = "Cosmic",
     [947] = "Azeroth",
+    [987] = "Outland",
+	[988] = "Northrend",
+    [1375] = "Halls of Stone",	
     [1411] = "Durotar",
     [1412] = "Mulgore",
     [1413] = "The Barrens",
@@ -217,108 +497,363 @@ local MapIdLookupTable = {
     [1461] = "Arathi Basin",
     [1463] = "Eastern Kingdoms",
     [1464] = "Kalimdor",
--- NOTE: The following are InstanceIDs, as Instances do not have a uiMapID in Classic
-    [30] = "Alteric Valley",
+    [1554] = "Serpentshrine Cavern",
+    [1555] = "Tempest Keep",
+    [1941] = "Eversong Woods",
+    [1942] = "Ghostlands",
+    [1943] = "Azuremyst Isle",
+    [1944] = "Hellfire Peninsula",
+    [1945] = "Outland",
+    [1946] = "Zangarmarsh",
+    [1947] = "The Exodar",
+    [1948] = "Shadowmoon Valley",
+    [1949] = "Blade's Edge Mountains",
+    [1950] = "Bloodmyst Isle",
+    [1951] = "Nagrand",
+    [1952] = "Terokkar Forest",
+    [1953] = "Netherstorm",
+    [1954] = "Silvermoon City",
+    [1955] = "Shattrath City",
+    [1956] = "Eye of the Storm",
+    [1957] = "Isle of Quel'Danas",
+    [2104] = "Wintergrasp",
+}
+
+-- InstanceIDs as used by GetRealZoneText
+local InstanceIdLookupTable = {
+    [1] = "Kalimdor",
+    [13] = "Test Dungeon",
+    [25] = "Scott Test",
+    [29] = "CashTest",
+    [30] = "Alterac Valley",
     [33] = "Shadowfang Keep",
-    [34] = "The Stockade",
-    [36] = "The Deadmines",
+    [34] = "Stormwind Stockade",
+    [35] = "<unused>StormwindPrison",
+    [36] = "Deadmines",
+    [37] = "Azshara Crater",
+    [42] = "Collin's Test",
     [43] = "Wailing Caverns",
+    [44] = "<unused> Monastery",
     [47] = "Razorfen Kraul",
     [48] = "Blackfathom Deeps",
     [70] = "Uldaman",
     [90] = "Gnomeregan",
-    [109] = "The Temple of Atal'Hakkar",
+    [109] = "Sunken Temple",
     [129] = "Razorfen Downs",
+    [169] = "Emerald Dream",
+    [189] = "Scarlet Monastery",
     [209] = "Zul'Farrak",
     [229] = "Blackrock Spire",
     [230] = "Blackrock Depths",
-	[249] = "Onyxia's Lair",
+    [249] = "Onyxia's Lair",
+    [269] = "Opening of the Dark Portal",
+    [289] = "Scholomance",
+    [309] = "Zul'Gurub",
     [329] = "Stratholme",
     [349] = "Maraudon",
     [369] = "Deeprun Tram",
     [389] = "Ragefire Chasm",
     [409] = "Molten Core",
     [429] = "Dire Maul",
+    [449] = "Alliance PVP Barracks",
+    [450] = "Horde PVP Barracks",
+    [451] = "Development Land",
     [469] = "Blackwing Lair",
     [489] = "Warsong Gulch",
     [509] = "Ruins of Ahn'Qiraj",
     [529] = "Arathi Basin",
+    [530] = "Outland",
     [531] = "Ahn'Qiraj Temple",
+    [532] = "Karazhan",
     [533] = "Naxxramas",
-    [189] = "Scarlet Monastery",  -- 1004 ?
-    [289] = "Scholomance",   -- 1007 ?
-	[309] = "Zul'Gurub",
+    [534] = "The Battle for Mount Hyjal",
+    [540] = "Hellfire Citadel: The Shattered Halls",
+    [542] = "Hellfire Citadel: The Blood Furnace",
+    [543] = "Hellfire Citadel: Ramparts",
+    [544] = "Magtheridon's Lair",
+    [545] = "Coilfang: The Steamvault",
+    [546] = "Coilfang: The Underbog",
+    [547] = "Coilfang: The Slave Pens",
+    [548] = "Coilfang: Serpentshrine Cavern",
+    [550] = "Tempest Keep",
+    [552] = "Tempest Keep: The Arcatraz",
+    [553] = "Tempest Keep: The Botanica",
+    [554] = "Tempest Keep: The Mechanar",
+    [555] = "Auchindoun: Shadow Labyrinth",
+    [556] = "Auchindoun: Sethekk Halls",
+    [557] = "Auchindoun: Mana-Tombs",
+    [558] = "Auchindoun: Auchenai Crypts",
+    [559] = "Nagrand Arena",
+    [560] = "The Escape From Durnholde",
+    [562] = "Blade's Edge Arena",
+    [564] = "Black Temple",
+    [565] = "Gruul's Lair",
+    [566] = "Eye of the Storm",
+    [568] = "Zul'Aman",
+    [571] = "Northrend",
+    [572] = "Ruins of Lordaeron",
+    [574] = "Utgarde Keep",
+    [575] = "Utgarde Pinnacle",
+    [576] = "The Nexus",
+    [578] = "The Oculus",
+    [580] = "The Sunwell",
+    [582] = "Transport: Rut'theran to Auberdine",
+    [584] = "Transport: Menethil to Theramore",
+    [585] = "Magister's Terrace",
+    [586] = "Transport: Exodar to Auberdine",
+    [587] = "Transport: Feathermoon Ferry",
+    [588] = "Transport: Menethil to Auberdine",
+    [589] = "Transport: Orgrimmar to Grom'Gol",
+    [590] = "Transport: Grom'Gol to Undercity",
+    [591] = "Transport: Undercity to Orgrimmar",
+    [592] = "Transport: Borean Tundra Test",
+    [593] = "Transport: Booty Bay to Ratchet",
+    [594] = "Transport: Howling Fjord Sister Mercy (Quest)",
+    [595] = "The Culling of Stratholme",
+    [596] = "Transport: Naglfar",
+    [598] = "Sunwell Fix (Unused)",
+    [599] = "Halls of Stone",
+    [600] = "Drak'Tharon Keep",
+    [601] = "Azjol-Nerub",
+    [602] = "Halls of Lightning",
+    [603] = "Ulduar",
+    [604] = "Gundrak",
+    [605] = "Development Land (non-weighted textures)",
+    [607] = "Strand of the Ancients",
+    [608] = "Violet Hold",
+    [609] = "Ebon Hold",
+    [610] = "Transport: Tirisfal to Vengeance Landing",
+    [612] = "Transport: Menethil to Valgarde",
+    [613] = "Transport: Orgrimmar to Warsong Hold",
+    [614] = "Transport: Stormwind to Valiance Keep",
+    [615] = "The Obsidian Sanctum",
+    [616] = "The Eye of Eternity",
+    [617] = "Dalaran Sewers",
+    [618] = "The Ring of Valor",
+    [619] = "Ahn'kahet: The Old Kingdom",
+    [620] = "Transport: Moa'ki to Unu'pe",
+    [621] = "Transport: Moa'ki to Kamagua",
+    [622] = "Transport: Orgrim's Hammer",
+    [623] = "Transport: The Skybreaker",
+    [624] = "Vault of Archavon",
+    [628] = "Isle of Conquest",
+    [631] = "Icecrown Citadel",
+    [632] = "The Forge of Souls",
+    [641] = "Transport: Alliance Airship BG",
+    [642] = "Transport: HordeAirshipBG",
+    [647] = "Transport: Orgrimmar to Thunder Bluff",
+    [649] = "Trial of the Crusader",
+    [650] = "Trial of the Champion",
+    [658] = "Pit of Saron",
+    [668] = "Halls of Reflection",
+    [672] = "Transport: The Skybreaker (Icecrown Citadel Raid)",
+    [673] = "Transport: Orgrim's Hammer (Icecrown Citadel Raid)",
+    [712] = "Transport: The Skybreaker (IC Dungeon)",
+    [713] = "Transport: Orgrim's Hammer (IC Dungeon)",
+    [718] = "Trasnport: The Mighty Wind (Icecrown Citadel Raid)",
+    [723] = "Stormwind",
+    [724] = "The Ruby Sanctum",
+    [2118] = "Wintergrasp",
+    [2565] = "Northrend (3.0 phase)",
+    [2567] = "Northrend (3.1 phase)",	
 }
+
 
 
 -- These zones are known in LibTourist's zones collection but are not returned by C_Map.GetMapInfo.
 -- The IDs are the areaIDs as used by C_Map.GetAreaInfo.
 local zoneTranslation = {
 	enUS = {
-		-- Dungeons
+		-- Instances
 		[5914] = "Dire Maul - East",
 		[5913] = "Dire Maul - North",
 		[5915] = "Dire Maul - West",
+		[2366] = "The Black Morass",
+		[2367] = "Old Hillsbrad Foothills",
+		[3606] = "Hyjal Summit",
+		[4075] = "Sunwell Plateau",
+--		[4131] = "Magister's Terrace",
+		
+		-- Complexes
+		[1445] = "Blackrock Mountain",
+		[3545] = "Hellfire Citadel",
+		[3688] = "Auchindoun",
+		[3905] = "Coilfang Reservoir",
+		[5695] = "Ahn'Qiraj: The Fallen Kingdom",
+		[2300] = "Caverns of Time",
+		[4024] = "Coldarra",
 	},
 	deDE = {
-		-- Dungeons
+		-- Instances
 		[5914] = "Düsterbruch - Ost",
 		[5913] = "Düsterbruch - Nord",
 		[5915] = "Düsterbruch - West",
+		[2366] = "Der schwarze Morast",
+		[2367] = "Vorgebirge des Alten Hügellands",
+		[3606] = "Hyjalgipfel",
+		[4075] = "Sonnenbrunnenplateau",
+--		[4131] = "Terrasse der Magister",
+		-- Complexes
+		[1445] = "Der Schwarzfels",
+		[3545] = "Höllenfeuerzitadelle",
+		[3688] = "Auchindoun",
+		[3905] = "Der Echsenkessel",
+		[5695] = "Ahn'Qiraj: Das Gefallene Königreich",
+		[2300] = "Höhlen der Zeit",
+		[4024] = "Kaltarra",
+
 	},
 	esES = {
-		-- Dungeons
+		-- Instances
 		[5914] = "La Masacre: Este",
 		[5913] = "La Masacre: Norte",
 		[5915] = "La Masacre: Oeste",
+		[2366] = "La Ciénaga Negra",
+		[2367] = "Antiguas Laderas de Trabalomas",
+		[3606] = "La Cima Hyjal",
+		[4075] = "Meseta de La Fuente del Sol",
+--		[4131] = "Bancal del Magister",
+		-- Complexes
+		[1445] = "Montaña Roca Negra",
+		[3545] = "Ciudadela del Fuego Infernal",
+		[3688] = "Auchindoun",
+		[3905] = "Reserva Colmillo Torcido",
+		[5695] = "Ahn'Qiraj: El Reino Caído",
+		[2300] = "Cavernas del Tiempo",
+		[4024] = "Gelidar",
 	},
 	esMX = {
-		-- Dungeons
+		-- Instances
 		[5914] = "La Masacre: Este",
 		[5913] = "La Masacre: Norte",
 		[5915] = "La Masacre: Oeste",
+		[2366] = "La Ciénaga Negra",
+		[2367] = "Antiguas Laderas de Trabalomas",
+		[3606] = "La Cima Hyjal",
+		[4075] = "Meseta de La Fuente del Sol",
+--		[4131] = "Bancal del Magister",
+		-- Complexes
+		[1445] = "Montaña Roca Negra",
+		[3545] = "Ciudadela del Fuego Infernal",
+		[3688] = "Auchindoun",
+		[3905] = "Reserva Colmillo Torcido",
+		[5695] = "Ahn'Qiraj: El Reino Caído",
+		[2300] = "Cavernas del Tiempo",
+		[4024] = "Gelidar",
 	},
 	frFR = {
-		-- Dungeons
+		-- Instances
 		[5914] = "Haches-Tripes - Est",
 		[5913] = "Haches-Tripes - Nord",
 		[5915] = "Haches-Tripes - Ouest",
+		[2366] = "Le Noir Marécage",
+		[2367] = "Contreforts de Hautebrande d'antan",
+		[3606] = "Sommet d'Hyjal",
+		[4075] = "Plateau du Puits de soleil",
+--		[4131] = "Terrasse des Magistères",
+		-- Complexes
+		[1445] = "Mont Rochenoire",
+		[3545] = "Citadelle des Flammes infernales",
+		[3688] = "Auchindoun",
+		[3905] = "Réservoir de Glissecroc",
+		[5695] = "Ahn’Qiraj : le royaume Déchu",
+		[2300] = "Grottes du temps",
+		[4024] = "Frimarra",
 	},
 	itIT = {
-		-- Dungeons
+		-- Instances
 		[5914] = "Maglio Infausto - Est",
 		[5913] = "Maglio Infausto - Nord",
 		[5915] = "Maglio Infausto - Ovest",
+		[2366] = "La palude nera",
+		[2367] = "Antiche colline pedemontane di Hillsbrad",
+		[3606] = "Vertice Hyjal",
+		[4075] = "Altopiano del sole",
+--		[4131] = "Terrazza dei Magistri",
+		-- Complexes
+		[1445] = "Massiccio Roccianera",
+		[3545] = "Cittadella del Fuoco Infernale",
+		[3688] = "Auchindoun",
+		[3905] = "Bacino degli Spiraguzza",
+		[5695] = "Ahn'qiraj: il Regno Perduto",
+		[2300] = "Caverne del tempo",
+		[4024] = "Ibernia",
 	},
 	koKR = {
-		-- Dungeons
+		-- Instances
 		[5914] = "혈투의 전장 - 동쪽",
 		[5913] = "혈투의 전장 - 북쪽",
 		[5915] = "혈투의 전장 - 서쪽",
+		[2366] = "검은늪",
+		[2367] = "옛 힐스브래드 구릉지",
+		[3606] = "하이잘 정상",
+		[4075] = "태양샘 고원",
+--		[4131] = "마법학자의 정원",
+		-- Complexes
+		[1445] = "검은바위 산",
+		[3545] = "지옥불 성채",
+		[3688] = "아킨둔",
+		[3905] = "갈퀴송곳니 저수지",
+		[5695] = "안퀴라즈: 무너진 왕국",
+		[2300] = "시간의 동굴",
+		[4024] = "콜다라",
 	},
 	ptBR = {
-		-- Dungeons
+		-- Instances
 		[5914] = "Gládio Cruel – Leste",
 		[5913] = "Gládio Cruel – Norte",
 		[5915] = "Gládio Cruel – Oeste",
-	},
-	ruRU = {
-		-- Dungeons
-		[5914] = "Забытый город – восток",
-		[5913] = "Забытый город – север",
-		[5915] = "Забытый город – запад",
+		[2366] = "Lamaçal Negro",
+		[2367] = "Antigo Contraforte de Eira dos Montes",
+		[3606] = "Pico Hyjal",
+		[4075] = "Platô da Nascente do Sol",
+--		[4131] = "Terraço dos Magísteres",		
+		-- Complexes
+		[1445] = "Montanha Rocha Negra",
+		[3545] = "Cidadela Fogo do Inferno",
+		[3688] = "Auchindoun",
+		[3905] = "Reservatório Presacurva",
+		[5695] = "Ahn'Qiraj: O Reino Derrotado",
+		[2300] = "Cavernas do Tempo",
+		[4024] = "Gelarra",
 	},
 	zhCN = {
-		-- Dungeons
+		-- Instances
 		[5914] = "厄运之槌 - 东",
 		[5913] = "厄运之槌 - 北",
 		[5915] = "厄运之槌 - 西",
+		[2366] = "黑色沼泽",
+		[2367] = "旧希尔斯布莱德丘陵",
+		[3606] = "海加尔峰",
+		[4075] = "太阳之井高地",
+--		[4131] = "魔导师平台",
+		-- Complexes
+		[1445] = "黑石山",
+		[3545] = "地狱火堡垒",
+		[3688] = "奥金顿",
+		[3905] = "盘牙水库",
+		[5695] = "安其拉：堕落王国",
+		[2300] = "时光之穴",
+		[4024] = "考达拉",
 	},
 	zhTW = {
-		-- Dungeons
+		-- Instances
 		[5914] = "厄運之槌 - 東方",
 		[5913] = "厄運之槌 - 北方",
 		[5915] = "厄運之槌 - 西方",
+		[2366] = "黑色沼澤",
+		[2367] = "希爾斯布萊德丘陵舊址",
+		[3606] = "海加爾山",
+		[4075] = "太陽之井高地",
+--		[4131] = "博學者殿堂",
+		-- Complexes
+		[1445] = "黑石山",
+		[3545] = "地獄火堡壘",
+		[3688] = "奧齊頓",
+		[3905] = "盤牙蓄湖",
+		[5695] = "其拉：沒落的王朝",
+		[2300] = "時光之穴",
+		[4024] = "凜懼島",
 	},
 }
 
@@ -330,7 +865,7 @@ local function CreateLocalizedZoneNameLookups()
 
 	-- Note: the loop below is not very sexy but makes sure missing entries in MapIdLookupTable are reported.
 	-- It is executed only once, upon initialization.
-	for uiMapID = 900, 1500, 1 do
+	for uiMapID = 1, 2000, 1 do
 		mapInfo = C_Map.GetMapInfo(uiMapID)
 		if mapInfo then
 			localizedZoneName = mapInfo.name
@@ -345,19 +880,21 @@ local function CreateLocalizedZoneNameLookups()
 					BZR[localizedZoneName] = englishZoneName
 				end
 			else
-				-- Not in lookup
+				-- Not in UIMap ID lookup
 				trace("|r|cffff4422! -- Tourist:|r English name not found in lookup for uiMapID "..tostring(uiMapID).." ("..tostring(localizedZoneName)..")" )
 			end
 		end
 	end
 
-	for instanceID = 1, 1100, 1 do
+	-- Some but not all instances are returned by C_Map.GetMapInfo.
+	-- Try to get missing localized names using the Instance ID lookup and GetRealZoneText:
+	for instanceID = 1, 2000, 1 do
 		localizedZoneName = GetRealZoneText(instanceID);
 		if localizedZoneName and localizedZoneName ~= ""  then
-			englishZoneName = MapIdLookupTable[instanceID]
+			englishZoneName = InstanceIdLookupTable[instanceID]
 
 			if englishZoneName then
-				-- Add combination of English and localized name to lookup tables
+				-- Add combination of English and localized name to lookup tables, if missing
 				if not BZ[englishZoneName] then
 					BZ[englishZoneName] = localizedZoneName
 				end
@@ -365,7 +902,7 @@ local function CreateLocalizedZoneNameLookups()
 					BZR[localizedZoneName] = englishZoneName
 				end
 			else
-				-- Not in lookup
+				-- Not in instance ID lookup
 				trace("|r|cffff4422! -- Tourist:|r English name not found in lookup for instanceID "..tostring(instanceID).." ("..tostring(localizedZoneName)..")" )
 			end
 		end
@@ -403,6 +940,20 @@ local function GetFlightnodeFaction(faction)
 	end
 end
 
+local function GetFlightnodeFactionLetter(faction)
+	if faction == 0 then
+		return "N"
+	end
+	if faction == 1 then
+		return "H"
+	end
+	if faction == 2 then
+		return "A"
+	else
+		return tostring(faction)
+	end
+end
+
 --[[
 	GatherFlightnodeData is called just in time, right before first use, because when LibTourist is being loaded at player logon,
 	not all flightpoints are available yet through the C_TaxiMap interface.
@@ -434,8 +985,6 @@ local function GatherFlightnodeData()
 	-- Add node objects from the C_TaxiMap interface to the lookup
 	for zMapID, zName in pairs(MapIdLookupTable) do
 		-- Use MapIdLookupTable instead of iterating through continents and zones to be sure all known zones are checked for flight nodes
---		cMapID = Tourist:GetContinentMapID(zMapID)
---		cName = MapIdLookupTable[cMapID]
 		nodes = C_TaxiMap.GetTaxiNodesForMap(zMapID)
 
 		if nodes ~= nil then
@@ -444,7 +993,9 @@ local function GatherFlightnodeData()
 				for i, node in ipairs(nodes) do
 					if not FlightnodeLookupTable[node.nodeID] then
 						if not missingNodes[node.nodeID] and not flightNodeIgnoreList[node.nodeID] then
-							trace("|r|cffff4422! -- Tourist: Missing flightnode in lookup: "..tostring(node.nodeID).." = "..tostring(node.name))
+							--trace("|r|cffff4422! -- Tourist: Missing flightnode in lookup: "..tostring(node.nodeID).." = "..tostring(node.name))
+							trace( "|r|cffff4422    ["..tostring(node.nodeID).."] = true,     -- "..tostring(node.name).." ("..tostring(GetFlightnodeFactionLetter(node.faction))..")")
+
 							errCount = errCount + 1
 							missingNodes[node.nodeID] = node.name
 						end
@@ -472,7 +1023,8 @@ local function GatherFlightnodeData()
 				end
 				nodesToUpdate[node.nodeID][zone] = true
 			else
-				trace("|r|cffff4422! -- Tourist: Missing flightnode in lookup: "..tostring(node.nodeID).." = "..tostring(node.name))
+				--trace("|r|cffff4422! -- Tourist: Missing flightnode in lookup: "..tostring(node.nodeID).." = "..tostring(node.name))
+				trace( "|r|cffff4422    ["..tostring(node.nodeID).."] = true,     -- "..tostring(node.name).." ("..tostring(GetFlightnodeFactionLetter(node.faction))..")")
 				errCount = errCount + 1
 			end
 		end
@@ -536,7 +1088,10 @@ function Tourist:GetMapIDLookupTable()
 	return MapIdLookupTable
 end
 
-
+-- Returns the lookup table with all instanceIDs as key and the English instance name as value.
+function Tourist:GetInstanceIDLookupTable()
+	return InstanceIdLookupTable
+end
 
 
 -- HELPER AND LOOKUP FUNCTIONS -------------------------------------------------------------
@@ -595,7 +1150,7 @@ function Tourist:GetMapZonesAlt(continentID)
 		return mapZonesByContinentID[continentID]
 	else
 		local mapZones = {}
-		local recursive = (continentID ~= 947)  -- 947 = Azeroth, parent for Nazjatar zone -> get Nazjatar only and not all zones of the Azeroth continents
+		local recursive = (continentID ~= 947)  -- 947 = Azeroth, get zones that have Azeroth as parent only
 		local mapChildrenInfo = { C_Map.GetMapChildrenInfo(continentID, Enum.UIMapType.Zone, recursive) }
 		for key, zones in pairs(mapChildrenInfo) do  -- don't know what this extra table is for
 			for zoneIndex, zone in pairs(zones) do
@@ -700,7 +1255,7 @@ function Tourist:GetFishingLevel(zone)
 end
 
 
--- Formats the minimum and maximum player level for the given zone as "[min]-[max]".
+-- Formats the minimum and maximum fishing level for the given zone as "[min]-[max]".
 -- Returns one number if min and max are equal.
 -- Returns an empty string if no player levels are applicable (like in Cities).
 function Tourist:GetFishingLevelString(zone)
@@ -726,6 +1281,14 @@ function Tourist:GetLevel(zone)
 		-- Find the most suitable bracket
 		if playerLvl >= MAX_PLAYER_LEVEL then
 			return MAX_PLAYER_LEVEL, MAX_PLAYER_LEVEL, nil
+		elseif playerLvl >= 75 then
+			return 75, 79
+		elseif playerLvl >= 70 then
+			return 70, 74
+		elseif playerLvl >= 65 then
+			return 65, 69, nil
+		elseif playerLvl >= 60 then
+			return 60, 64, nil
 		elseif playerLvl >= 55 then
 			return 55, 59, nil
 		elseif playerLvl >= 50 then
@@ -957,21 +1520,44 @@ function Tourist:GetGatheringSkillColor(minLevel, currentSkill)
 	
 	if currentSkill < minLevel then
 		-- Red
-		return 1, 0, 0	
+		return 1, 0.1, 0.1	
 	elseif currentSkill < minLevel + 25 + lvl1Corr then
 		-- Orange
-		return 1, 0.7, 0	
+		return 1, 0.5, 0.25
 	elseif currentSkill < minLevel + 50 + lvl1Corr then
 		-- Yellow
 		return 1, 1, 0	
 	elseif currentSkill < minLevel + 100 + lvl1Corr then
 		-- Green
-		return 0, 1, 0	
+		return 0.25, 0.75, 0.25	
 	else
 		-- Gray
 		return 0.5, 0.5, 0.5
 	end
 end
+
+-- Returns the minimum required skinning skill for a given mob or zone level
+function Tourist:GetRequiredSkinningSkill(level)
+	if level <= 10 then
+		return 1
+	elseif level <= 20 then
+		return (level * 10) - 100
+	else
+		return level * 5
+	end
+end
+
+
+-- Formats the minimum and maximum skinning skill for the given zone as "[min]-[max]".
+-- Returns one number if min and max are equal.
+-- Returns an empty string if no player levels are applicable (like in Cities).
+function Tourist:GetSkinningLevelString(zone)
+	local low, high = Tourist:GetLevel(zone)
+	local skinningLow = Tourist:GetRequiredSkinningSkill(low)
+	local skinningHigh = Tourist:GetRequiredSkinningSkill(high)
+	return FormatLevelString(skinningLow, skinningHigh)
+end
+
 
 
 
@@ -1195,7 +1781,7 @@ local function initZonesInstances()
 	if not zonesInstances then
 		zonesInstances = {}
 		for zone, v in pairs(lows) do
-			if types[zone] ~= "Transport" then
+			if types[zone] ~= "Transport" and types[zone] ~= "Portal" and types[zone] ~= "Continent" then
 				zonesInstances[zone] = true
 			end
 		end
@@ -1212,7 +1798,7 @@ end
 
 local function zoneIter(_, position)
 	local k = next(zonesInstances, position)
-	while k ~= nil and (types[k] == "Instance" or types[k] == "Battleground" or types[k] == "Complex") do
+	while k ~= nil and (types[k] == "Instance" or types[k] == "Battleground" or types[k] == "Arena" or types[k] == "Complex") do
 		k = next(zonesInstances, k)
 	end
 	return k
@@ -1226,7 +1812,7 @@ end
 
 local function instanceIter(_, position)
 	local k = next(zonesInstances, position)
-	while k ~= nil and (types[k] ~= "Instance" and types[k] ~= "Battleground") do
+	while k ~= nil and (types[k] ~= "Instance" and types[k] ~= "Battleground" and types[k] ~= "Arena") do
 		k = next(zonesInstances, k)
 	end
 	return k
@@ -1250,6 +1836,20 @@ function Tourist:IterateBattlegrounds()
 		initZonesInstances()
 	end
 	return bgIter, nil, nil
+end
+
+local function arIter(_, position)
+	local k = next(zonesInstances, position)
+	while k ~= nil and types[k] ~= "Arena" do
+		k = next(zonesInstances, k)
+	end
+	return k
+end
+function Tourist:IterateArenas()
+	if initZonesInstances then
+		initZonesInstances()
+	end
+	return arIter, nil, nil
 end
 
 local function compIter(_, position)
@@ -1358,6 +1958,34 @@ function Tourist:IterateEasternKingdoms()
 	return easternKingdomsIter, nil, nil
 end
 
+local function outlandIter(_, position)
+	local k = next(zonesInstances, position)
+	while k ~= nil and continents[k] ~= Outland do
+		k = next(zonesInstances, k)
+	end
+	return k
+end
+function Tourist:IterateOutland()
+	if initZonesInstances then
+		initZonesInstances()
+	end
+	return outlandIter, nil, nil
+end
+
+local function northrendIter(_, position)
+	local k = next(zonesInstances, position)
+	while k ~= nil and continents[k] ~= Northrend do
+		k = next(zonesInstances, k)
+	end
+	return k
+end
+function Tourist:IterateNorthrend()
+	if initZonesInstances then
+		initZonesInstances()
+	end
+	return northrendIter, nil, nil
+end
+
 function Tourist:IterateRecommendedZones()
 	return retNormal, recZones, nil
 end
@@ -1373,13 +2001,13 @@ end
 function Tourist:IsInstance(zone)
 	zone = Tourist:GetMapNameByIDAlt(zone) or zone
 	local t = types[zone]
-	return t == "Instance" or t == "Battleground"
+	return t == "Instance" or t == "Battleground" or t == "Arena"
 end
 
 function Tourist:IsZone(zone)
 	zone = Tourist:GetMapNameByIDAlt(zone) or zone
 	local t = types[zone]
-	return t and t ~= "Instance" and t ~= "Battleground" and t ~= "Transport" and t ~= "Complex"
+	return t and t ~= "Instance" and t ~= "Battleground" and t ~= "Transport" and t ~= "Portal" and t ~= "Arena" and t ~= "Complex"
 end
 
 function Tourist:IsContinent(zone)
@@ -1401,13 +2029,13 @@ end
 function Tourist:IsZoneOrInstance(zone)
 	zone = Tourist:GetMapNameByIDAlt(zone) or zone
 	local t = types[zone]
-	return t and t ~= "Transport"
+	return t and t ~= "Transport" and t ~= "Portal"
 end
 
 function Tourist:IsTransport(zone)
 	zone = Tourist:GetMapNameByIDAlt(zone) or zone
 	local t = types[zone]
-	return t == "Transport"
+	return t == "Transport" or t == "Portal"
 end
 
 function Tourist:IsComplex(zone)
@@ -1420,6 +2048,12 @@ function Tourist:IsBattleground(zone)
 	zone = Tourist:GetMapNameByIDAlt(zone) or zone
 	local t = types[zone]
 	return t == "Battleground"
+end
+
+function Tourist:IsArena(zone)
+	zone = Tourist:GetMapNameByIDAlt(zone) or zone
+	local t = types[zone]
+	return t == "Arena"
 end
 
 function Tourist:IsPvPZone(zone)
@@ -1470,6 +2104,16 @@ end
 function Tourist:IsInEasternKingdoms(zone)
 	zone = Tourist:GetMapNameByIDAlt(zone) or zone
 	return continents[zone] == Eastern_Kingdoms
+end
+
+function Tourist:IsInOutland(zone)
+	zone = Tourist:GetMapNameByIDAlt(zone) or zone
+	return continents[zone] == Outland
+end
+
+function Tourist:IsInNorthrend(zone)
+	zone = Tourist:GetMapNameByIDAlt(zone) or zone
+	return continents[zone] == Northrend
 end
 
 function Tourist:GetInstanceGroupSize(instance)
@@ -1559,13 +2203,24 @@ setmetatable(cost, {
 		end
 
 		if factions[vertex] == (isHorde and "Horde" or "Alliance") then
+			-- Friendly
 			price = price / 2
 		elseif factions[vertex] == (isHorde and "Alliance" or "Horde") then
-			if types[vertex] == "City" then
-				price = price * 10
-			else
-				price = price * 3
+			-- Hostile
+			if types[vertex] == "Portal" then
+				price = inf
+			else 
+				if types[vertex] == "City" then
+					price = price * 10
+				else
+					price = price * 3
+				end
 			end
+		end
+
+		if continents[vertex] == Outland and playerLevel < 58 then
+			-- Avoid using Shattrath portals in paths between Azeroth locations when they're not yet available
+			price = inf
 		end
 
 		if types[vertex] == "Transport" then
@@ -1577,18 +2232,19 @@ setmetatable(cost, {
 	end
 })
 
--- This function tries to calculate the most optimal path between alpha and bravo
--- by foot or ground mount, that is, without using a flying mount or a taxi service.
--- The return value is an iteration that gives a travel advice in the form of a list
--- of zones and transports to follow in order to get from alpha to bravo.
--- The function tries to avoid hostile zones by calculating a "price" for each possible
+-- This function tries to calculate the most optimal path between alpha and bravo 
+-- by foot or ground mount, that is, without using a flying mount or a taxi service (with a few exceptions). 
+-- The return value is an iteration that gives a travel advice in the form of a list 
+-- of zones, transports and portals to follow in order to get from alpha to bravo. 
+-- The function tries to avoid hostile zones by calculating a "price" for each possible 
 -- route. The price calculation takes zone level, faction and type into account.
 -- See metatable above for the 'pricing' mechanism.
 function Tourist:IteratePath(alpha, bravo)
-	alpha = Tourist:GetMapNameByIDAlt(alpha) or alpha
-	bravo = Tourist:GetMapNameByIDAlt(bravo) or bravo
+	alpha = Tourist:GetMapNameByIDAlt(alpha) or alpha  -- departure zone
+	bravo = Tourist:GetMapNameByIDAlt(bravo) or bravo  -- destination zone
 
 	if paths[alpha] == nil or paths[bravo] == nil then
+		-- departure zone and destination zone must both have at least one path
 		return retNil
 	end
 
@@ -1601,48 +2257,85 @@ function Tourist:IteratePath(alpha, bravo)
 	local pi = next(stack) or {}
 	stack[pi] = nil
 
-	for vertex, v in pairs(paths) do
-		d[vertex] = inf
-		Q[vertex] = v
+	for vertex, v in pairs(paths) do  -- for each zone with at least one path
+		d[vertex] = inf -- add to price stack: d[<zone>] = price of the route to get to that zone from alpha, initially infinite
+		Q[vertex] = v   -- add to zone stack:  Q[<zone>] = <path collection>, contains all zones that have one or more paths
 	end
-	d[alpha] = 0
+	d[alpha] = 0  -- price for departure zone = 0 (no costs to get there)
 
-	while next(Q) do
-		local u
-		local min = inf
-		for z in pairs(Q) do
-			local value = d[z]
-			if value < min then
-				min = value
-				u = z
+	while next(Q) do   		-- do this for each zone as long as there are zones present in the zone stack
+		local u  			-- this will hold the zone name with the lowest price
+		local min = inf		-- this will hold the lowest price that has been found while searching; initially infinite
+		for z in pairs(Q) do   		-- for each zone currently present in the zone stack
+			local value = d[z]		-- get price for the route to get to that zone (see note below)
+			if value < min then		-- compare to find the zone with the lowest price. If a lower price is found:
+				min = value				-- remember lowest route price so far
+				u = z					-- remember the zone with the lowest route price so far
 			end
 		end
+		
 		if min == inf then
-			return retNil
+			return retNil  -- no zone found for which a price has been determined -> exit and return nil (no path possible between alpha and bravo)
 		end
-		Q[u] = nil
+		Q[u] = nil  -- remove the zone that came up as cheapest from the stack so it won't be used twice
 		if u == bravo then
-			break
+			break 	-- we have reached our destination zone; stop searching by exiting the 'while next(Q)' loop
 		end
 
-		local adj = paths[u]
-		if type(adj) == "table" then
-			local d_u = d[u]
-			for v in pairs(adj) do
-				local c = d_u + cost[v]
-				if d[v] > c then
-					d[v] = c
-					pi[v] = u
+		-- The very first cycle will result in the departure zone being the cheapest to go to. This zone has price 0, while all other zones are still
+		-- priced 'infinite' at this point. The departure zone will then be picked up for processing of its connections (paths).
+		--
+		-- Each zone that has been processed will be removed from the stack. The departure zone will therefore be the first zone to be removed.
+		-- Because every cycle the a zone with the lowest available price is processed, the remaining zones in the stack will always have an equal or 
+		-- higher price (if not inifinite).
+		--
+		-- In subsequent cycles, prices will be calculated and set for other zones, causing them to be picked up for processing eventually in later cycles.
+		-- The price reflects the costs to reach that zone, originating from the departure zone.
+		--
+		-- Only zones will be priced, that have a connection with the zone that is being processed (starting with the departure zone).
+		-- Prices are only registered when they are lower than the registered price. When this happens the registered price is always 'infinite'.
+		-- Because the price of the route keeps increasing, prices are never updated once set. This ensures that the search always moves away from the 
+		-- departure zone, like an oil stain.
+		-- 
+		-- At some point the destination zone will be priced too, if it comes up during the search.
+		--
+		-- When eventually the destination zone is picked as cheapest one left in the stack, this means that:
+		--   a) there is a route between departure and destination, because the destination zone has been priced
+		--   b) this route is made up out of the cheapest connections available
+		-- As a result, there is no need to continue the search because every other option would be more expensive.
+		
+
+		-- process the path connections of the found zone
+		local adj = paths[u]  			-- get the path connections of the zone being processed (adj = adjecent?)
+		if type(adj) == "table" then	-- multiple paths go from here
+			local d_u = d[u]			-- current route price: the price of the route to get to the zone being processed
+			for v in pairs(adj) do		-- for each path that goes from here
+				local c = d_u + cost[v]		-- add the price of that path to the route price
+				if d[v] > c then	-- if the currently known price of this path (initialized at infinite at the beginning) is greater than the calculated price...
+					d[v] = c		-- - update the price of the path to that zone in the collection of prices
+					pi[v] = u		-- - store or update how to get there: pi[<path zone name>] = <current zone name> 
 				end
 			end
-		elseif adj ~= false then
-			local c = d[u] + cost[adj]
-			if d[adj] > c then
-				d[adj] = c
-				pi[adj] = u
+		elseif adj ~= false then		-- one path goes from here
+			local c = d[u] + cost[adj]	-- add the price of that path to the route price
+			if d[adj] > c then			-- if the the calculated route price for this path is less than the currently known price (initialized at inf at the beginning) is greater than ...
+				d[adj] = c					-- - update the price of the path to that zone in the collection of prices
+				pi[adj] = u					-- - store or update how to get there: pi[<path zone name>] = <current zone name> 		
 			end
 		end
 	end
+
+	-- At this point, pi will contain a collection of all connections that have been priced, stored as: pi[<you should go here>] = <from here>
+	-- Amongst these are the connections that have to be used to create the cheapest route between departure and destination.
+	-- Next, the route will be extracted from the data in pi.
+	--
+	-- The loop below starts at the destination zone and works it way back to the departure zone, asking
+	-- "from which direction should I be coming when I arrive here?"
+	-- until there is no answer to that question, which will be the case for the departure zone. Technically, the departure zone 
+	-- has not been priced and is therefore not present in the collection.
+	--
+	-- The resulting sequence is stored in S[<index>] = <zone name>
+	-- The sequence appears to be reversed, starting at the destination zone (not sure why that is)
 
 	local i = 1
 	local last = bravo
@@ -1652,6 +2345,7 @@ function Tourist:IteratePath(alpha, bravo)
 		last = pi[last]
 	end
 
+	-- reset the helper stacks
 	for k in pairs(pi) do
 		pi[k] = nil
 	end
@@ -1665,9 +2359,9 @@ function Tourist:IteratePath(alpha, bravo)
 	stack[Q] = true
 	stack[d] = true
 
-	S['#'] = i
+	S['#'] = i  -- set the stack size of S
 
-	return iterator, S
+	return iterator, S  -- return result
 end
 
 
@@ -1723,15 +2417,119 @@ do
 
 	local transports = {}
 
-	-- Boats
-	transports["BOOTYBAY_RATCHET_BOAT"] = string.format(X_Y_BOAT, BZ["Stranglethorn Vale"], BZ["The Barrens"])
-	transports["MENETHIL_THERAMORE_BOAT"] = string.format(X_Y_BOAT, BZ["Wetlands"], BZ["Dustwallow Marsh"])
-	transports["MENETHIL_AUBERDINE_BOAT"] = string.format(X_Y_BOAT, BZ["Wetlands"], BZ["Darkshore"])
+	-- Boats -------------------------------------
+	-- Classic
+	transports["STRANGLETHORN_BARRENS_BOAT"] = string.format(X_Y_BOAT, BZ["Stranglethorn Vale"], BZ["The Barrens"])
+	transports["BARRENS_STRANGLETHORN_BOAT"] = string.format(X_Y_BOAT, BZ["The Barrens"], BZ["Stranglethorn Vale"])
+	
+	transports["WETLANDS_DUSTWALLOW_BOAT"] = string.format(X_Y_BOAT, BZ["Wetlands"], BZ["Dustwallow Marsh"])
+	transports["DUSTWALLOW_WETLANDS_BOAT"] = string.format(X_Y_BOAT, BZ["Dustwallow Marsh"], BZ["Wetlands"])
+	
+	transports["WETLANDS_DARKSHORE_BOAT"] = string.format(X_Y_BOAT, BZ["Wetlands"], BZ["Darkshore"])
+	transports["DARKSHORE_WETLANDS_BOAT"] = string.format(X_Y_BOAT, BZ["Darkshore"], BZ["Wetlands"])
+	
+	-- TBC
+	transports["DARKSHORE_TELDRASSIL_BOAT"] = string.format(X_Y_BOAT, BZ["Darkshore"], BZ["Teldrassil"])
+	transports["TELDRASSIL_DARKSHORE_BOAT"] = string.format(X_Y_BOAT, BZ["Teldrassil"], BZ["Darkshore"])
+	
+	transports["DARKSHORE_AZUREMYST_BOAT"] = string.format(X_Y_BOAT, BZ["Darkshore"], BZ["Azuremyst Isle"])
+	transports["AZUREMYST_DARKSHORE_BOAT"] = string.format(X_Y_BOAT, BZ["Azuremyst Isle"], BZ["Darkshore"])
 
-	-- Zeppelins
-	transports["ORGRIMMAR_UNDERCITY_ZEPPELIN"] = string.format(X_Y_ZEPPELIN, BZ["Orgrimmar"], BZ["Undercity"])
-	transports["ORGRIMMAR_GROMGOL_ZEPPELIN"] = string.format(X_Y_ZEPPELIN, BZ["Orgrimmar"], BZ["Stranglethorn Vale"])
-	transports["UNDERCITY_GROMGOL_ZEPPELIN"] = string.format(X_Y_ZEPPELIN, BZ["Undercity"], BZ["Stranglethorn Vale"])
+	-- WotLK
+	transports["WETLANDS_HOWLINGFJORD_BOAT"] = string.format(X_Y_BOAT, BZ["Wetlands"], BZ["Howling Fjord"])
+	transports["HOWLINGFJORD_WETLANDS_BOAT"] = string.format(X_Y_BOAT, BZ["Howling Fjord"], BZ["Wetlands"])
+	
+	transports["STORMWIND_BOREANTUNDRA_BOAT"] = string.format(X_Y_BOAT, BZ["Stormwind City"], BZ["Borean Tundra"])
+	transports["BOREANTUNDRA_STORMWIND_BOAT"] = string.format(X_Y_BOAT, BZ["Borean Tundra"], BZ["Stormwind City"])
+
+	transports["BOREANTUNDRA_DRAGONBLIGHT_BOAT"] = string.format(X_Y_BOAT, BZ["Dragonblight"], BZ["Borean Tundra"])
+	transports["DRAGONBLIGHT_BOREANTUNDRA_BOAT"] = string.format(X_Y_BOAT, BZ["Borean Tundra"], BZ["Dragonblight"])
+	
+	transports["DRAGONBLIGHT_HOWLINGFJORD_BOAT"] = string.format(X_Y_BOAT, BZ["Dragonblight"], BZ["Howling Fjord"])
+	transports["HOWLINGFJORD_DRAGONBLIGHT_BOAT"] = string.format(X_Y_BOAT, BZ["Howling Fjord"], BZ["Dragonblight"])
+
+
+	-- Zeppelins -------------------------------------
+	-- Classic
+	transports["ORGRIMMAR_TIRISFAL_ZEPPELIN"] = string.format(X_Y_ZEPPELIN, BZ["Orgrimmar"], BZ["Tirisfal Glades"])
+	transports["TIRISFAL_ORGRIMMAR_ZEPPELIN"] = string.format(X_Y_ZEPPELIN, BZ["Tirisfal Glades"], BZ["Orgrimmar"])
+	
+	transports["ORGRIMMAR_STRANGLETHORN_ZEPPELIN"] = string.format(X_Y_ZEPPELIN, BZ["Orgrimmar"], BZ["Stranglethorn Vale"])
+	transports["STRANGLETHORN_ORGRIMMAR_ZEPPELIN"] = string.format(X_Y_ZEPPELIN, BZ["Stranglethorn Vale"], BZ["Orgrimmar"])
+	
+	transports["TIRISFAL_STRANGLETHORN_ZEPPELIN"] = string.format(X_Y_ZEPPELIN, BZ["Tirisfal Glades"], BZ["Stranglethorn Vale"])
+	transports["STRANGLETHORN_TIRISFAL_ZEPPELIN"] = string.format(X_Y_ZEPPELIN, BZ["Stranglethorn Vale"], BZ["Tirisfal Glades"])
+
+	-- WotLK
+	transports["ORGRIMMAR_BOREANTUNDRA_ZEPPELIN"] = string.format(X_Y_ZEPPELIN, BZ["Orgrimmar"], BZ["Borean Tundra"])
+	transports["BOREANTUNDRA_ORGRIMMAR_ZEPPELIN"] = string.format(X_Y_ZEPPELIN, BZ["Borean Tundra"], BZ["Orgrimmar"])
+
+	transports["UNDERCITY_HOWLINGFJORD_ZEPPELIN"] = string.format(X_Y_ZEPPELIN, BZ["Undercity"], BZ["Howling Fjord"])
+	transports["HOWLINGFJORD_UNDERCITY_ZEPPELIN"] = string.format(X_Y_ZEPPELIN, BZ["Howling Fjord"], BZ["Undercity"])
+
+
+
+
+	-- Portals -------------------------------------
+	-- TBC
+	transports["SHATTRATH_IRONFORGE_PORTAL"] = string.format(X_Y_PORTAL, BZ["Shattrath City"], BZ["Ironforge"])
+	transports["IRONFORGE_SHATTRATH_PORTAL"] = string.format(X_Y_PORTAL, BZ["Ironforge"], BZ["Shattrath City"])
+	
+	transports["SHATTRATH_STORMWIND_PORTAL"] = string.format(X_Y_PORTAL, BZ["Shattrath City"], BZ["Stormwind City"])
+	transports["STORMWIND_SHATTRATH_PORTAL"] = string.format(X_Y_PORTAL, BZ["Stormwind City"], BZ["Shattrath City"])
+	
+	transports["SHATTRATH_DARNASSUS_PORTAL"] = string.format(X_Y_PORTAL, BZ["Shattrath City"], BZ["Darnassus"])
+	transports["DARNASSUS_SHATTRATH_PORTAL"] = string.format(X_Y_PORTAL, BZ["Darnassus"], BZ["Shattrath City"])
+	
+	transports["SHATTRATH_ORGRIMMAR_PORTAL"] = string.format(X_Y_PORTAL, BZ["Shattrath City"], BZ["Orgrimmar"])
+	transports["ORGRIMMAR_SHATTRATH_PORTAL"] = string.format(X_Y_PORTAL, BZ["Orgrimmar"], BZ["Shattrath City"])
+	
+	transports["SHATTRATH_THUNDERBLUFF_PORTAL"] = string.format(X_Y_PORTAL, BZ["Shattrath City"], BZ["Thunder Bluff"])
+	transports["THUNDERBLUFF_SHATTRATH_PORTAL"] = string.format(X_Y_PORTAL, BZ["Thunder Bluff"], BZ["Shattrath City"])
+	
+	transports["SHATTRATH_UNDERCITY_PORTAL"] = string.format(X_Y_PORTAL, BZ["Shattrath City"], BZ["Undercity"])
+	transports["UNDERCITY_SHATTRATH_PORTAL"] = string.format(X_Y_PORTAL, BZ["Undercity"], BZ["Shattrath City"])
+	
+	transports["SHATTRATH_EXODAR_PORTAL"] = string.format(X_Y_PORTAL, BZ["Shattrath City"], BZ["The Exodar"])
+	transports["EXODAR_SHATTRATH_PORTAL"] = string.format(X_Y_PORTAL, BZ["The Exodar"], BZ["Shattrath City"])
+	
+	transports["SHATTRATH_SILVERMOON_PORTAL"] = string.format(X_Y_PORTAL, BZ["Shattrath City"], BZ["Silvermoon City"])
+	transports["SILVERMOON_SHATTRATH_PORTAL"] = string.format(X_Y_PORTAL, BZ["Silvermoon City"], BZ["Shattrath City"])
+
+	transports["THE_DARK_PORTAL_BLASTED_LANDS"] = string.format(X_Y_PORTAL, BZ["Blasted Lands"], BZ["Hellfire Peninsula"])
+	transports["THE_DARK_PORTAL_HELLFIRE"] = string.format(X_Y_PORTAL, BZ["Hellfire Peninsula"], BZ["Blasted Lands"])	
+
+	transports["SHATTRATH_QUELDANAS_PORTAL"] = string.format(X_Y_PORTAL, BZ["Shattrath City"], BZ["Isle of Quel'Danas"])
+
+	-- WotLK
+	transports["DALARAN_COT_PORTAL"] = string.format(X_Y_PORTAL, BZ["Dalaran"], BZ["Caverns of Time"])
+
+	transports["DALARAN_ORGRIMMAR_PORTAL"] = string.format(X_Y_PORTAL, BZ["Dalaran"], BZ["Orgrimmar"])
+	
+	transports["DALARAN_STORMWIND_PORTAL"] = string.format(X_Y_PORTAL, BZ["Dalaran"], BZ["Stormwind City"])
+
+
+
+	-- Teleports -------------------------------------
+	-- Classic
+	transports["DARNASSUS_TELDRASSIL_TELEPORT"] = string.format(X_Y_TELEPORT, BZ["Darnassus"], BZ["Teldrassil"])
+	transports["TELDRASSIL_DARNASSUS_TELEPORT"] = string.format(X_Y_TELEPORT, BZ["Teldrassil"], BZ["Darnassus"])
+	
+	-- TBC
+	transports["SILVERMOON_UNDERCITY_TELEPORT"] = string.format(X_Y_TELEPORT, BZ["Silvermoon City"], BZ["Undercity"])
+	transports["UNDERCITY_SILVERMOON_TELEPORT"] = string.format(X_Y_TELEPORT, BZ["Undercity"], BZ["Silvermoon City"])
+
+	-- WotLK
+	transports["DALARAN_CRYSTALSONG_TELEPORT"] = string.format(X_Y_TELEPORT, BZ["Dalaran"], BZ["Crystalsong Forest"])
+	transports["CRYSTALSONG_DALARAN_TELEPORT"] = string.format(X_Y_TELEPORT, BZ["Crystalsong Forest"], BZ["Dalaran"])
+
+
+
+
+
+
+
+
 
 	local zones = {}
 
@@ -1756,60 +2554,488 @@ do
 		continent = Kalimdor,
 	}
 
+	zones[BZ["Outland"]] = {
+		type = "Continent",
+		continent = Outland,
+	}
+
+	zones[BZ["Northrend"]] = {
+		type = "Continent",
+		continent = Northrend,
+	}
+
 	-- TRANSPORTS ---------------------------------------------------------------
 
-	zones[transports["ORGRIMMAR_UNDERCITY_ZEPPELIN"]] = {
+	zones[transports["ORGRIMMAR_TIRISFAL_ZEPPELIN"]] = {
+		paths = {
+			[BZ["Tirisfal Glades"]] = true,
+		},
+		faction = "Horde",
+		type = "Transport",
+	}
+
+	zones[transports["TIRISFAL_ORGRIMMAR_ZEPPELIN"]] = {
 		paths = {
 			[BZ["Orgrimmar"]] = true,
+		},
+		faction = "Horde",
+		type = "Transport",
+	}
+
+
+	zones[transports["ORGRIMMAR_STRANGLETHORN_ZEPPELIN"]] = {
+		paths = {
+			[BZ["Stranglethorn Vale"]] = true,
+		},
+		faction = "Horde",
+		type = "Transport",
+	}
+
+	zones[transports["STRANGLETHORN_ORGRIMMAR_ZEPPELIN"]] = {
+		paths = {
+			[BZ["Orgrimmar"]] = true,
+		},
+		faction = "Horde",
+		type = "Transport",
+	}
+
+
+	zones[transports["TIRISFAL_STRANGLETHORN_ZEPPELIN"]] = {
+		paths = {
+			[BZ["Stranglethorn Vale"]] = true,
+		},
+		faction = "Horde",
+		type = "Transport",
+	}
+
+	zones[transports["STRANGLETHORN_TIRISFAL_ZEPPELIN"]] = {
+		paths = {
 			[BZ["Tirisfal Glades"]] = true,
 		},
 		faction = "Horde",
 		type = "Transport",
 	}
 
-	zones[transports["ORGRIMMAR_GROMGOL_ZEPPELIN"]] = {
-		paths = {
-			[BZ["Orgrimmar"]] = true,
-			[BZ["Stranglethorn Vale"]] = true,
-		},
-		faction = "Horde",
-		type = "Transport",
-	}
 
-	zones[transports["UNDERCITY_GROMGOL_ZEPPELIN"]] = {
-		paths = {
-			[BZ["Tirisfal Glades"]] = true,
-			[BZ["Stranglethorn Vale"]] = true,
-		},
-		faction = "Horde",
-		type = "Transport",
-	}
 
-	zones[transports["BOOTYBAY_RATCHET_BOAT"]] = {
+	zones[transports["STRANGLETHORN_BARRENS_BOAT"]] = {
 		paths = {
-			[BZ["Stranglethorn Vale"]] = true,
 			[BZ["The Barrens"]] = true,
 		},
 		type = "Transport",
 	}
 
-	zones[transports["MENETHIL_AUBERDINE_BOAT"]] = {
+	zones[transports["BARRENS_STRANGLETHORN_BOAT"]] = {
 		paths = {
-			[BZ["Wetlands"]] = true,
+			[BZ["Stranglethorn Vale"]] = true,
+		},
+		type = "Transport",
+	}	
+	
+	
+	
+	
+
+	zones[transports["WETLANDS_DARKSHORE_BOAT"]] = {
+		paths = {
 			[BZ["Darkshore"]] = true,
 		},
 		faction = "Alliance",
 		type = "Transport",
 	}
 
-	zones[transports["MENETHIL_THERAMORE_BOAT"]] = {
+	zones[transports["DARKSHORE_WETLANDS_BOAT"]] = {
 		paths = {
 			[BZ["Wetlands"]] = true,
+		},
+		faction = "Alliance",
+		type = "Transport",
+	}
+
+
+
+	zones[BZ["Deeprun Tram"]] = {
+		paths = {
+			[BZ["Stormwind City"]] = true,
+			[BZ["Ironforge"]] = true,
+		},
+		faction = "Alliance",		
+		type = "Transport",
+	}
+
+
+
+	-- TBC
+	zones[transports["SILVERMOON_UNDERCITY_TELEPORT"]] = {
+		paths = {
+			[BZ["Undercity"]] = true,
+		},
+--		faction = "Horde",  TODO: check
+		type = "Portal",
+	}
+	
+	zones[transports["UNDERCITY_SILVERMOON_TELEPORT"]] = {
+		paths = {
+			[BZ["Silvermoon City"]] = true,
+		},
+--		faction = "Horde",  TODO: check
+		type = "Portal",
+	}	
+
+	zones[transports["DARKSHORE_AZUREMYST_BOAT"]] = {
+		paths = {
+			[BZ["Azuremyst Isle"]] = true,
+		},
+		faction = "Alliance",
+		type = "Transport",
+	}
+	
+	zones[transports["AZUREMYST_DARKSHORE_BOAT"]] = {
+		paths = {
+			[BZ["Darkshore"]] = true,
+		},
+		faction = "Alliance",
+		type = "Transport",
+	}
+
+	
+	
+	
+	zones[transports["DARKSHORE_TELDRASSIL_BOAT"]] = {
+		paths = {
+			[BZ["Teldrassil"]] = true,
+		},
+		faction = "Alliance",
+		type = "Transport",
+	}
+
+	zones[transports["TELDRASSIL_DARKSHORE_BOAT"]] = {
+		paths = {
+			[BZ["Darkshore"]] = true,
+		},
+		faction = "Alliance",
+		type = "Transport",
+	}
+
+	zones[transports["DARNASSUS_TELDRASSIL_TELEPORT"]] = {
+		paths = {
+			[BZ["Teldrassil"]] = true,
+		},
+		type = "Portal",
+	}
+
+	zones[transports["TELDRASSIL_DARNASSUS_TELEPORT"]] = {
+		paths = {
+			[BZ["Darnassus"]] = true,
+		},
+		type = "Portal",
+	}
+
+	zones[transports["SHATTRATH_DARNASSUS_PORTAL"]] = {
+		paths = {
+			[BZ["Darnassus"]] = true,
+		},
+		faction = "Alliance",
+		type = "Portal",
+	}
+	
+	zones[transports["DARNASSUS_SHATTRATH_PORTAL"]] = {
+		paths = {
+			[BZ["Shattrath City"]] = true,
+		},
+		faction = "Alliance",
+		type = "Portal",
+	}
+
+	zones[transports["SHATTRATH_EXODAR_PORTAL"]] = {
+		paths = {
+			[BZ["The Exodar"]] = true,
+		},
+		faction = "Alliance",
+		type = "Portal",
+	}
+	
+	zones[transports["EXODAR_SHATTRATH_PORTAL"]] = {
+		paths = {
+			[BZ["Shattrath City"]] = true,
+		},
+		faction = "Alliance",
+		type = "Portal",
+	}	
+	
+	
+	
+	zones[transports["SHATTRATH_IRONFORGE_PORTAL"]] = {
+		paths = {
+			[BZ["Ironforge"]] = true,
+		},
+		faction = "Alliance",
+		type = "Portal",
+	}
+	
+	zones[transports["IRONFORGE_SHATTRATH_PORTAL"]] = {
+		paths = {
+			[BZ["Shattrath City"]] = true,
+		},
+		faction = "Alliance",
+		type = "Portal",
+	}	
+
+	zones[transports["SHATTRATH_QUELDANAS_PORTAL"]] = {
+		paths = BZ["Isle of Quel'Danas"],
+		type = "Portal",
+	}
+
+	zones[transports["SHATTRATH_ORGRIMMAR_PORTAL"]] = {
+		paths = {
+			[BZ["Orgrimmar"]] = true,
+		},
+		faction = "Horde",
+		type = "Portal",
+	}
+	
+	zones[transports["ORGRIMMAR_SHATTRATH_PORTAL"]] = {
+		paths = {
+			[BZ["Shattrath City"]] = true,
+		},
+		faction = "Horde",
+		type = "Portal",
+	}
+
+	zones[transports["SHATTRATH_SILVERMOON_PORTAL"]] = {
+		paths = {
+			[BZ["Silvermoon City"]] = true,
+		},
+		faction = "Horde",
+		type = "Portal",
+	}
+	
+	zones[transports["SILVERMOON_SHATTRATH_PORTAL"]] = {
+		paths = {
+			[BZ["Shattrath City"]] = true,
+		},
+		faction = "Horde",
+		type = "Portal",
+	}	
+	
+	
+	
+	zones[transports["SHATTRATH_STORMWIND_PORTAL"]] = {
+		paths = {
+			[BZ["Stormwind City"]] = true,
+		},
+		faction = "Alliance",
+		type = "Portal",
+	}
+	
+	zones[transports["STORMWIND_SHATTRATH_PORTAL"]] = {
+		paths = {
+			[BZ["Shattrath City"]] = true,
+		},
+		faction = "Alliance",
+		type = "Portal",
+	}	
+
+	zones[transports["SHATTRATH_THUNDERBLUFF_PORTAL"]] = {
+		paths = {
+			[BZ["Thunder Bluff"]] = true,
+		},
+		faction = "Horde",
+		type = "Portal",
+	}
+
+	zones[transports["THUNDERBLUFF_SHATTRATH_PORTAL"]] = {
+		paths = {
+			[BZ["Shattrath City"]] = true,
+		},
+		faction = "Horde",
+		type = "Portal",
+	}
+
+	zones[transports["SHATTRATH_UNDERCITY_PORTAL"]] = {
+		paths = {
+			[BZ["Undercity"]] = true,
+		},
+		faction = "Horde",
+		type = "Portal",
+	}
+
+	zones[transports["UNDERCITY_SHATTRATH_PORTAL"]] = {
+		paths = {
+			[BZ["Shattrath City"]] = true,
+		},
+		faction = "Horde",
+		type = "Portal",
+	}
+
+
+	zones[transports["THE_DARK_PORTAL_BLASTED_LANDS"]] = {
+		paths = {
+			[BZ["Hellfire Peninsula"]] = true,
+		},
+		type = "Portal",
+	}
+
+	zones[transports["THE_DARK_PORTAL_HELLFIRE"]] = {
+		paths = {
+			[BZ["Blasted Lands"]] = true,
+		},
+		type = "Portal",
+	}
+
+
+	-- WotLK
+	
+	zones[transports["DALARAN_COT_PORTAL"]] = {
+		paths = {
+			[BZ["Caverns of Time"]] = true,
+		},
+		type = "Portal",
+	}	
+	
+	zones[transports["DALARAN_STORMWIND_PORTAL"]] = {
+		paths = {
+			[BZ["Stormwind City"]] = true,
+		},
+		faction = "Alliance",
+		type = "Portal",
+	}
+
+	zones[transports["DALARAN_ORGRIMMAR_PORTAL"]] = {
+		paths = {
+			[BZ["Orgrimmar"]] = true,
+		},
+		faction = "Horde",
+		type = "Portal",
+	}	
+	
+	zones[transports["DALARAN_CRYSTALSONG_TELEPORT"]] = {
+		paths = {
+			[BZ["Crystalsong Forest"]] = true,
+		},
+		type = "Portal",
+	}
+
+	zones[transports["CRYSTALSONG_DALARAN_TELEPORT"]] = {
+		paths = {
+			[BZ["Dalaran"]] = true,
+		},
+		type = "Portal",
+	}
+	
+	
+	
+	zones[transports["STORMWIND_BOREANTUNDRA_BOAT"]] = {
+		paths = {
+			[BZ["Borean Tundra"]] = true,
+		},
+		faction = "Alliance",
+		type = "Transport",
+	}
+
+	zones[transports["BOREANTUNDRA_STORMWIND_BOAT"]] = {
+		paths = {
+			[BZ["Stormwind City"]] = true,
+		},
+		faction = "Alliance",
+		type = "Transport",
+	}	
+	
+	zones[transports["ORGRIMMAR_BOREANTUNDRA_ZEPPELIN"]] = {
+		paths = {
+			[BZ["Borean Tundra"]] = true,
+		},
+		faction = "Horde",
+		type = "Transport",
+	}	
+	
+	zones[transports["BOREANTUNDRA_ORGRIMMAR_ZEPPELIN"]] = {
+		paths = {
+			[BZ["Orgrimmar"]] = true,
+		},
+		faction = "Horde",
+		type = "Transport",
+	}		
+	
+	zones[transports["UNDERCITY_HOWLINGFJORD_ZEPPELIN"]] = {
+		paths = {
+			[BZ["Howling Fjord"]] = true,
+		},
+		faction = "Horde",
+		type = "Transport",
+	}
+
+	zones[transports["HOWLINGFJORD_UNDERCITY_ZEPPELIN"]] = {
+		paths = {
+			[BZ["Tirisfal Glades"]] = true,
+		},
+		faction = "Horde",
+		type = "Transport",
+	}
+
+	zones[transports["WETLANDS_DUSTWALLOW_BOAT"]] = {
+		paths = {
 			[BZ["Dustwallow Marsh"]] = true,
 		},
 		faction = "Alliance",
 		type = "Transport",
 	}
+
+	zones[transports["DUSTWALLOW_WETLANDS_BOAT"]] = {
+		paths = {
+			[BZ["Wetlands"]] = true,
+		},
+		faction = "Alliance",
+		type = "Transport",
+	}
+
+	zones[transports["WETLANDS_HOWLINGFJORD_BOAT"]] = {
+		paths = {
+			[BZ["Howling Fjord"]] = true,
+		},
+		faction = "Alliance",
+		type = "Transport",
+	}
+
+	zones[transports["HOWLINGFJORD_WETLANDS_BOAT"]] = {
+		paths = {
+			[BZ["Wetlands"]] = true,
+		},
+		faction = "Alliance",
+		type = "Transport",
+	}
+
+	zones[transports["DRAGONBLIGHT_BOREANTUNDRA_BOAT"]] = {
+		paths = {
+			[BZ["Borean Tundra"]] = true,
+		},
+		type = "Transport",
+	}
+	
+	zones[transports["BOREANTUNDRA_DRAGONBLIGHT_BOAT"]] = {
+		paths = {
+			[BZ["Dragonblight"]] = true,
+		},
+		type = "Transport",
+	}
+
+
+	zones[transports["DRAGONBLIGHT_HOWLINGFJORD_BOAT"]] = {
+		paths = {
+			[BZ["Howling Fjord"]] = true,
+		},
+		type = "Transport",
+	}
+
+	zones[transports["HOWLINGFJORD_DRAGONBLIGHT_BOAT"]] = {
+		paths = {
+			[BZ["Dragonblight"]] = true,
+		},
+		type = "Transport",
+	}
+
+
+
 
 	-- ZONES, INSTANCES AND COMPLEXES ---------------------------------------------------------
 
@@ -1822,6 +3048,8 @@ do
 			[BZ["Deeprun Tram"]] = true,
 			[BZ["The Stockade"]] = true,
 			[BZ["Elwynn Forest"]] = true,
+			[transports["STORMWIND_SHATTRATH_PORTAL"]] = true,
+			[transports["STORMWIND_BOREANTUNDRA_BOAT"]] = true,
 		},
 		flightnodes = {
 			[2] = true,      -- Stormwind, Elwynn (A)
@@ -1837,6 +3065,10 @@ do
 		instances = BZ["Ruins of Lordaeron"],
 		paths = {
 			[BZ["Tirisfal Glades"]] = true,
+			[BZ["Ruins of Lordaeron"]] = true,
+			[transports["UNDERCITY_SILVERMOON_TELEPORT"]] = true,
+			[transports["UNDERCITY_SHATTRATH_PORTAL"]] = true,
+			[transports["UNDERCITY_HOWLINGFJORD_ZEPPELIN"]] = true,
 		},
 		flightnodes = {
 			[11] = true,     -- Undercity, Tirisfal (H)
@@ -1852,6 +3084,7 @@ do
 		paths = {
 			[BZ["Dun Morogh"]] = true,
 			[BZ["Deeprun Tram"]] = true,
+			[transports["IRONFORGE_SHATTRATH_PORTAL"]] = true,			
 		},
 		flightnodes = {
 			[6] = true,      -- Ironforge, Dun Morogh (A)
@@ -1872,6 +3105,9 @@ do
 			[BZ["Ironforge"]] = true,
 			[BZ["Loch Modan"]] = true,
 		},
+		flightnodes = {
+			[6] = true,      -- Ironforge, Dun Morogh (A)
+		},		
 		faction = "Alliance",
 		fishing_low = 1,
 		fishing_high = 25,
@@ -1887,6 +3123,9 @@ do
 			[BZ["Stormwind City"]] = true,
 			[BZ["Duskwood"]] = true,
 		},
+		flightnodes = {
+			[2] = true,      -- Stormwind, Elwynn (A)
+		},		
 		faction = "Alliance",
 		fishing_low = 1,
 		fishing_high = 25,
@@ -1901,10 +3140,14 @@ do
 			[BZ["Western Plaguelands"]] = true,
 			[BZ["Undercity"]] = true,
 			[BZ["Scarlet Monastery"]] = true,
-			[transports["ORGRIMMAR_UNDERCITY_ZEPPELIN"]] = true,
-			[transports["UNDERCITY_GROMGOL_ZEPPELIN"]] = true,
+			[transports["TIRISFAL_ORGRIMMAR_ZEPPELIN"]] = true,
+			[transports["TIRISFAL_STRANGLETHORN_ZEPPELIN"]] = true,
 			[BZ["Silverpine Forest"]] = true,
 		},
+		flightnodes = {
+			[11] = true,     -- Undercity, Tirisfal (H)
+			[384] = true,     -- The Bulwark, Tirisfal (H)			
+		},		
 		faction = "Horde",
 		fishing_low = 1,
 		fishing_high = 25,
@@ -2039,8 +3282,9 @@ do
 		continent = Eastern_Kingdoms,
 		paths = {
 			[BZ["Arathi Highlands"]] = true,
-			[transports["MENETHIL_THERAMORE_BOAT"]] = true,
-			[transports["MENETHIL_AUBERDINE_BOAT"]] = true,
+			[transports["WETLANDS_DUSTWALLOW_BOAT"]] = true,
+			[transports["WETLANDS_DARKSHORE_BOAT"]] = true,
+			[transports["WETLANDS_HOWLINGFJORD_BOAT"]] = true,
 			[BZ["Loch Modan"]] = true,
 		},
 		flightnodes = {
@@ -2076,14 +3320,15 @@ do
 		paths = {
 			[BZ["Duskwood"]] = true,
 			[BZ["Zul'Gurub"]] = true,
-			[transports["ORGRIMMAR_GROMGOL_ZEPPELIN"]] = true,
-			[transports["UNDERCITY_GROMGOL_ZEPPELIN"]] = true,
-			[transports["BOOTYBAY_RATCHET_BOAT"]] = true,
+			[transports["STRANGLETHORN_ORGRIMMAR_ZEPPELIN"]] = true,
+			[transports["STRANGLETHORN_TIRISFAL_ZEPPELIN"]] = true,
+			[transports["STRANGLETHORN_BARRENS_BOAT"]] = true,
 		},
 		flightnodes = {
 			[18] = true,     -- Booty Bay, Stranglethorn (H)
 			[19] = true,     -- Booty Bay, Stranglethorn (A)
 			[20] = true,     -- Grom'gol, Stranglethorn (H)
+			[195] = true,    -- Rebel Camp, Stranglethorn Vale (A)			
 		},
 		fishing_low = 130,
 		fishing_high = 225,
@@ -2119,6 +3364,7 @@ do
 		},
 		flightnodes = {
 			[66] = true,     -- Chillwind Camp, Western Plaguelands (A)
+			[383] = true,     -- Thondoril River, Western Plaguelands (N)
 		},
 		fishing_low = 205,
 		fishing_high = 300,
@@ -2128,15 +3374,23 @@ do
 		low = 55,
 		high = 60,
 		continent = Eastern_Kingdoms,
-		instances = BZ["Stratholme"],
+		instances = {
+			[BZ["Stratholme"]] = true,
+			[BZ["Naxxramas"]] = true,
+		},
 		paths = {
 			[BZ["Western Plaguelands"]] = true,
 			[BZ["Stratholme"]] = true,
-		--	[BZ["Naxxramas"]] = true,
+			[BZ["Naxxramas"]] = true,
 		},
 		flightnodes = {
-			[67] = true,      -- Light's Hope Chapel, Eastern Plaguelands (A)
-			[68] = true,      -- Light's Hope Chapel, Eastern Plaguelands (H)
+			[67] = true,    -- Light's Hope Chapel, Eastern Plaguelands (A)
+			[68] = true,    -- Light's Hope Chapel, Eastern Plaguelands (H)
+			[85] = true,    -- Northpass Tower, Eastern Plaguelands (N)
+			[86] = true,    -- Eastwall Tower, Eastern Plaguelands (N)
+			[84] = true,    -- Plaguewood Tower, Eastern Plaguelands (N)
+			[87] = true,    -- Crown Guard Tower, Eastern Plaguelands (N)
+			[315] = true,     -- Acherus: The Ebon Hold (N)
 		},
 		type = "PvP Zone",
 		fishing_low = 330,
@@ -2169,7 +3423,7 @@ do
 			[BZ["Blackrock Spire"]] = true,
 		},
 		paths = {
-		--	[BZ["Blackrock Mountain"]] = true, -- NO KNOWN instanceID or uiMapID
+			[BZ["Blackrock Mountain"]] = true,
 			[BZ["Badlands"]] = true,
 			[BZ["Loch Modan"]] = not isHorde and true or nil,
 		},
@@ -2178,7 +3432,7 @@ do
 			[74] = true,     -- Thorium Point, Searing Gorge (A)
 		},
 		complexes = {
-		--	[BZ["Blackrock Mountain"]] = true,
+			[BZ["Blackrock Mountain"]] = true,
 		},
 	}
 
@@ -2193,7 +3447,7 @@ do
 			[BZ["Blackrock Spire"]] = true,
 		},
 		paths = {
-		--	[BZ["Blackrock Mountain"]] = true,
+			[BZ["Blackrock Mountain"]] = true,
 			[BZ["Redridge Mountains"]] = true,
 		},
 		flightnodes = {
@@ -2201,7 +3455,7 @@ do
 			[71] = true,     -- Morgan's Vigil, Burning Steppes (A)
 		},
 		complexes = {
-		--	[BZ["Blackrock Mountain"]] = true,
+			[BZ["Blackrock Mountain"]] = true,
 		},
 		fishing_low = 330,
 		fishing_high = 425,
@@ -2229,6 +3483,7 @@ do
 		high = 55,
 		continent = Eastern_Kingdoms,
 		paths = {
+			[transports["THE_DARK_PORTAL_BLASTED_LANDS"]] = true,	
 			[BZ["Swamp of Sorrows"]] = true,
 		},
 		flightnodes = {
@@ -2243,6 +3498,10 @@ do
 		paths = {
 			[BZ["Duskwood"]] = true,
 			[BZ["Swamp of Sorrows"]] = true,
+			[BZ["Karazhan"]] = true,
+		},
+		instances = {
+			[BZ["Karazhan"]] = true,
 		},
 		fishing_low = 330,
 		fishing_high = 425,
@@ -2257,8 +3516,10 @@ do
 			[BZ["Durotar"]] = true,
 			[BZ["The Barrens"]] = true,
 			[BZ["Ragefire Chasm"]] = true,
-			[transports["ORGRIMMAR_GROMGOL_ZEPPELIN"]] = true,
-			[transports["ORGRIMMAR_UNDERCITY_ZEPPELIN"]] = true,
+			[transports["ORGRIMMAR_STRANGLETHORN_ZEPPELIN"]] = true,
+			[transports["ORGRIMMAR_TIRISFAL_ZEPPELIN"]] = true,
+			[transports["ORGRIMMAR_SHATTRATH_PORTAL"]] = true,
+			[transports["ORGRIMMAR_BOREANTUNDRA_ZEPPELIN"]] = true,
 		},
 		flightnodes = {
 			[23] = true,     -- Orgrimmar, Durotar (H)
@@ -2273,6 +3534,7 @@ do
 		continent = Kalimdor,
 		paths = {
 			[BZ["Mulgore"]] = true,
+			[transports["THUNDERBLUFF_SHATTRATH_PORTAL"]] = true,			
 		},
 		flightnodes = {
 			[22] = true,     -- Thunder Bluff, Mulgore (H)
@@ -2286,7 +3548,8 @@ do
 	zones[BZ["Darnassus"]] = {
 		continent = Kalimdor,
 		paths = {
-			[BZ["Teldrassil"]] = true,
+			[transports["DARNASSUS_TELDRASSIL_TELEPORT"]] = true,
+			[transports["DARNASSUS_SHATTRATH_PORTAL"]] = true,
 		},
 		faction = "Alliance",
 		type = "City",
@@ -2302,6 +3565,9 @@ do
 			[BZ["The Barrens"]] = true,
 			[BZ["Orgrimmar"]] = true,
 		},
+		flightnodes = {
+			[23] = true,     -- Orgrimmar, Durotar (H)
+		},		
 		faction = "Horde",
 		fishing_low = 1,
 		fishing_high = 25,
@@ -2315,6 +3581,9 @@ do
 			[BZ["Thunder Bluff"]] = true,
 			[BZ["The Barrens"]] = true,
 		},
+		flightnodes = {
+			[22] = true,     -- Thunder Bluff, Mulgore (H)
+		},		
 		faction = "Horde",
 		fishing_low = 1,
 		fishing_high = 25,
@@ -2325,7 +3594,8 @@ do
 		high = 12,
 		continent = Kalimdor,
 		paths = {
-			[BZ["Darnassus"]] = true,
+			[transports["TELDRASSIL_DARNASSUS_TELEPORT"]] = true,
+			[transports["TELDRASSIL_DARKSHORE_BOAT"]] = true,
 		},
 		flightnodes = {
 			[27] = true,     -- Rut'theran Village, Teldrassil (A)
@@ -2356,6 +3626,9 @@ do
 		continent = Kalimdor,
 		paths = {
 			[BZ["Ashenvale"]] = true,
+			[transports["DARKSHORE_WETLANDS_BOAT"]] = true,
+			[transports["DARKSHORE_TELDRASSIL_BOAT"]] = true,
+			[transports["DARKSHORE_AZUREMYST_BOAT"]] = true,
 		},
 		flightnodes = {
 			[26] = true,     -- Auberdine, Darkshore (A)
@@ -2387,7 +3660,7 @@ do
 			[BZ["Razorfen Kraul"]] = true,
 			[BZ["Razorfen Downs"]] = true,
 			[BZ["Dustwallow Marsh"]] = true,
-			[transports["BOOTYBAY_RATCHET_BOAT"]] = true,
+			[transports["BARRENS_STRANGLETHORN_BOAT"]] = true,
 		},
 		flightnodes = {
 			[80] = true,    -- Ratchet, The Barrens (N)
@@ -2419,6 +3692,7 @@ do
 			[61] = true,     -- Splintertree Post, Ashenvale (H)
 			[28] = true,     -- Astranaar, Ashenvale (A)
 			[58] = true,     -- Zoram'gar Outpost, Ashenvale (H)
+			[167] = true,    -- Forest Song, Ashenvale (A)
 		},
 		fishing_low = 55,
 		fishing_high = 150,
@@ -2467,11 +3741,12 @@ do
 		paths = {
 			[BZ["Onyxia's Lair"]] = true,
 			[BZ["The Barrens"]] = true,
-			[transports["MENETHIL_THERAMORE_BOAT"]] = true,
+			[transports["DUSTWALLOW_WETLANDS_BOAT"]] = true,
 		},
 		flightnodes = {
 			[55] = true,     -- Brackenwall Village, Dustwallow Marsh (H)
 			[32] = true,     -- Theramore, Dustwallow Marsh (A)
+			[179] = true,    -- Mudsprocket, Dustwallow Marsh (N)
 		},
 		fishing_low = 130,
 		fishing_high = 225,
@@ -2531,6 +3806,7 @@ do
 		flightnodes = {
 			[48] = true,     -- Bloodvenom Post, Felwood (H)
 			[65] = true,     -- Talonbranch Glade, Felwood (A)
+			[166] = true,    -- Emerald Sanctuary, Felwood (N)			
 		},
 		fishing_low = 205,
 		fishing_high = 300,
@@ -2540,16 +3816,26 @@ do
 		low = 40,
 		high = 50,
 		continent = Kalimdor,
-		instances = BZ["Zul'Farrak"],
+		instances = 
+		{
+			[BZ["Zul'Farrak"]] = true,
+			[BZ["Old Hillsbrad Foothills"]] = true,
+			[BZ["The Black Morass"]] = true,
+			[BZ["Hyjal Summit"]] = true,
+		},
 		paths = {
 			[BZ["Thousand Needles"]] = true,
 			[BZ["Un'Goro Crater"]] = true,
 			[BZ["Zul'Farrak"]] = true,
+			[BZ["Caverns of Time"]] = true,
 		},
 		flightnodes = {
 			[39] = true,     -- Gadgetzan, Tanaris (A)
 			[40] = true,     -- Gadgetzan, Tanaris (H)
 		},
+		complexes = {
+			[BZ["Caverns of Time"]] = true,
+		},		
 		fishing_low = 205,
 		fishing_high = 300,
 	}
@@ -2588,21 +3874,20 @@ do
 		low = 55,
 		high = 60,
 		continent = Kalimdor,
-		paths = {
+		instances = {
+			[BZ["Ahn'Qiraj Temple"]] = true,
 			[BZ["Ruins of Ahn'Qiraj"]] = true,
+		},
+		paths = {
 			[BZ["Un'Goro Crater"]] = true,
-		--	[BZ["Ahn'Qiraj Temple"]] = true,
+			[BZ["Ahn'Qiraj: The Fallen Kingdom"]] = true,
 		},
 		flightnodes = {
 			[73] = true,    -- Cenarion Hold, Silithus (A)
 			[72] = true,    -- Cenarion Hold, Silithus (H)
 		},
-		instances = {
-		--	[BZ["Ahn'Qiraj Temple"]] = true,
-			[BZ["Ruins of Ahn'Qiraj"]] = true,
-		},
 		complexes = {
-		--	[BZ["Ahn'Qiraj: The Fallen Kingdom"]] = true,
+			[BZ["Ahn'Qiraj: The Fallen Kingdom"]] = true,
 		},
 		type = "PvP Zone",
 		fishing_low = 330,
@@ -2626,15 +3911,670 @@ do
 		fishing_high = 300,
 	}
 
-	-- Classic dungeons --
+
+
+
+	-- The Burning Crusade Cities -------------------------------------
+	
+	zones[BZ["Silvermoon City"]] = {
+		continent = Eastern_Kingdoms,
+		paths = {
+			[BZ["Eversong Woods"]] = true,
+			[BZ["Undercity"]] = true,
+			[transports["SILVERMOON_UNDERCITY_TELEPORT"]] = true,
+			[transports["SILVERMOON_SHATTRATH_PORTAL"]] = true,
+		},
+		flightnodes = {
+			[82] = true,    -- Silvermoon City (H)
+		},
+		faction = "Horde",
+		type = "City",
+		fishing_low = 1,
+		fishing_high = 75,
+	}
+
+	zones[BZ["The Exodar"]] = {
+		continent = Kalimdor,
+		paths = {
+			[BZ["Azuremyst Isle"]] = true,
+			[transports["EXODAR_SHATTRATH_PORTAL"]] = true,
+		},
+		flightnodes = {
+			[94] = true,    -- The Exodar (A)
+		},		
+		faction = "Alliance",
+		type = "City",
+		fishing_low = 1,
+		fishing_high = 75,
+	}
+
+	zones[BZ["Shattrath City"]] = {
+		continent = Outland,
+		paths = {
+			[BZ["Nagrand"]] = true,
+			[BZ["Terokkar Forest"]] = true,
+			[transports["SHATTRATH_THUNDERBLUFF_PORTAL"]] = true,
+			[transports["SHATTRATH_STORMWIND_PORTAL"]] = true,
+			[transports["SHATTRATH_UNDERCITY_PORTAL"]] = true,
+			[transports["SHATTRATH_SILVERMOON_PORTAL"]] = true,
+			[transports["SHATTRATH_EXODAR_PORTAL"]] = true,
+			[transports["SHATTRATH_DARNASSUS_PORTAL"]] = true,
+			[transports["SHATTRATH_ORGRIMMAR_PORTAL"]] = true,
+			[transports["SHATTRATH_IRONFORGE_PORTAL"]] = true,
+			[transports["SHATTRATH_QUELDANAS_PORTAL"]] = true,
+		},
+		flightnodes = {
+			[128] = true,    -- Shattrath, Terokkar Forest (N)
+		},
+		type = "City",
+		fishing_low = 1,
+		fishing_high = 75,
+	}
+
+
+
+	-- The Burning Crusade Zones --------------------------------------
+	
+	-- Blood Elf zones
+	zones[BZ["Eversong Woods"]] = {
+		low = 1,
+		high = 10,
+		continent = Eastern_Kingdoms,
+		paths = {
+			[BZ["Silvermoon City"]] = true,
+			[BZ["Ghostlands"]] = true,
+		},
+		flightnodes = {
+			[82] = true,    -- Silvermoon City (H)
+		},	
+		faction = "Horde",
+		fishing_low = 1,
+		fishing_high = 25,
+	}
+	
+	zones[BZ["Ghostlands"]] = {
+		low = 10,
+		high = 20,
+		continent = Eastern_Kingdoms,
+		instances = BZ["Zul'Aman"],
+		paths = {
+			[BZ["Eastern Plaguelands"]] = true,
+			[BZ["Zul'Aman"]] = true,
+			[BZ["Eversong Woods"]] = true,
+		},
+		flightnodes = {
+			[83] = true,    -- Tranquillien, Ghostlands (H)
+			[205] = true,    -- Zul'Aman, Ghostlands (N)
+		},
+		faction = "Horde",
+		fishing_low = 1,
+		fishing_high = 25,
+	}
+
+	-- Dranei zones
+	zones[BZ["Azuremyst Isle"]] = {
+		low = 1,
+		high = 10,
+		continent = Kalimdor,
+		paths = {
+			[BZ["The Exodar"]] = true,
+			[BZ["Bloodmyst Isle"]] = true,
+			[transports["AZUREMYST_DARKSHORE_BOAT"]] = true,
+		},
+		flightnodes = {
+			[94] = true,    -- The Exodar (A)
+		},
+		faction = "Alliance",
+		fishing_low = 1,
+		fishing_high = 25,
+	}
+
+	zones[BZ["Bloodmyst Isle"]] = {
+		low = 10,
+		high = 20,
+		continent = Kalimdor,
+		paths = {
+			[BZ["Azuremyst Isle"]] = true,
+		},
+		flightnodes = {
+			[93] = true,    -- Blood Watch, Bloodmyst Isle (A)
+		},
+		faction = "Alliance",
+		fishing_low = 1,
+		fishing_high = 25,
+	}
+
+	-- Outland zones
+	zones[BZ["Hellfire Peninsula"]] = {
+		low = 58,
+		high = 63,
+		continent = Outland,
+		instances = {
+			[BZ["The Blood Furnace"]] = true,
+			[BZ["Hellfire Ramparts"]] = true,
+			[BZ["Magtheridon's Lair"]] = true,
+			[BZ["The Shattered Halls"]] = true,
+		},
+		paths = {
+			[BZ["Zangarmarsh"]] = true,
+			[transports["THE_DARK_PORTAL_HELLFIRE"]] = true,
+			[BZ["Terokkar Forest"]] = true,
+			[BZ["Hellfire Citadel"]] = true,
+		},
+		complexes = {
+			[BZ["Hellfire Citadel"]] = true,
+		},
+		flightnodes = {
+			[99] = true,     -- Thrallmar, Hellfire Peninsula (H)
+			[101] = true,    -- Temple of Telhamat, Hellfire Peninsula (A)
+			[141] = true,    -- Spinebreaker Ridge, Hellfire Peninsula (H)
+			[149] = true,    -- Shatter Point, Hellfire Peninsula (A)
+			[102] = true,    -- Falcon Watch, Hellfire Peninsula (H)
+			[100] = true,    -- Honor Hold, Hellfire Peninsula (A)
+			[129] = true,	 -- The Dark Portal, Hellfire Peninsula (A)
+			[130] = true,	 -- The Dark Portal, Hellfire Peninsula (H)
+		},
+        type = "PvP Zone",
+		fishing_low = 280,
+		fishing_high = 375,		
+	}
+
+	zones[BZ["Zangarmarsh"]] = {
+		low = 60,
+		high = 64,
+		continent = Outland,
+		instances = {
+			[BZ["The Underbog"]] = true,
+			[BZ["Serpentshrine Cavern"]] = true,
+			[BZ["The Steamvault"]] = true,
+			[BZ["The Slave Pens"]] = true,
+		},
+		paths = {
+			[BZ["Blade's Edge Mountains"]] = true,
+			[BZ["Terokkar Forest"]] = true,
+			[BZ["Nagrand"]] = true,
+			[BZ["Hellfire Peninsula"]] = true,
+			[BZ["Coilfang Reservoir"]] = true,
+		},
+		complexes = {
+			[BZ["Coilfang Reservoir"]] = true,
+		},		
+		flightnodes = {
+			[118] = true,    -- Zabra'jin, Zangarmarsh (H)
+			[164] = true,    -- Orebor Harborage, Zangarmarsh (A)
+			[151] = true,    -- Swamprat Post, Zangarmarsh (H)
+			[117] = true,    -- Telredor, Zangarmarsh (A)
+		},
+        type = "PvP Zone",
+		fishing_low = 305,
+		fishing_high = 400,
+	}
+	
+	zones[BZ["Terokkar Forest"]] = {
+		low = 62,
+		high = 65,
+		continent = Outland,
+		instances = {
+			[BZ["Mana-Tombs"]] = true,
+			[BZ["Sethekk Halls"]] = true,
+			[BZ["Shadow Labyrinth"]] = true,
+			[BZ["Auchenai Crypts"]] = true,
+		},
+		paths = {
+			[BZ["Shadowmoon Valley"]] = true,
+			[BZ["Zangarmarsh"]] = true,
+			[BZ["Shattrath City"]] = true,
+			[BZ["Hellfire Peninsula"]] = true,
+			[BZ["Nagrand"]] = true,
+			[BZ["Auchindoun"]] = true,
+		},
+		complexes = {
+			[BZ["Auchindoun"]] = true,
+		},			
+		flightnodes = {
+			[127] = true,    -- Stonebreaker Hold, Terokkar Forest (H)
+			[128] = true,    -- Shattrath, Terokkar Forest (N)
+			[121] = true,    -- Allerian Stronghold, Terokkar Forest (A)
+		},
+        type = "PvP Zone",
+		fishing_low = 355,
+		fishing_high = 450,
+	}
+
+	zones[BZ["Nagrand"]] = {
+		low = 64,
+		high = 67,
+		continent = Outland,
+		instances = {
+			[BZ["Nagrand Arena"]] = true,
+		},
+		paths = {
+			[BZ["Zangarmarsh"]] = true,
+			[BZ["Shattrath City"]] = true,
+			[BZ["Terokkar Forest"]] = true,
+			[BZ["Nagrand Arena"]] = true,
+		},
+		flightnodes = {
+			[120] = true,    -- Garadar, Nagrand (H)
+			[119] = true,    -- Telaar, Nagrand (A)
+		},
+        type = "PvP Zone",
+		fishing_low = 380,
+		fishing_high = 475,
+	}
+
+	zones[BZ["Blade's Edge Mountains"]] = {
+		low = 65,
+		high = 68,
+		continent = Outland,
+		instances = {
+			[BZ["Gruul's Lair"]] = true,
+			[BZ["Blade's Edge Arena"]] = true,
+		},
+		paths = {
+			[BZ["Netherstorm"]] = true,
+			[BZ["Zangarmarsh"]] = true,
+			[BZ["Gruul's Lair"]] = true,
+			[BZ["Blade's Edge Arena"]] = true,
+		},
+		flightnodes = {
+			[126] = true,    -- Thunderlord Stronghold, Blade's Edge Mountains (H)
+			[163] = true,    -- Mok'Nathal Village, Blade's Edge Mountains (H)
+			[160] = true,    -- Evergrove, Blade's Edge Mountains (N)
+			[125] = true,    -- Sylvanaar, Blade's Edge Mountains (A)
+			[156] = true,    -- Toshley's Station, Blade's Edge Mountains (A)
+		},
+		-- No fishable waters
+	}	
+
+	zones[BZ["Shadowmoon Valley"]] = {
+		low = 67,
+		high = 70,
+		continent = Outland,
+		instances = {
+			[BZ["Black Temple"]] = true,
+		},
+		paths = {
+			[BZ["Terokkar Forest"]] = true,
+			[BZ["Black Temple"]] = true,
+		},
+		flightnodes = {
+			[124] = true,     -- Wildhammer Stronghold, Shadowmoon Valley (A)
+			[123] = true,     -- Shadowmoon Village, Shadowmoon Valley (H)
+			[140] = true,     -- Altar of Sha'tar, Shadowmoon Valley (N)
+			[159] = true,     -- Sanctum of the Stars, Shadowmoon Valley (N)			
+		},
+		fishing_low = 280,
+		fishing_high = 375,
+	}
+	
+	zones[BZ["Netherstorm"]] = {
+		low = 67,
+		high = 70,
+		continent = Outland,
+		instances = {
+			[BZ["The Mechanar"]] = true,
+			[BZ["The Botanica"]] = true,
+			[BZ["The Arcatraz"]] = true,
+			[BZ["Tempest Keep"]] = true, -- = The Eye
+		},
+		paths = {
+			[BZ["Blade's Edge Mountains"]] = true,
+			[BZ["The Mechanar"]] = true,
+			[BZ["The Botanica"]] = true,
+			[BZ["The Arcatraz"]] = true,
+			[BZ["Tempest Keep"]] = true,
+		},
+		complexes = {
+--			[BZ["Tempest Keep"]] = true,
+		},		
+		flightnodes = {
+			[150] = true,    -- Cosmowrench, Netherstorm (N)
+			[122] = true,    -- Area 52, Netherstorm (N)
+			[139] = true,    -- The Stormspire, Netherstorm (N)
+		},
+		fishing_low = 380,
+		fishing_high = 475,
+	}	
+	
+	
+	
+	-- TBC 2.4 zone
+	zones[BZ["Isle of Quel'Danas"]] = {
+		continent = Eastern_Kingdoms,
+		low = 70,
+		high = 70,
+		instances = {
+			[BZ["Magister's Terrace"]] = true,
+			[BZ["Sunwell Plateau"]] = true,
+		},
+		paths = {
+			[BZ["Magister's Terrace"]] = true,
+			[BZ["Sunwell Plateau"]] = true,
+		},		
+--		flightnodes = {
+--			[00] = true,    -- TODO
+--		},
+		fishing_low = 355,
+		fishing_high = 450,
+	}
+
+
+
+
+	-- Wrath of the Lich King Cities
+	
+	zones[BZ["Dalaran"]] = {
+		continent = Northrend,
+		paths = {
+			[BZ["The Violet Hold"]] = true,
+			[transports["DALARAN_CRYSTALSONG_TELEPORT"]] = true,
+			[transports["DALARAN_COT_PORTAL"]] = true,
+			[transports["DALARAN_STORMWIND_PORTAL"]] = true,
+			[transports["DALARAN_ORGRIMMAR_PORTAL"]] = true,
+		},
+		instances = {
+			[BZ["The Violet Hold"]] = true,
+--			[BZ["Dalaran Arena"]] = true,
+		},
+		flightnodes = {
+			[310] = true,     -- Dalaran (N)
+		},		
+		type = "City",
+		texture = "Dalaran",
+		faction = "Sanctuary",
+		fishing_low = 450,  -- TODO: check
+		fishing_high = 525,
+	}	
+
+
+
+	-- Wrath of the Lich King Zones
+
+	zones[BZ["Borean Tundra"]] = {
+		low = 68,
+		high = 72,
+		continent = Northrend,
+		paths = {
+			[BZ["Coldarra"]] = true,
+			[BZ["Dragonblight"]] = true,
+			[BZ["Sholazar Basin"]] = true,
+			[transports["BOREANTUNDRA_STORMWIND_BOAT"]] = true,
+			[transports["BOREANTUNDRA_ORGRIMMAR_ZEPPELIN"]] = true,
+			[transports["DRAGONBLIGHT_BOREANTUNDRA_BOAT"]] = true,
+		},
+		instances = {
+			[BZ["The Nexus"]] = true,
+			[BZ["The Oculus"]] = true,
+			[BZ["The Eye of Eternity"]] = true,
+		},
+		complexes = {
+			[BZ["Coldarra"]] = true,
+		},
+		flightnodes = {
+			[226] = true,     -- Transitus Shield, Coldarra (N)
+			[234] = true,     -- Coldarra Ledge, Coldarra (H)
+			[245] = true,     -- Valiance Keep, Borean Tundra (A)
+			[246] = true,     -- Fizzcrank Airstrip, Borean Tundra (A)
+			[257] = true,     -- Warsong Hold, Borean Tundra (H)
+			[258] = true,     -- Taunka'le Village, Borean Tundra (H)
+			[259] = true,     -- Bor'gorok Outpost, Borean Tundra (H)
+			[289] = true,     -- Amber Ledge, Borean Tundra (N)
+			[296] = true,     -- Unu'pe, Borean Tundra (N)
+		},				
+		fishing_low = 370,  -- TODO: check
+		fishing_high = 475,
+	}
+
+	zones[BZ["Howling Fjord"]] = {
+		low = 68,
+		high = 72,
+		continent = Northrend,
+		paths = {
+			[BZ["Grizzly Hills"]] = true,
+			[transports["HOWLINGFJORD_WETLANDS_BOAT"]] = true,
+			[transports["HOWLINGFJORD_UNDERCITY_ZEPPELIN"]] = true,
+			[transports["HOWLINGFJORD_DRAGONBLIGHT_BOAT"]] = true,
+			[BZ["Utgarde Keep"]] = true,
+			[BZ["Utgarde Pinnacle"]] = true,
+		},
+		instances = {
+			[BZ["Utgarde Keep"]] = true,
+			[BZ["Utgarde Pinnacle"]] = true,
+		},
+		flightnodes = {
+			[183] = true,     -- Valgarde Port, Howling Fjord (A)
+			[184] = true,     -- Fort Wildervar, Howling Fjord (A)
+			[185] = true,     -- Westguard Keep, Howling Fjord (A)
+			[190] = true,     -- New Agamand, Howling Fjord (H)
+			[191] = true,     -- Vengeance Landing, Howling Fjord (H)
+			[192] = true,     -- Camp Winterhoof, Howling Fjord (H)
+			[248] = true,     -- Apothecary Camp, Howling Fjord (H)
+			[295] = true,     -- Kamagua, Howling Fjord (N)
+		},				
+		fishing_low = 370,  -- TODO: check
+		fishing_high = 475,
+	}
+
+	zones[BZ["Dragonblight"]] = {
+		low = 71,
+		high = 75,
+		continent = Northrend,
+		paths = {
+			[BZ["Borean Tundra"]] = true,
+			[BZ["Grizzly Hills"]] = true,
+			[BZ["Zul'Drak"]] = true,
+			[BZ["Crystalsong Forest"]] = true,
+			[transports["BOREANTUNDRA_DRAGONBLIGHT_BOAT"]] = true,
+			[transports["DRAGONBLIGHT_HOWLINGFJORD_BOAT"]] = true,
+			[BZ["Azjol-Nerub"]] = true,
+			[BZ["Ahn'kahet: The Old Kingdom"]] = true,
+			[BZ["Naxxramas"]] = true,
+			[BZ["The Obsidian Sanctum"]] = true,
+		},
+		instances = {
+			[BZ["Azjol-Nerub"]] = true,
+			[BZ["Ahn'kahet: The Old Kingdom"]] = true,
+			[BZ["Naxxramas"]] = true,
+			[BZ["The Obsidian Sanctum"]] = true,
+			[BZ["Strand of the Ancients"]] = true,
+		},
+		flightnodes = {
+			[244] = true,     -- Wintergarde Keep, Dragonblight (A)
+			[247] = true,     -- Stars' Rest, Dragonblight (A)
+			[251] = true,     -- Fordragon Hold, Dragonblight (A)
+			[252] = true,     -- Wyrmrest Temple, Dragonblight (N)
+			[254] = true,     -- Venomspite, Dragonblight (H)
+			[256] = true,     -- Agmar's Hammer, Dragonblight (H)
+			[260] = true,     -- Kor'koron Vanguard, Dragonblight (H)
+			[294] = true,     -- Moa'ki, Dragonblight (N)
+		},				
+		fishing_low = 370,  -- TODO: check
+		fishing_high = 475,
+	}
+
+	zones[BZ["Grizzly Hills"]] = {
+		low = 73,
+		high = 75,
+		continent = Northrend,
+		paths = {
+			[BZ["Howling Fjord"]] = true,
+			[BZ["Dragonblight"]] = true,
+			[BZ["Zul'Drak"]] = true,
+			[BZ["Drak'Tharon Keep"]] = true,
+		},
+		instances = BZ["Drak'Tharon Keep"],
+		flightnodes = {
+			[249] = true,     -- Camp Oneqwah, Grizzly Hills (H)
+			[250] = true,     -- Conquest Hold, Grizzly Hills (H)
+			[253] = true,     -- Amberpine Lodge, Grizzly Hills (A)
+			[255] = true,     -- Westfall Brigade, Grizzly Hills (A)
+		},				
+		fishing_low = 370,  -- TODO: check
+		fishing_high = 475,
+	}
+
+	zones[BZ["Zul'Drak"]] = {
+		low = 74,
+		high = 77,
+		continent = Northrend,
+		paths = {
+			[BZ["Dragonblight"]] = true,
+			[BZ["Grizzly Hills"]] = true,
+			[BZ["Crystalsong Forest"]] = true,
+			[BZ["Gundrak"]] = true,
+			[BZ["Drak'Tharon Keep"]] = true,
+		},
+		instances = {
+			[BZ["Gundrak"]] = true,
+			[BZ["Drak'Tharon Keep"]] = true,
+		},
+		flightnodes = {
+			[304] = true,     -- The Argent Stand, Zul'Drak (N)
+			[305] = true,     -- Ebon Watch, Zul'Drak (N)
+			[306] = true,     -- Light's Breach, Zul'Drak (N)
+			[307] = true,     -- Zim'Torga, Zul'Drak (N)
+			[290] = true,     -- Argent Stand, Zul'Drak (H)
+			[331] = true,     -- Gundrak, Zul'Drak (N)
+		},				
+		fishing_low = 370,  -- TODO: check
+		fishing_high = 475,
+	}
+
+	zones[BZ["Sholazar Basin"]] = {
+		low = 75,
+		high = 78,
+		continent = Northrend,
+		paths = BZ["Borean Tundra"],
+		flightnodes = {
+			[308] = true,     -- River's Heart, Sholazar Basin (N)
+			[309] = true,     -- Nesingwary Base Camp, Sholazar Basin (N)
+		},				
+		fishing_low = 450,  -- TODO: check
+		fishing_high = 525,
+	}
+
+	zones[BZ["Crystalsong Forest"]] = {
+		low = 77,
+		high = 80,
+		continent = Northrend,
+		paths = {
+			[transports["CRYSTALSONG_DALARAN_TELEPORT"]] = true,
+			[BZ["Dragonblight"]] = true,
+			[BZ["Zul'Drak"]] = true,
+			[BZ["The Storm Peaks"]] = true,
+		},
+		flightnodes = {
+			[336] = true,     -- Windrunner's Overlook, Crystalsong Forest (A)
+			[337] = true,     -- Sunreaver's Command, Crystalsong Forest (H)
+		},				
+		fishing_low = 425,  -- TODO: check
+		fishing_high = 500,
+	}
+
+	zones[BZ["The Storm Peaks"]] = {
+		low = 77,
+		high = 80,
+		continent = Northrend,
+		paths = {
+			[BZ["Crystalsong Forest"]] = true,
+			[BZ["Halls of Stone"]] = true,
+			[BZ["Halls of Lightning"]] = true,
+			[BZ["Ulduar"]] = true,
+		},
+		instances = {
+			[BZ["Halls of Stone"]] = true,
+			[BZ["Halls of Lightning"]] = true,
+			[BZ["Ulduar"]] = true,
+		},
+		flightnodes = {
+			[320] = true,     -- K3, The Storm Peaks (N)
+			[321] = true,     -- Frosthold, The Storm Peaks (A)
+			[322] = true,     -- Dun Nifflelem, The Storm Peaks (N)
+			[323] = true,     -- Grom'arsh Crash-Site, The Storm Peaks (H)
+			[324] = true,     -- Camp Tunka'lo, The Storm Peaks (H)
+			[326] = true,     -- Ulduar, The Storm Peaks (N)
+			[327] = true,     -- Bouldercrag's Refuge, The Storm Peaks (N)
+		},				
+		fishing_low = 475,  -- TODO: check
+		fishing_high = 550,
+	}
+
+	zones[BZ["Icecrown"]] = {
+		low = 77,
+		high = 80,
+		continent = Northrend,
+		paths = {
+			[BZ["Trial of the Champion"]] = true,
+			[BZ["Trial of the Crusader"]] = true,
+			[BZ["The Forge of Souls"]] = true,
+			[BZ["Pit of Saron"]] = true,
+			[BZ["Halls of Reflection"]] = true,
+			[BZ["Icecrown Citadel"]] = true,
+			[BZ["Hrothgar's Landing"]] = true,
+		},
+		instances = {
+			[BZ["Trial of the Champion"]] = true,
+			[BZ["Trial of the Crusader"]] = true,
+			[BZ["The Forge of Souls"]] = true,
+			[BZ["Pit of Saron"]] = true,
+			[BZ["Halls of Reflection"]] = true,
+			[BZ["Icecrown Citadel"]] = true,
+			[BZ["Isle of Conquest"]] = true,
+		},
+		flightnodes = {
+			[325] = true,     -- Death's Rise, Icecrown (N)
+			[333] = true,     -- The Shadow Vault, Icecrown (H)
+			[334] = true,     -- The Argent Vanguard, Icecrown (N)
+			[335] = true,     -- Crusaders' Pinnacle, Icecrown (N)
+			[340] = true,     -- Argent Tournament Grounds, Icecrown (N)
+		},				
+		fishing_low = 475,  -- TODO: check
+		fishing_high = 550,
+	}
+
+	zones[BZ["Hrothgar's Landing"]] = { 
+		low = 77,
+		high = 80,
+		paths = BZ["Icecrown"],
+		continent = Northrend,
+		fishing_low = 475,  -- TODO: check
+		fishing_high = 550,
+	}
+
+	zones[BZ["Wintergrasp"]] = {
+		low = 77,
+		high = 80,
+		continent = Northrend,
+		paths = BZ["Vault of Archavon"],
+		instances = BZ["Vault of Archavon"],
+		type = "PvP Zone",
+		flightnodes = {
+			[303] = true,     -- Valiance Landing Camp, Wintergrasp (A)
+			[332] = true,     -- Warsong Camp, Wintergrasp (H)
+		},						
+		fishing_low = 450,  -- TODO: check
+		fishing_high = 550,
+	}
+
+--	zones[BZ["The Frozen Sea"]] = {
+--		continent = Northrend,
+--		fishing_low = 450,  -- TODO: check
+--		fishing_high = 575,
+--	}
+
+
+
+
+
+	-- Classic dungeons ------------------------
 
 	zones[BZ["Ragefire Chasm"]] = {
 		low = 13,
 		high = 18,
 		continent = Kalimdor,
 		paths = BZ["Orgrimmar"],
-		groupMinSize = 5,
-		groupMaxSize = 10,
+		groupSize = 5,
 		faction = "Horde",
 		type = "Instance",
 		entrancePortal = { BZ["Orgrimmar"], 52.8, 49 },
@@ -2645,8 +4585,7 @@ do
 		high = 26,
 		continent = Eastern_Kingdoms,
 		paths = BZ["Westfall"],
-		groupMinSize = 5,
-		groupMaxSize = 10,
+		groupSize = 5,
 		faction = "Alliance",
 		type = "Instance",
 		fishing_low = 1,
@@ -2659,8 +4598,7 @@ do
 		high = 30,
 		continent = Eastern_Kingdoms,
 		paths = BZ["Silverpine Forest"],
-		groupMinSize = 5,
-		groupMaxSize = 10,
+		groupSize = 5,
 		type = "Instance",
 		entrancePortal = { BZ["Silverpine Forest"], 44.80, 67.83 },
 	}
@@ -2670,8 +4608,7 @@ do
 		high = 24,
 		continent = Kalimdor,
 		paths = BZ["The Barrens"],
-		groupMinSize = 5,
-		groupMaxSize = 10,
+		groupSize = 5,
 		type = "Instance",
 		fishing_low = 1,
 		fishing_high = 75,
@@ -2683,8 +4620,7 @@ do
 		high = 32,
 		continent = Kalimdor,
 		paths = BZ["Ashenvale"],
-		groupMinSize = 5,
-		groupMaxSize = 10,
+		groupSize = 5,
 		type = "Instance",
 		fishing_low = 1,
 		fishing_high = 75,
@@ -2696,8 +4632,7 @@ do
 		high = 32,
 		continent = Eastern_Kingdoms,
 		paths = BZ["Stormwind City"],
-		groupMinSize = 5,
-		groupMaxSize = 10,
+		groupSize = 5,
 		faction = "Alliance",
 		type = "Instance",
 		entrancePortal = { BZ["Stormwind City"], 39.85, 54.30 },
@@ -2708,8 +4643,7 @@ do
 		high = 38,
 		continent = Eastern_Kingdoms,
 		paths = BZ["Dun Morogh"],
-		groupMinSize = 5,
-		groupMaxSize = 10,
+		groupSize = 5,
 		faction = "Alliance",
 		type = "Instance",
 		entrancePortal = { BZ["Dun Morogh"], 24, 38.9 },
@@ -2721,8 +4655,7 @@ do
 		high = 45,
 		continent = Eastern_Kingdoms,
 		paths = BZ["Tirisfal Glades"],
-		groupMinSize = 5,
-		groupMaxSize = 10,
+		groupSize = 5,
 		type = "Instance",
 		fishing_low = 130,
 		fishing_high = 225,
@@ -2734,8 +4667,7 @@ do
 		high = 38,
 		continent = Kalimdor,
 		paths = BZ["The Barrens"],
-		groupMinSize = 5,
-		groupMaxSize = 10,
+		groupSize = 5,
 		type = "Instance",
 		entrancePortal = { BZ["The Barrens"], 40.8, 94.5 },
 	}
@@ -2745,8 +4677,7 @@ do
 		high = 46,
 		continent = Kalimdor,
 		paths = BZ["The Barrens"],
-		groupMinSize = 5,
-		groupMaxSize = 10,
+		groupSize = 5,
 		type = "Instance",
 		entrancePortal = { BZ["The Barrens"], 47.5, 23.7 },
 	}
@@ -2757,8 +4688,7 @@ do
 		high = 55,
 		continent = Kalimdor,
 		paths = BZ["Desolace"],
-		groupMinSize = 5,
-		groupMaxSize = 10,
+		groupSize = 5,
 		type = "Instance",
 		fishing_low = 205,
 		fishing_high = 300,
@@ -2770,8 +4700,7 @@ do
 		high = 51,
 		continent = Eastern_Kingdoms,
 		paths = BZ["Badlands"],
-		groupMinSize = 5,
-		groupMaxSize = 10,
+		groupSize = 5,
 		type = "Instance",
 		entrancePortal = { BZ["Badlands"], 42.4, 18.6 },
 	}
@@ -2782,8 +4711,7 @@ do
 		high = 60,
 		continent = Kalimdor,
 		paths = BZ["Dire Maul"],
-		groupMinSize = 5,
-		groupMaxSize = 10,
+		groupSize = 5,
 		type = "Instance",
 		complex = BZ["Dire Maul"],
 		entrancePortal = { BZ["Feralas"], 66.7, 34.8 },
@@ -2795,8 +4723,7 @@ do
 		high = 60,
 		continent = Kalimdor,
 		paths = BZ["Dire Maul"],
-		groupMinSize = 5,
-		groupMaxSize = 10,
+		groupSize = 5,
 		type = "Instance",
 		complex = BZ["Dire Maul"],
 		entrancePortal = { BZ["Feralas"], 60.3, 30.6 },
@@ -2808,8 +4735,7 @@ do
 		high = 60,
 		continent = Kalimdor,
 		paths = BZ["Dire Maul"],
-		groupMinSize = 5,
-		groupMaxSize = 10,
+		groupSize = 5,
 		type = "Instance",
 		complex = BZ["Dire Maul"],
 		entrancePortal = { BZ["Feralas"], 62.5, 24.9 },
@@ -2845,8 +4771,7 @@ do
 		high = 46,
 		continent = Kalimdor,
 		paths = BZ["Tanaris"],
-		groupMinSize = 5,
-		groupMaxSize = 10,
+		groupSize = 5,
 		type = "Instance",
 		entrancePortal = { BZ["Tanaris"], 36, 11.7 },
 	}
@@ -2858,11 +4783,11 @@ do
 		continent = Eastern_Kingdoms,
 		paths = {
 			[BZ["Molten Core"]] = true,
---			[BZ["Blackrock Mountain"]] = true,
+			[BZ["Blackrock Mountain"]] = true,
 		},
 		groupSize = 5,
 		type = "Instance",
---		complex = BZ["Blackrock Mountain"],
+		complex = BZ["Blackrock Mountain"],
 		entrancePortal = { BZ["Searing Gorge"], 35.4, 84.4 },
 	}
 
@@ -2872,8 +4797,7 @@ do
 		high = 56,
 		continent = Eastern_Kingdoms,
 		paths = BZ["Swamp of Sorrows"],
-		groupMinSize = 5,
-		groupMaxSize = 10,
+		groupSize = 5,
 		type = "Instance",
 		fishing_low = 205,
 		fishing_high = 300,
@@ -2885,17 +4809,410 @@ do
 		high = 60,
 		continent = Eastern_Kingdoms,
 		paths = {
---			[BZ["Blackrock Mountain"]] = true,
+			[BZ["Blackrock Mountain"]] = true,
 			[BZ["Blackwing Lair"]] = true,
 		},
-		groupMinSize = 5,
-		groupMaxSize = 10,
+		groupSize = 5,
 		type = "Instance",
---		complex = BZ["Blackrock Mountain"],
+		complex = BZ["Blackrock Mountain"],
 		entrancePortal = { BZ["Burning Steppes"], 29.7, 37.5 },
 	}
 
-	-- Raids --
+
+	
+
+
+
+	-- The Burning Crusade Dungeons --------------------------------------
+
+
+	-- a.k.a The Escape From Durnholde
+	zones[BZ["Old Hillsbrad Foothills"]] = {
+		low = 66,
+		high = 70,
+		continent = Kalimdor,
+		paths = {
+			[BZ["Caverns of Time"]] = true,
+		},
+		groupSize = 5,
+		type = "Instance",
+		complex = BZ["Caverns of Time"],
+		entrancePortal = { BZ["Tanaris"], 66.2, 49.3 },
+	}
+
+	-- a.k.a. Opening of the Dark Portal
+	zones[BZ["The Black Morass"]] = {
+		low = 67,
+		high = 70,
+		continent = Kalimdor,
+		paths = {
+			[BZ["Caverns of Time"]] = true,
+		},
+		groupSize = 5,
+		type = "Instance",
+		complex = BZ["Caverns of Time"],
+		entrancePortal = { BZ["Tanaris"], 66.2, 49.3 },
+	}
+
+	zones[BZ["Karazhan"]] = {
+		low = 70,
+		high = 70,
+		continent = Eastern_Kingdoms,
+		paths = BZ["Deadwind Pass"],
+		groupSize = 5,
+		type = "Instance",
+		entrancePortal = { BZ["Deadwind Pass"], 40.9, 73.2 },
+	}
+	
+	zones[BZ["Zul'Aman"]] = {
+		low = 70,
+		high = 70,
+		continent = Eastern_Kingdoms,
+		paths = BZ["Ghostlands"],
+		groupSize = 5,
+		type = "Instance",
+		entrancePortal = { BZ["Ghostlands"], 77.7, 63.2 },
+	}
+	
+	-- ---
+
+	zones[BZ["Hellfire Ramparts"]] = {
+		low = 60,
+		high = 62,
+		continent = Outland,
+		paths = BZ["Hellfire Citadel"],
+		groupSize = 5,
+		type = "Instance",
+		complex = BZ["Hellfire Citadel"],
+		entrancePortal = { BZ["Hellfire Peninsula"], 47.8, 53.3 },
+	}
+	
+	zones[BZ["The Blood Furnace"]] = {
+		low = 61,
+		high = 63,
+		continent = Outland,
+		paths = BZ["Hellfire Citadel"],
+		groupSize = 5,
+		type = "Instance",
+		complex = BZ["Hellfire Citadel"],
+		entrancePortal = { BZ["Hellfire Peninsula"], 46.1, 51.8 },
+	}
+	
+	zones[BZ["The Shattered Halls"]] = {
+		low = 70,
+		high = 70,
+		continent = Outland,
+		paths = BZ["Hellfire Citadel"],
+		groupSize = 5,
+		type = "Instance",
+		complex = BZ["Hellfire Citadel"],
+		entrancePortal = { BZ["Hellfire Peninsula"], 47.8, 51.1 },
+	}
+	
+	-- ---
+	
+	zones[BZ["The Slave Pens"]] = {
+		low = 62,
+		high = 64,
+		continent = Outland,
+		paths = BZ["Coilfang Reservoir"],
+		groupSize = 5,
+		type = "Instance",
+		complex = BZ["Coilfang Reservoir"],
+		entrancePortal = { BZ["Zangarmarsh"], 49.0, 36.0 },
+	}
+	
+	zones[BZ["The Underbog"]] = {
+		low = 63,
+		high = 65,
+		continent = Outland,
+		paths = BZ["Coilfang Reservoir"],
+		groupSize = 5,
+		type = "Instance",
+		complex = BZ["Coilfang Reservoir"],
+		entrancePortal = { BZ["Zangarmarsh"], 54.0, 43.0 },
+	}
+	
+	zones[BZ["The Steamvault"]] = {
+		low = 70,
+		high = 70,
+		continent = Outland,
+		paths = BZ["Coilfang Reservoir"],
+		groupSize = 5,
+		type = "Instance",
+		complex = BZ["Coilfang Reservoir"],
+		entrancePortal = { BZ["Zangarmarsh"], 50.0, 33.0 },
+	}
+	
+	-- ---
+	
+	zones[BZ["Auchenai Crypts"]] = {
+		low = 65,
+		high = 67,
+		continent = Outland,
+		paths = BZ["Auchindoun"],
+		groupSize = 5,
+		type = "Instance",
+		complex = BZ["Auchindoun"],
+		entrancePortal = { BZ["Terokkar Forest"], 35, 65.8 },
+	}
+	
+	zones[BZ["Shadow Labyrinth"]] = {
+		low = 70,
+		high = 72,
+		continent = Outland,
+		paths = BZ["Auchindoun"],
+		groupSize = 5,
+		type = "Instance",
+		complex = BZ["Auchindoun"],
+		entrancePortal = { BZ["Terokkar Forest"], 39.6, 65.5 },
+	}
+	
+	zones[BZ["Sethekk Halls"]] = {
+		low = 67,
+		high = 69,
+		continent = Outland,
+		paths = BZ["Auchindoun"],
+		groupSize = 5,
+		type = "Instance",
+		complex = BZ["Auchindoun"],
+		entrancePortal = { BZ["Terokkar Forest"], 43.4, 65.4 },
+	}
+	
+	zones[BZ["Mana-Tombs"]] = {
+		low = 64,
+		high = 66,
+		continent = Outland,
+		paths = BZ["Auchindoun"],
+		groupSize = 5,
+		type = "Instance",
+		complex = BZ["Auchindoun"],
+		entrancePortal = { BZ["Terokkar Forest"], 39.2, 58.5 },
+	}	
+	
+	-- ---
+
+	zones[BZ["The Mechanar"]] = {
+		low = 69,
+		high = 70,
+		continent = Outland,
+		paths = BZ["Netherstorm"],
+--		paths = BZ["Tempest Keep"],
+		groupSize = 5,
+		type = "Instance",
+--		complex = BZ["Tempest Keep"],
+		entrancePortal = { BZ["Netherstorm"], 76.5, 65.1 },
+	}
+	
+	zones[BZ["The Botanica"]] = {
+		low = 70,
+		high = 70,
+		continent = Outland,
+		paths = BZ["Netherstorm"],
+--		paths = BZ["Tempest Keep"],
+		groupSize = 5,
+		type = "Instance",
+--		complex = BZ["Tempest Keep"],
+		entrancePortal = { BZ["Netherstorm"], 76.5, 65.1 },
+	}
+	
+	zones[BZ["The Arcatraz"]] = {
+		low = 70,
+		high = 70,
+		continent = Outland,
+		paths = BZ["Netherstorm"],
+--		paths = BZ["Tempest Keep"],
+		groupSize = 5,
+		type = "Instance",
+--		complex = BZ["Tempest Keep"],
+		entrancePortal = { BZ["Netherstorm"], 76.5, 65.1 },
+	}
+
+	-- TBC 2.4 dungeon
+	zones[BZ["Magister's Terrace"]] = {
+		low = 70,
+		high = 70,
+		continent = Eastern_Kingdoms,
+		paths = BZ["Isle of Quel'Danas"],
+		groupSize = 5,
+		type = "Instance",
+		entrancePortal = { BZ["Isle of Quel'Danas"], 61.3, 30.9 },
+	}	
+
+
+
+
+
+
+	-- Wrath of the Lich King Dungeons
+	
+	zones[BZ["Utgarde Keep"]] = {
+		low = 69,
+		high = 72,
+		continent = Northrend,
+		paths = BZ["Howling Fjord"],
+		groupSize = 5,
+		type = "Instance",
+		entrancePortal = { BZ["Howling Fjord"], 57.30, 46.84 },
+	}
+
+	zones[BZ["Utgarde Pinnacle"]] = {
+		low = 79,
+		high = 80,
+		continent = Northrend,
+		paths = BZ["Howling Fjord"],
+		groupSize = 5,
+		type = "Instance",
+		entrancePortal = { BZ["Howling Fjord"], 57.25, 46.60 },
+	}
+
+	zones[BZ["The Nexus"]] = {
+		low = 71,
+		high = 73,
+		continent = Northrend,
+		paths = BZ["Coldarra"],
+		groupSize = 5,
+		type = "Instance",
+		complex = BZ["Coldarra"],
+		entrancePortal = { BZ["Borean Tundra"], 27.50, 26.03 },
+	}
+
+	zones[BZ["The Oculus"]] = {
+		low = 79,
+		high = 80,
+		continent = Northrend,
+		paths = BZ["Coldarra"],
+		groupSize = 5,
+		type = "Instance",
+		complex = BZ["Coldarra"],
+		entrancePortal = { BZ["Borean Tundra"], 27.52, 26.67 },
+	}
+
+	zones[BZ["Azjol-Nerub"]] = {
+		low = 72,
+		high = 74,
+		continent = Northrend,
+		paths = BZ["Dragonblight"],
+		groupSize = 5,
+		type = "Instance",
+		entrancePortal = { BZ["Dragonblight"], 26.01, 50.83 },
+	}
+
+	zones[BZ["Ahn'kahet: The Old Kingdom"]] = {
+		low = 73,
+		high = 75,
+		continent = Northrend,
+		paths = BZ["Dragonblight"],
+		groupSize = 5,
+		type = "Instance",
+		entrancePortal = { BZ["Dragonblight"], 28.49, 51.73 },
+	}
+
+	zones[BZ["Drak'Tharon Keep"]] = {
+		low = 74,
+		high = 76,
+		continent = Northrend,
+		paths = {
+			[BZ["Grizzly Hills"]] = true,
+			[BZ["Zul'Drak"]] = true,
+		},
+		groupSize = 5,
+		type = "Instance",
+		entrancePortal = { BZ["Zul'Drak"], 28.53, 86.93 },
+	}
+
+	zones[BZ["Gundrak"]] = {
+		low = 76,
+		high = 78,
+		continent = Northrend,
+		paths = BZ["Zul'Drak"],
+		groupSize = 5,
+		type = "Instance",
+		fishing_low = 350,  -- TODO: check
+		fishing_high = 475,
+		entrancePortal = { BZ["Zul'Drak"], 76.14, 21.00 },
+	}
+
+	zones[BZ["Halls of Stone"]] = {
+		low = 77,
+		high = 79,
+		continent = Northrend,
+		paths = BZ["The Storm Peaks"],
+		groupSize = 5,
+		type = "Instance",
+		entrancePortal = { BZ["The Storm Peaks"], 39.52, 26.91 },
+	}
+
+	zones[BZ["Halls of Lightning"]] = {
+		low = 79,
+		high = 80,
+		continent = Northrend,
+		paths = BZ["The Storm Peaks"],
+		groupSize = 5,
+		type = "Instance",
+		entrancePortal = { BZ["The Storm Peaks"], 45.38, 21.37 },
+	}
+
+	zones[BZ["The Violet Hold"]] = {
+		low = 75,
+		high = 77,
+		continent = Northrend,
+		paths = BZ["Dalaran"],
+		groupSize = 5,
+		type = "Instance",
+		entrancePortal = { BZ["Dalaran"], 66.78, 68.19 },
+	}
+
+	zones[BZ["Trial of the Champion"]] = {
+		low = 79,
+		high = 80,
+		continent = Northrend,
+		paths = BZ["Icecrown"],
+		groupSize = 5,
+		type = "Instance",
+		entrancePortal = { BZ["Icecrown"], 74.18, 20.45 },
+	}
+
+	zones[BZ["The Forge of Souls"]] = {
+		low = 79,
+		high = 80,
+		continent = Northrend,
+		paths = BZ["Icecrown"],
+		groupSize = 5,
+		type = "Instance",
+		entrancePortal = { BZ["Icecrown"], 52.60, 89.35 },
+	}
+
+	zones[BZ["Pit of Saron"]] = {
+		low = 79,
+		high = 80,
+		continent = Northrend,
+		paths = BZ["Icecrown"],
+		groupSize = 5,
+		type = "Instance",
+		fishing_low = 475,  -- TODO: check
+		fishing_high = 550,
+		entrancePortal = { BZ["Icecrown"], 52.60, 89.35 },
+	}
+
+	zones[BZ["Halls of Reflection"]] = {
+		low = 79,
+		high = 80,
+		continent = Northrend,
+		paths = BZ["Icecrown"],
+		groupSize = 5,
+		type = "Instance",
+		entrancePortal = { BZ["Icecrown"], 52.60, 89.35 },
+	}
+	
+	
+
+
+
+
+
+
+	-- Classic Raids -----------------------------
 
 	zones[BZ["Zul'Gurub"]] = {
 		low = 60,
@@ -2931,17 +5248,17 @@ do
 		entrancePortal = { BZ["Searing Gorge"], 35.4, 84.4 },
 	}
 
---	zones[BZ["Ahn'Qiraj Temple"]] = {
---		low = 60,
---		high = 60,
---		continent = Kalimdor,
---		paths = BZ["Ahn'Qiraj: The Fallen Kingdom"],
---		groupSize = 40,
---		type = "Instance",
---		complex = BZ["Ahn'Qiraj: The Fallen Kingdom"],
---		entrancePortal = { BZ["Ahn'Qiraj: The Fallen Kingdom"], 46.6, 7.4 },
---	}
---
+	zones[BZ["Ahn'Qiraj Temple"]] = {
+		low = 60,
+		high = 60,
+		continent = Kalimdor,
+		paths = BZ["Ahn'Qiraj: The Fallen Kingdom"],
+		groupSize = 40,
+		type = "Instance",
+		complex = BZ["Ahn'Qiraj: The Fallen Kingdom"],
+		entrancePortal = { BZ["Ahn'Qiraj: The Fallen Kingdom"], 46.6, 7.4 },  TODO
+	}
+
 	zones[BZ["Ruins of Ahn'Qiraj"]] = {
 		low = 60,
 		high = 60,
@@ -2950,7 +5267,7 @@ do
 		groupSize = 20,
 		type = "Instance",
 		complex = BZ["Ahn'Qiraj: The Fallen Kingdom"],
-		entrancePortal = { BZ["Ahn'Qiraj: The Fallen Kingdom"], 58.9, 14.3 },
+		entrancePortal = { BZ["Ahn'Qiraj: The Fallen Kingdom"], 58.9, 14.3 },  TODO
 	}
 
 	zones[BZ["Onyxia's Lair"]] = {
@@ -2963,18 +5280,199 @@ do
 		entrancePortal = { BZ["Dustwallow Marsh"], 52, 76 },
 	}
 
---	zones[BZ["Naxxramas"]] = {
---		low = 60,
---		high = 60,
---		continent = Eastern_Kingdoms,
---		paths = BZ["Eastern Plaguelands"],
---		groupSize = 40,
---		type = "Instance",
---		fishing_high = 1,  -- acid
---		entrancePortal = { BZ["Eastern Plaguelands"], 87.30, 51.00 },
---	}
+	zones[BZ["Naxxramas"]] = {
+		low = 60,
+		high = 60,
+		continent = Eastern_Kingdoms,
+		paths = BZ["Eastern Plaguelands"],
+		groupSize = 40,
+		type = "Instance",
+		fishing_high = 1,  -- acid
+		entrancePortal = { BZ["Eastern Plaguelands"], 87.30, 51.00 },
+	}
 
-	-- Battlegrounds --
+
+	-- The Burning Crusade Raids --------------------------------------
+	
+	zones[BZ["Magtheridon's Lair"]] = {
+		low = 70,
+		high = 70,
+		continent = Outland,
+		paths = BZ["Hellfire Citadel"],
+		groupSize = 25,
+		type = "Instance",
+		complex = BZ["Hellfire Citadel"],
+		entrancePortal = { BZ["Hellfire Peninsula"], 46.8, 54.9 },
+	}	
+	
+	zones[BZ["Serpentshrine Cavern"]] = {
+		low = 70,
+		high = 70,
+		continent = Outland,
+		paths = BZ["Coilfang Reservoir"],
+		groupSize = 25,
+		type = "Instance",
+		complex = BZ["Coilfang Reservoir"],
+		entrancePortal = { BZ["Zangarmarsh"], 50.2, 40.8 },
+	}	
+	
+	zones[BZ["Gruul's Lair"]] = {
+		low = 70,
+		high = 70,
+		continent = Outland,
+		paths = BZ["Blade's Edge Mountains"],
+		groupSize = 25,
+		type = "Instance",
+		entrancePortal = { BZ["Blade's Edge Mountains"], 68, 24 },
+	}	
+	
+	zones[BZ["Black Temple"]] = {
+		low = 70,
+		high = 70,
+		continent = Outland,
+		paths = BZ["Shadowmoon Valley"],
+		groupSize = 25,
+		type = "Instance",
+		entrancePortal = { BZ["Shadowmoon Valley"], 77.7, 43.7 },
+	}	
+	
+	--zones[BZ["The Eye"]] = {
+	zones[BZ["Tempest Keep"]] = {
+		low = 70,
+		high = 70,
+		continent = Outland,
+--		paths = BZ["Tempest Keep"],
+		paths = BZ["Netherstorm"],		
+		groupSize = 25,
+		type = "Instance",
+--		complex = BZ["Tempest Keep"],
+		entrancePortal = { BZ["Netherstorm"], 76.5, 65.1 },
+	}	
+	
+	-- a.k.a The Battle for Mount Hyjal
+	zones[BZ["Hyjal Summit"]] = {
+		low = 70,
+		high = 70,
+		continent = Kalimdor,
+		paths = BZ["Caverns of Time"],
+		groupSize = 25,
+		type = "Instance",
+		complex = BZ["Caverns of Time"],
+		entrancePortal = { BZ["Tanaris"], 66.2, 49.3 },
+	}
+	
+
+	
+	
+	-- TBC 2.4 raid
+	zones[BZ["Sunwell Plateau"]] = {
+		low = 70,
+		high = 70,
+		continent = Eastern_Kingdoms,
+		paths = BZ["Isle of Quel'Danas"],
+		groupSize = 25,
+		type = "Instance",
+		entrancePortal = { BZ["Isle of Quel'Danas"], 44.3, 45.7 },
+	}	
+
+
+	-- Wrath of the Lich King Raids
+	
+	zones[BZ["The Eye of Eternity"]] = {
+		low = 80,
+		high = 80,
+		continent = Northrend,
+		paths = BZ["Coldarra"],
+		groupSize = 10,
+		altGroupSize = 25,
+		type = "Instance",
+		complex = BZ["Coldarra"],
+		entrancePortal = { BZ["Borean Tundra"], 27.54, 26.68 },
+	}
+
+	zones[BZ["Naxxramas"]] = {
+		low = 80,
+		high = 80,
+		continent = Northrend,
+		paths = BZ["Dragonblight"],
+		groupSize = 10,
+		altGroupSize = 25,
+		type = "Instance",
+		entrancePortal = { BZ["Dragonblight"], 87.30, 51.00 },
+	}
+
+	zones[BZ["The Obsidian Sanctum"]] = {
+		low = 80,
+		high = 80,
+		continent = Northrend,
+		paths = BZ["Dragonblight"],
+		groupSize = 10,
+		altGroupSize = 25,
+		type = "Instance",
+		entrancePortal = { BZ["Dragonblight"], 60.00, 57.00 },
+	}
+
+	zones[BZ["Ulduar"]] = {
+		low = 80,
+		high = 80,
+		continent = Northrend,
+		paths = BZ["The Storm Peaks"],
+		groupSize = 10,
+		altGroupSize = 25,
+		type = "Instance",
+		entrancePortal = { BZ["The Storm Peaks"], 41.56, 17.76 },
+		fishing_min = 550,
+	}
+	
+	zones[BZ["Trial of the Crusader"]] = {
+		low = 80,
+		high = 80,
+		continent = Northrend,
+		paths = BZ["Icecrown"],
+		groupSize = 10,
+		altGroupSize = 25,
+		type = "Instance",
+		entrancePortal = { BZ["Icecrown"], 75.07, 21.80 },
+	}
+
+	zones[BZ["Icecrown Citadel"]] = {
+		low = 80,
+		high = 80,
+		continent = Northrend,
+		paths = BZ["Icecrown"],
+		groupSize = 10,
+		altGroupSize = 25,
+		type = "Instance",
+		entrancePortal = { BZ["Icecrown"], 53.86, 87.27 },
+	}
+
+	zones[BZ["Vault of Archavon"]] = {
+		low = 80,
+		high = 80,
+		continent = Northrend,
+		paths = BZ["Wintergrasp"],
+		groupSize = 10,
+		altGroupSize = 25,
+		type = "Instance",
+		entrancePortal = { BZ["Wintergrasp"], 50, 11.2 }, 
+	}
+
+	zones[BZ["The Ruby Sanctum"]] = {
+		low = 80,
+		high = 80,
+		continent = Northrend,
+		paths = BZ["Dragonblight"],
+		groupSize = 10,
+		altGroupSize = 25,
+		type = "Instance",
+		entrancePortal = { BZ["Dragonblight"], 61.00, 53.00 },
+	}
+
+
+
+
+
+	-- Classic Battlegrounds --
 
 	zones[BZ["Arathi Basin"]] = {
 		low = 10,
@@ -3006,7 +5504,94 @@ do
 		texture = "AlteracValley",
 	}
 
-	-- Complexes --
+	-- The Burning Crusade Battlegrounds --------------------------------------
+	
+	zones[BZ["Eye of the Storm"]] = {
+		low = 61,
+		high = 70,
+		continent = Outland,
+		paths = BZ["Netherstorm"],
+		groupSize = 25,
+		type = "Battleground",
+		texture = "NetherstormArena",
+	}
+	
+	
+	
+	-- Wrath of the Lich King Battelgrounds
+	
+	zones[BZ["Strand of the Ancients"]] = {
+		low = 65,
+		high = 80,
+		continent = Northrend,
+		groupSize = 15,
+		type = "Battleground",
+		texture = "StrandoftheAncients",
+	}
+	
+	zones[BZ["Isle of Conquest"]] = {
+		low = 75,
+		high = 80,
+		continent = Northrend,
+		groupSize = 40,
+		type = "Battleground",
+		texture = "IsleofConquest",
+	}
+	
+	
+	
+	
+	
+	
+	-- The Burning Crusade Arenas --------------------------------------
+	
+	zones[BZ["Blade's Edge Arena"]] = {
+		low = 70,
+		high = 70,
+		continent = Outland,
+		paths = BZ["Blade's Edge Mountains"],
+		type = "Arena",
+	}
+
+	zones[BZ["Nagrand Arena"]] = {
+		low = 70,
+		high = 70,
+		continent = Outland,
+		paths = BZ["Nagrand"],
+		type = "Arena",
+	}
+	
+	zones[BZ["Ruins of Lordaeron"]] = {
+		low = 70,
+		high = 70,
+		continent = Kalimdor,
+		paths = BZ["Undercity"],
+		type = "Arena",
+	}
+	
+
+	-- Wrath of the Lich King Arenas
+	
+--	zones[BZ["Dalaran Arena"]] = {
+--		low = 80,
+--		high = 80,
+--		continent = Northrend,
+--		type = "Arena",
+--	}
+	
+	zones[BZ["The Ring of Valor"]] = {
+		low = 80,
+		high = 80,
+		continent = Kalimdor,
+		type = "Arena",
+	}	
+	
+	
+	
+
+
+
+	-- Classic Complexes ---------------------------------------------
 
 	zones[BZ["Dire Maul"]] = {
 		low = 36,
@@ -3026,43 +5611,176 @@ do
 		type = "Complex",
 	}
 
---	zones[BZ["Blackrock Mountain"]] = {
---		low = 47,
---		high = 100,
---		continent = Eastern_Kingdoms,
---		instances = {
---			[BZ["Blackrock Depths"]] = true,
---			[BZ["Blackrock Caverns"]] = true,
---			[BZ["Blackwing Lair"]] = true,
---			[BZ["Molten Core"]] = true,
---			[BZ["Blackrock Spire"]] = true,
---		},
---		paths = {
---			[BZ["Burning Steppes"]] = true,
---			[BZ["Searing Gorge"]] = true,
---			[BZ["Blackwing Lair"]] = true,
---			[BZ["Molten Core"]] = true,
---			[BZ["Blackrock Depths"]] = true,
---			[BZ["Blackrock Caverns"]] = true,
---			[BZ["Blackrock Spire"]] = true,
---		},
---		type = "Complex",
---		fishing_high = 1, -- lava
---	}
---
---	zones[BZ["Ahn'Qiraj: The Fallen Kingdom"]] = {
---		low = 60,
---		high = 63,
---		continent = Kalimdor,
---		paths = {
---			[BZ["Silithus"]] = true,
---		},
---		instances = {
---			[BZ["Ahn'Qiraj Temple"]] = true,
---			[BZ["Ruins of Ahn'Qiraj"]] = true,
---		},
---		type = "Complex",
---	}
+	zones[BZ["Blackrock Mountain"]] = {
+		low = 52,
+		high = 60,
+		continent = Eastern_Kingdoms,
+		instances = {
+			[BZ["Blackrock Depths"]] = true,
+			[BZ["Blackwing Lair"]] = true,
+			[BZ["Molten Core"]] = true,
+			[BZ["Blackrock Spire"]] = true,
+		},
+		paths = {
+			[BZ["Burning Steppes"]] = true,
+			[BZ["Searing Gorge"]] = true,
+			[BZ["Blackwing Lair"]] = true,
+			[BZ["Molten Core"]] = true,
+			[BZ["Blackrock Depths"]] = true,
+			[BZ["Blackrock Spire"]] = true,
+		},
+		type = "Complex",
+		fishing_high = 1, -- lava
+	}
+
+
+	-- The Burning Crusade complexes -------------------------------------
+
+
+	zones[BZ["Ahn'Qiraj: The Fallen Kingdom"]] = {
+		low = 60,
+		high = 63,
+		continent = Kalimdor,
+		instances = {
+			[BZ["Ahn'Qiraj Temple"]] = true,
+			[BZ["Ruins of Ahn'Qiraj"]] = true,
+		},
+		paths = {
+			[BZ["Silithus"]] = true,
+			[BZ["Ahn'Qiraj Temple"]] = true,
+			[BZ["Ruins of Ahn'Qiraj"]] = true,
+		},	
+		type = "Complex",
+	}
+
+	-- No UiMapID available?
+	 zones[BZ["Caverns of Time"]] = {
+		low = 66,
+		high = 70,
+		continent = Kalimdor,
+		instances = {
+			[BZ["Old Hillsbrad Foothills"]] = true,
+			[BZ["The Black Morass"]] = true,
+			[BZ["Hyjal Summit"]] = true,
+		},
+		paths = {
+			[BZ["Tanaris"]] = true,
+			[BZ["Old Hillsbrad Foothills"]] = true,
+			[BZ["The Black Morass"]] = true,
+			[BZ["Hyjal Summit"]] = true,
+		},
+		type = "Complex",
+	}
+	
+
+	-- No UiMapID available?
+	zones[BZ["Hellfire Citadel"]] = {
+		low = 60,
+		high = 70,
+		continent = Outland,
+		instances = {
+			[BZ["The Blood Furnace"]] = true,
+			[BZ["Hellfire Ramparts"]] = true,
+			[BZ["Magtheridon's Lair"]] = true,
+			[BZ["The Shattered Halls"]] = true,
+		},
+		paths = {
+			[BZ["Hellfire Peninsula"]] = true,
+			[BZ["The Blood Furnace"]] = true,
+			[BZ["Hellfire Ramparts"]] = true,
+			[BZ["Magtheridon's Lair"]] = true,
+			[BZ["The Shattered Halls"]] = true,
+		},
+		type = "Complex",
+	}	
+	
+	-- No UiMapID available?
+	zones[BZ["Coilfang Reservoir"]] = {
+		low = 62,
+		high = 70,
+		continent = Outland,
+		instances = {
+			[BZ["The Underbog"]] = true,
+			[BZ["Serpentshrine Cavern"]] = true,
+			[BZ["The Steamvault"]] = true,
+			[BZ["The Slave Pens"]] = true,
+		},
+		paths = {
+			[BZ["Zangarmarsh"]] = true,
+			[BZ["The Underbog"]] = true,
+			[BZ["Serpentshrine Cavern"]] = true,
+			[BZ["The Steamvault"]] = true,
+			[BZ["The Slave Pens"]] = true,
+		},
+		type = "Complex",	
+	}	
+	
+	-- No UiMapID available?
+	-- inner circle: "Ring of Observance"
+	zones[BZ["Auchindoun"]] = {
+		low = 64,
+		high = 70,
+		continent = Outland,
+		instances = {
+			[BZ["Auchenai Crypts"]] = true,
+			[BZ["Shadow Labyrinth"]] = true,
+			[BZ["Sethekk Halls"]] = true,
+			[BZ["Mana-Tombs"]] = true,
+		},
+		paths = {
+			[BZ["Terokkar Forest"]] = true,
+			[BZ["Auchenai Crypts"]] = true,
+			[BZ["Shadow Labyrinth"]] = true,
+			[BZ["Sethekk Halls"]] = true,
+			[BZ["Mana-Tombs"]] = true,
+		},
+		type = "Complex",	
+	}		
+	
+	-- Had to remove the complex 'Tempest Keep' because of the 'The Eye' instance actually has same name
+	-- zones[BZ["Tempest Keep"]] = {
+		-- low = 67,
+		-- high = 70,
+		-- continent = Outland,
+		-- instances = {
+			-- [BZ["The Mechanar"]] = true,
+			-- [BZ["The Eye"]] = true,
+			-- [BZ["The Botanica"]] = true,
+			-- [BZ["The Arcatraz"]] = true,
+		-- },
+		-- paths = {
+			-- [BZ["Netherstorm"]] = true,
+			-- [BZ["The Mechanar"]] = true,
+			-- [BZ["The Eye"]] = true,
+			-- [BZ["The Botanica"]] = true,
+			-- [BZ["The Arcatraz"]] = true,
+		-- },
+		-- type = "Complex",	
+	-- }	
+	
+
+	
+	-- Wrath of the Lich King Complexes
+	
+	zones[BZ["Coldarra"]] = {
+		low = 69,
+		high = 80,
+		continent = Northrend,
+		paths = {
+			[BZ["Borean Tundra"]] = true,
+			[BZ["The Nexus"]] = true,
+			[BZ["The Oculus"]] = true,
+			[BZ["The Eye of Eternity"]] = true,
+		},
+		instances = {
+			[BZ["The Nexus"]] = true,
+			[BZ["The Oculus"]] = true,
+			[BZ["The Eye of Eternity"]] = true,
+		},
+		type = "Complex",
+	}
+
+
 
 
 
@@ -3075,214 +5793,427 @@ do
 -- Thanks to GatherMate2 Classic
 local herbTranslations = {
 	koKR = {
-		["Peacebloom"] = "평온초",
-		["Silverleaf"] = "은엽수 덤불",
-		["Earthroot"] = "뱀뿌리",
-		["Mageroyal"] = "마법초",
-		["Briarthorn"] = "찔레가시",
-		["Stranglekelp"] = "갈래물풀",
-		["Bruiseweed"] = "생채기풀",
-		["Wild Steelbloom"] = "야생 철쭉",
-		["Grave Moss"] = "무덤이끼",
-		["Kingsblood"] = "왕꽃잎풀",
-		["Liferoot"] = "생명의 뿌리",
-		["Fadeleaf"] = "미명초잎",
-		["Goldthorn"] = "황금가시",
-		["Khadgar's Whisker"] = "카드가의 수염",
-		["Wintersbite"] = "겨울서리풀",
-		["Firebloom"] = "화염초",
-		["Purple Lotus"] = "보라 연꽃",
+		["Adder's Tongue"] = "얼레지 꽃",
+		["Ancient Lichen"] = "고대 이끼",
 		["Arthas' Tears"] = "아서스의 눈물",
-		["Sungrass"] = "태양풀",
-		["Blindweed"] = "실명초",
-		["Ghost Mushroom"] = "유령버섯",
-		["Gromsblood"] = "그롬의 피",
-		["Golden Sansam"] = "황금 산삼",
-		["Dreamfoil"] = "꿈풀",
-		["Mountain Silversage"] = "은초롱이",
-		["Plaguebloom"] = "역병초",
-		["Icecap"] = "얼음송이",
 		["Black Lotus"] = "검은 연꽃",
+		["Blindweed"] = "실명초",
+		["Briarthorn"] = "찔레가시",
+		["Bruiseweed"] = "생채기풀",
+		["Dreamfoil"] = "꿈풀",
+		["Dreaming Glory"] = "꿈초롱이",
+		["Earthroot"] = "뱀뿌리",
+		["Fadeleaf"] = "미명초잎",
+		["Felweed"] = "지옥풀",
+		["Firebloom"] = "화염초",
+		["Firethorn"] = "화염가시풀",
+		["Frost Lotus"] = "서리 연꽃",
+		["Frozen Herb"] = "얼어붙은 약초",
+		["Ghost Mushroom"] = "유령버섯",
+		["Goldclover"] = "황금토끼풀",
+		["Golden Sansam"] = "황금 산삼",
+		["Goldthorn"] = "황금가시",
+		["Grave Moss"] = "무덤이끼",
+		["Gromsblood"] = "그롬의 피",
+		["Icecap"] = "얼음송이",
+		["Icethorn"] = "얼음가시",
+		["Khadgar's Whisker"] = "카드가의 수염",
+		["Kingsblood"] = "왕꽃잎풀",
+		["Lichbloom"] = "시체꽃",
+		["Liferoot"] = "생명의 뿌리",
+		["Mageroyal"] = "마법초",
+		["Mana Thistle"] = "마나 엉겅퀴",
+		["Mountain Silversage"] = "은초롱이",
+		["Netherbloom"] = "황천꽃",
+		["Nightmare Vine"] = "악몽의 덩굴",
+		["Peacebloom"] = "평온초",
+		["Plaguebloom"] = "역병초",
+		["Purple Lotus"] = "보라 연꽃",
+		["Ragveil"] = "가림막이버섯",
+		["Silverleaf"] = "은엽수 덤불",
+		["Stranglekelp"] = "갈래물풀",
+		["Sungrass"] = "태양풀",
+		["Talandra's Rose"] = "탈란드라의 장미",
+		["Terocone"] = "테로열매",
+		["Tiger Lily"] = "참나리",
+		["Wild Steelbloom"] = "야생 철쭉",
+		["Wintersbite"] = "겨울서리풀",
 	},
 	deDE = {
-		["Peacebloom"] = "Friedensblume",
-		["Silverleaf"] = "Silberblatt",
-		["Earthroot"] = "Erdwurzel",
-		["Mageroyal"] = "Maguskönigskraut",
-		["Briarthorn"] = "Wilddornrose",
-		["Stranglekelp"] = "Würgetang",
-		["Bruiseweed"] = "Beulengras",
-		["Wild Steelbloom"] = "Wildstahlblume",
-		["Grave Moss"] = "Grabmoos",
-		["Kingsblood"] = "Königsblut",
-		["Liferoot"] = "Lebenswurz",
-		["Fadeleaf"] = "Blassblatt",
-		["Goldthorn"] = "Golddorn",
-		["Khadgar's Whisker"] = "Khadgars Schnurrbart",
-		["Wintersbite"] = "Winterbiss",
-		["Firebloom"] = "Feuerblüte",
-		["Purple Lotus"] = "Lila Lotus",
+		["Adder's Tongue"] = "Schlangenzunge",
+		["Ancient Lichen"] = "Urflechte",
 		["Arthas' Tears"] = "Arthas’ Tränen",
-		["Sungrass"] = "Sonnengras",
-		["Blindweed"] = "Blindkraut",
-		["Ghost Mushroom"] = "Geisterpilz",
-		["Gromsblood"] = "Gromsblut",
-		["Golden Sansam"] = "Goldener Sansam",
-		["Dreamfoil"] = "Traumblatt",
-		["Mountain Silversage"] = "Bergsilbersalbei",
-		["Plaguebloom"] = "Pestblüte",
-		["Icecap"] = "Eiskappe",
 		["Black Lotus"] = "Schwarzer Lotus",
+		["Blindweed"] = "Blindkraut",
+		["Briarthorn"] = "Wilddornrose",
+		["Bruiseweed"] = "Beulengras",
+		["Dreamfoil"] = "Traumblatt",
+		["Dreaming Glory"] = "Traumwinde",
+		["Earthroot"] = "Erdwurzel",
+		["Fadeleaf"] = "Blassblatt",
+		["Felweed"] = "Teufelsgras",
+		["Firebloom"] = "Feuerblüte",
+		["Firethorn"] = "Feuerdorn",
+		["Frost Lotus"] = "Frostlotus",
+		["Frozen Herb"] = "Gefrorenes Kraut",
+		["Ghost Mushroom"] = "Geisterpilz",
+		["Goldclover"] = "Goldklee",
+		["Golden Sansam"] = "Goldener Sansam",
+		["Goldthorn"] = "Golddorn",
+		["Grave Moss"] = "Grabmoos",
+		["Gromsblood"] = "Gromsblut",
+		["Icecap"] = "Eiskappe",
+		["Icethorn"] = "Eisdorn",
+		["Khadgar's Whisker"] = "Khadgars Schnurrbart",
+		["Kingsblood"] = "Königsblut",
+		["Lichbloom"] = "Lichblüte",
+		["Liferoot"] = "Lebenswurz",
+		["Mageroyal"] = "Maguskönigskraut",
+		["Mana Thistle"] = "Manadistel",
+		["Mountain Silversage"] = "Bergsilbersalbei",
+		["Netherbloom"] = "Netherblüte",
+		["Nightmare Vine"] = "Alptraumranke",
+		["Peacebloom"] = "Friedensblume",
+		["Plaguebloom"] = "Pestblüte",
+		["Purple Lotus"] = "Lila Lotus",
+		["Ragveil"] = "Zottelkappe",
+		["Silverleaf"] = "Silberblatt",
+		["Stranglekelp"] = "Würgetang",
+		["Sungrass"] = "Sonnengras",
+		["Talandra's Rose"] = "Talandras Rose",
+		["Terocone"] = "Terozapfen",
+		["Tiger Lily"] = "Tigerlilie",
+		["Wild Steelbloom"] = "Wildstahlblume",
+		["Wintersbite"] = "Winterbiss",	
 	},
 	frFR = {
-		["Peacebloom"] = "Pacifique",
-		["Silverleaf"] = "Feuillargent",
-		["Earthroot"] = "Terrestrine",
-		["Mageroyal"] = "Mage royal",
-		["Briarthorn"] = "Eglantine",
-		["Stranglekelp"] = "Etouffante",
-		["Bruiseweed"] = "Doulourante",
-		["Wild Steelbloom"] = "Aciérite sauvage",
-		["Grave Moss"] = "Tombeline",
-		["Kingsblood"] = "Sang-royal",
-		["Liferoot"] = "Vietérule",
-		["Fadeleaf"] = "Pâlerette",
-		["Goldthorn"] = "Dorépine",
-		["Khadgar's Whisker"] = "Moustache de Khadgar",
-		["Wintersbite"] = "Hivernale",
-		["Firebloom"] = "Fleur de feu",
-		["Purple Lotus"] = "Lotus pourpre",
+		["Adder's Tongue"] = "Langue de serpent",
+		["Ancient Lichen"] = "Lichen ancien",
 		["Arthas' Tears"] = "Larmes d'Arthas",
-		["Sungrass"] = "Soleillette",
-		["Blindweed"] = "Aveuglette",
-		["Ghost Mushroom"] = "Champignon fantôme",
-		["Gromsblood"] = "Gromsang",
-		["Golden Sansam"] = "Sansam doré",
-		["Dreamfoil"] = "Feuillerêve",
-		["Mountain Silversage"] = "Sauge-argent des montagnes",
-		["Plaguebloom"] = "Chagrinelle",
-		["Icecap"] = "Calot de glace",
 		["Black Lotus"] = "Lotus noir",
+		["Blindweed"] = "Aveuglette",
+		["Briarthorn"] = "Eglantine",
+		["Bruiseweed"] = "Doulourante",
+		["Dreamfoil"] = "Feuillerêve",
+		["Dreaming Glory"] = "Glaurier",
+		["Earthroot"] = "Terrestrine",
+		["Fadeleaf"] = "Pâlerette",
+		["Felweed"] = "Gangrelette",
+		["Firebloom"] = "Fleur de feu",
+		["Firethorn"] = "Epine de feu",
+		["Frost Lotus"] = "Lotus givré",
+		["Frozen Herb"] = "Herbe gelée",
+		["Ghost Mushroom"] = "Champignon fantôme",
+		["Goldclover"] = "Trèfle doré",
+		["Golden Sansam"] = "Sansam doré",
+		["Goldthorn"] = "Dorépine",
+		["Grave Moss"] = "Tombeline",
+		["Gromsblood"] = "Gromsang",
+		["Icecap"] = "Calot de glace",
+		["Icethorn"] = "Glacépine",
+		["Khadgar's Whisker"] = "Moustache de Khadgar",
+		["Kingsblood"] = "Sang-royal",
+		["Lichbloom"] = "Fleur-de-liche",
+		["Liferoot"] = "Vietérule",
+		["Mageroyal"] = "Mage royal",
+		["Mana Thistle"] = "Chardon de mana",
+		["Mountain Silversage"] = "Sauge-argent des montagnes",
+		["Netherbloom"] = "Néantine",
+		["Nightmare Vine"] = "Cauchemardelle",
+		["Peacebloom"] = "Pacifique",
+		["Plaguebloom"] = "Chagrinelle",
+		["Purple Lotus"] = "Lotus pourpre",
+		["Ragveil"] = "Voile-misère",
+		["Silverleaf"] = "Feuillargent",
+		["Stranglekelp"] = "Etouffante",
+		["Sungrass"] = "Soleillette",
+		["Talandra's Rose"] = "Rose de Talandra",
+		["Terocone"] = "Terocône",
+		["Tiger Lily"] = "Lys tigré",
+		["Wild Steelbloom"] = "Aciérite sauvage",
+		["Wintersbite"] = "Hivernale",		
 	},
 	esES = {
-		["Peacebloom"] = "Flor de paz",
-		["Silverleaf"] = "Hojaplata",
-		["Earthroot"] = "Raíz de tierra",
-		["Mageroyal"] = "Marregal",
-		["Briarthorn"] = "Brezospina",
-		["Stranglekelp"] = "Alga estranguladora",
-		["Bruiseweed"] = "Hierba cardenal",
-		["Wild Steelbloom"] = "Acérita salvaje",
-		["Grave Moss"] = "Musgo de tumba",
-		["Kingsblood"] = "Sangrerregia",
-		["Liferoot"] = "Vidarraíz",
-		["Fadeleaf"] = "Pálida",
-		["Goldthorn"] = "Espina de oro",
-		["Khadgar's Whisker"] = "Mostacho de Khadgar",
-		["Wintersbite"] = "Ivernalia",
-		["Firebloom"] = "Flor de fuego",
-		["Purple Lotus"] = "Loto cárdeno",
+		["Adder's Tongue"] = "Lengua de víboris",
+		["Ancient Lichen"] = "Liquen Antiguo",
 		["Arthas' Tears"] = "Lágrimas de Arthas",
-		["Sungrass"] = "Solea",
-		["Blindweed"] = "Carolina",
-		["Ghost Mushroom"] = "Champiñón fantasma",
-		["Gromsblood"] = "Gromsanguina",
-		["Golden Sansam"] = "Sansam dorado",
-		["Dreamfoil"] = "Hojasueño",
-		["Mountain Silversage"] = "Salviargenta de montaña",
-		["Plaguebloom"] = "Flor de peste",
-		["Icecap"] = "Setelo",
 		["Black Lotus"] = "Loto negro",
+		["Blindweed"] = "Carolina",
+		["Briarthorn"] = "Brezospina",
+		["Bruiseweed"] = "Hierba cardenal",
+		["Dreamfoil"] = "Hojasueño",
+		["Dreaming Glory"] = "Gloria de ensueño",
+		["Earthroot"] = "Raíz de tierra",
+		["Fadeleaf"] = "Pálida",
+		["Felweed"] = "Hierba vil",
+		["Firebloom"] = "Flor de fuego",
+		["Firethorn"] = "Espino de fuego",
+		["Frost Lotus"] = "Loto de escarcha",
+		["Frozen Herb"] = "Hierba congelada",
+		["Ghost Mushroom"] = "Champiñón fantasma",
+		["Goldclover"] = "Trébol de oro",
+		["Golden Sansam"] = "Sansam dorado",
+		["Goldthorn"] = "Espina de oro",
+		["Grave Moss"] = "Musgo de tumba",
+		["Gromsblood"] = "Gromsanguina",
+		["Icecap"] = "Setelo",
+		["Icethorn"] = "Espina de hielo",
+		["Khadgar's Whisker"] = "Mostacho de Khadgar",
+		["Kingsblood"] = "Sangrerregia",
+		["Lichbloom"] = "Flor exánime",
+		["Liferoot"] = "Vidarraíz",
+		["Mageroyal"] = "Marregal",
+		["Mana Thistle"] = "Cardo de maná",
+		["Mountain Silversage"] = "Salviargenta de montaña",
+		["Netherbloom"] = "Flor abisal",
+		["Nightmare Vine"] = "Vid pesadilla",
+		["Peacebloom"] = "Flor de paz",
+		["Plaguebloom"] = "Flor de peste",
+		["Purple Lotus"] = "Loto cárdeno",
+		["Ragveil"] = "Velada",
+		["Silverleaf"] = "Hojaplata",
+		["Stranglekelp"] = "Alga estranguladora",
+		["Sungrass"] = "Solea",
+		["Talandra's Rose"] = "Rosa de Talandra",
+		["Terocone"] = "Teropiña",
+		["Tiger Lily"] = "Lirio atigrado",
+		["Wild Steelbloom"] = "Acérita salvaje",
+		["Wintersbite"] = "Ivernalia",	
 	},
+	esMX = {
+		["Adder's Tongue"] = "Lengua de víboris",
+		["Ancient Lichen"] = "Liquen Antiguo",
+		["Arthas' Tears"] = "Lágrimas de Arthas",
+		["Black Lotus"] = "Loto negro",
+		["Blindweed"] = "Carolina",
+		["Briarthorn"] = "Brezospina",
+		["Bruiseweed"] = "Hierba cardenal",
+		["Dreamfoil"] = "Hojasueño",
+		["Dreaming Glory"] = "Gloria de ensueño",
+		["Earthroot"] = "Raíz de tierra",
+		["Fadeleaf"] = "Pálida",
+		["Felweed"] = "Hierba vil",
+		["Firebloom"] = "Flor de fuego",
+		["Firethorn"] = "Espino de fuego",
+		["Frost Lotus"] = "Loto de escarcha",
+		["Frozen Herb"] = "Hierba congelada",
+		["Ghost Mushroom"] = "Champiñón fantasma",
+		["Goldclover"] = "Trébol de oro",
+		["Golden Sansam"] = "Sansam dorado",
+		["Goldthorn"] = "Espina de oro",
+		["Grave Moss"] = "Musgo de tumba",
+		["Gromsblood"] = "Gromsanguina",
+		["Icecap"] = "Setelo",
+		["Icethorn"] = "Espina de hielo",
+		["Khadgar's Whisker"] = "Mostacho de Khadgar",
+		["Kingsblood"] = "Sangrerregia",
+		["Lichbloom"] = "Flor exánime",
+		["Liferoot"] = "Vidarraíz",
+		["Mageroyal"] = "Marregal",
+		["Mana Thistle"] = "Cardo de maná",
+		["Mountain Silversage"] = "Salviargenta de montaña",
+		["Netherbloom"] = "Flor abisal",
+		["Nightmare Vine"] = "Vid pesadilla",
+		["Peacebloom"] = "Flor de paz",
+		["Plaguebloom"] = "Flor de peste",
+		["Purple Lotus"] = "Loto cárdeno",
+		["Ragveil"] = "Velada",
+		["Silverleaf"] = "Hojaplata",
+		["Stranglekelp"] = "Alga estranguladora",
+		["Sungrass"] = "Solea",
+		["Talandra's Rose"] = "Rosa de Talandra",
+		["Terocone"] = "Teropiña",
+		["Tiger Lily"] = "Lirio atigrado",
+		["Wild Steelbloom"] = "Acérita salvaje",
+		["Wintersbite"] = "Ivernalia",	
+	},
+	itIT = {
+		["Adder's Tongue"] = "Lingua di vipera",
+		["Ancient Lichen"] = "Lichene Antico",
+		["Arthas' Tears"] = "Lacrima di Arthas",
+		["Black Lotus"] = "Fiore di Loto Nero",
+		["Blindweed"] = "Erbacieca",
+		["Briarthorn"] = "Grandespina",
+		["Bruiseweed"] = "Erbalivida",
+		["Dreamfoil"] = "Erba Onirica",
+		["Dreaming Glory"] = "Gloria d'Oro",
+		["Earthroot"] = "Bulboterro",
+		["Fadeleaf"] = "Foglia Eterea",
+		["Felweed"] = "Erbavile",
+		["Firebloom"] = "Sbocciafuoco",
+		["Firethorn"] = "Ardispina",
+		["Frost Lotus"] = "Loto Gelido",
+		["Frozen Herb"] = "Erba del Gelo",
+		["Ghost Mushroom"] = "Fungo Fantasma",
+		["Goldclover"] = "Trifoglio d'Oro",
+		["Golden Sansam"] = "Sansam Dorato",
+		["Goldthorn"] = "Orospino",
+		["Grave Moss"] = "Muschio di Tomba",
+		["Gromsblood"] = "Sangue di Grom",
+		["Icecap"] = "Corolla Invernale",
+		["Icethorn"] = "Gelaspina",
+		["Khadgar's Whisker"] = "Ciuffo di Khadgar",
+		["Kingsblood"] = "Sanguesacro",
+		["Lichbloom"] = "Fiore del Lich",
+		["Liferoot"] = "Bulbovivo",
+		["Mageroyal"] = "Magareale",
+		["Mana Thistle"] = "Cardomana",
+		["Mountain Silversage"] = "Ramargento Montano",
+		["Netherbloom"] = "Sbocciafatuo",
+		["Nightmare Vine"] = "Vite dell'Incubo",
+		["Peacebloom"] = "Sbocciapace",
+		["Plaguebloom"] = "Sbocciapiaga",
+		["Purple Lotus"] = "Fiore di Loto Purpureo",
+		["Ragveil"] = "Velorotto",
+		["Silverleaf"] = "Fogliargenta",
+		["Stranglekelp"] = "Algatorta",
+		["Sungrass"] = "Erbasole",
+		["Talandra's Rose"] = "Rosa di Talandra",
+		["Terocone"] = "Terocone",
+		["Tiger Lily"] = "Giglio Tigrato",
+		["Wild Steelbloom"] = "Fiordiferro Selvatico",
+		["Wintersbite"] = "Morso dell'Inverno",  -- guessed
+	},
+	ptBR = {
+		["Adder's Tongue"] = "Língua de Áspide",
+		["Ancient Lichen"] = "Líquen-antigo",
+		["Arthas' Tears"] = "Lágrimas de Arthas",
+		["Black Lotus"] = "Lótus Preto",
+		["Blindweed"] = "Ervacega",
+		["Briarthorn"] = "Cravespinho",
+		["Bruiseweed"] = "Ervamossa",
+		["Dreamfoil"] = "Folha-de-sonho",
+		["Dreaming Glory"] = "Glória-sonhadora",
+		["Earthroot"] = "Raiz-telúrica",
+		["Fadeleaf"] = "Some-folha",
+		["Felweed"] = "Vilerva",
+		["Firebloom"] = "Ignídea",
+		["Firethorn"] = "Espinho de Fogo",
+		["Frost Lotus"] = "Lótus Gélido",
+		["Frozen Herb"] = "Planta Congelada",
+		["Ghost Mushroom"] = "Cogumelo-fantasma",
+		["Goldclover"] = "Trevo Dourado",
+		["Golden Sansam"] = "Sonsona-dourada",
+		["Goldthorn"] = "Espinheira-dourada",
+		["Grave Moss"] = "Musgo-de-tumba",
+		["Gromsblood"] = "Sangue-de-grom",
+		["Icecap"] = "Chapéu-de-gelo",
+		["Icethorn"] = "Espinho de Gelo",
+		["Khadgar's Whisker"] = "Bigode-de-hadgar",
+		["Kingsblood"] = "Sangue-real",
+		["Lichbloom"] = "Flor-de-lich",
+		["Liferoot"] = "Raiz-da-vida",
+		["Mageroyal"] = "Magi-real",
+		["Mana Thistle"] = "Manacardo",
+		["Mountain Silversage"] = "Sávia-prata-da-montanha",
+		["Netherbloom"] = "Floretérea",
+		["Nightmare Vine"] = "Vinha-do-pesadelo",
+		["Peacebloom"] = "Botão-da-paz",
+		["Plaguebloom"] = "Botão-da-praga",  -- guessed
+		["Purple Lotus"] = "Lótus Roxo",
+		["Ragveil"] = "Trapovéu",
+		["Silverleaf"] = "Flor-de-seda",
+		["Stranglekelp"] = "Estrangulalga",
+		["Sungrass"] = "Ervassol",
+		["Talandra's Rose"] = "Rosa de Talandra",
+		["Terocone"] = "Teropinha",
+		["Tiger Lily"] = "Lírio Tigre",
+		["Wild Steelbloom"] = "Ácera-agreste",
+		["Wintersbite"] = "Modida-do-inverno",	-- guessed
+	},	
 	zhTW = {
-		["Peacebloom"] = "寧神花",
-		["Silverleaf"] = "銀葉草",
-		["Earthroot"] = "地根草",
-		["Mageroyal"] = "魔皇草",
-		["Briarthorn"] = "石南草",
-		["Stranglekelp"] = "荊棘藻",
-		["Bruiseweed"] = "跌打草",
-		["Wild Steelbloom"] = "野鋼花",
-		["Grave Moss"] = "墓地苔",
-		["Kingsblood"] = "皇血草",
-		["Liferoot"] = "活根草",
-		["Fadeleaf"] = "枯葉草",
-		["Goldthorn"] = "金棘草",
-		["Khadgar's Whisker"] = "卡德加的鬍鬚",
-		["Wintersbite"] = "冬刺草",
-		["Firebloom"] = "火焰花",
-		["Purple Lotus"] = "紫蓮花",
+		["Adder's Tongue"] = "奎蛇之舌",
+		["Ancient Lichen"] = "古老青苔",
 		["Arthas' Tears"] = "阿薩斯之淚",
-		["Sungrass"] = "太陽草",
-		["Blindweed"] = "盲目草",
-		["Ghost Mushroom"] = "鬼魂菇",
-		["Gromsblood"] = "格羅姆之血",
-		["Golden Sansam"] = "黃金蔘",
-		["Dreamfoil"] = "夢葉草",
-		["Mountain Silversage"] = "山鼠草",
-		["Plaguebloom"] = "瘟疫花",
-		["Icecap"] = "冰蓋草",
 		["Black Lotus"] = "黑蓮花",
+		["Blindweed"] = "盲目草",
+		["Briarthorn"] = "石南草",
+		["Bruiseweed"] = "跌打草",
+		["Dreamfoil"] = "夢葉草",
+		["Dreaming Glory"] = "譽夢草",
+		["Earthroot"] = "地根草",
+		["Fadeleaf"] = "枯葉草",
+		["Felweed"] = "魔獄草",
+		["Firebloom"] = "火焰花",
+		["Firethorn"] = "火棘",
+		["Frost Lotus"] = "冰霜蓮花",
+		["Frozen Herb"] = "冰凍草藥",
+		["Ghost Mushroom"] = "鬼魂菇",
+		["Goldclover"] = "金黃苜蓿",
+		["Golden Sansam"] = "黃金蔘",
+		["Goldthorn"] = "金棘草",
+		["Grave Moss"] = "墓地苔",
+		["Gromsblood"] = "格羅姆之血",
+		["Icecap"] = "冰蓋草",
+		["Icethorn"] = "冰棘",
+		["Khadgar's Whisker"] = "卡德加的鬍鬚",
+		["Kingsblood"] = "皇血草",
+		["Lichbloom"] = "低語藤",
+		["Liferoot"] = "活根草",
+		["Mageroyal"] = "魔皇草",
+		["Mana Thistle"] = "法力薊",
+		["Mountain Silversage"] = "山鼠草",
+		["Netherbloom"] = "虛空花",
+		["Nightmare Vine"] = "夢魘根",
+		["Peacebloom"] = "寧神花",
+		["Plaguebloom"] = "瘟疫花",
+		["Purple Lotus"] = "紫蓮花",
+		["Ragveil"] = "拉格維花",
+		["Silverleaf"] = "銀葉草",
+		["Stranglekelp"] = "荊棘藻",
+		["Sungrass"] = "太陽草",
+		["Talandra's Rose"] = "泰蘭卓的玫瑰",
+		["Terocone"] = "泰魯草",
+		["Tiger Lily"] = "虎百合",
+		["Wild Steelbloom"] = "野鋼花",
+		["Wintersbite"] = "冬刺草",	
 	},
 	zhCN = {
-		["Peacebloom"] = "宁神花",
-		["Silverleaf"] = "银叶草",
-		["Earthroot"] = "地根草",
-		["Mageroyal"] = "魔皇草",
-		["Briarthorn"] = "石南草",
-		["Stranglekelp"] = "荆棘藻",
-		["Bruiseweed"] = "跌打草",
-		["Wild Steelbloom"] = "野钢花",
-		["Grave Moss"] = "墓地苔",
-		["Kingsblood"] = "皇血草",
-		["Liferoot"] = "活根草",
-		["Fadeleaf"] = "枯叶草",
-		["Goldthorn"] = "金棘草",
-		["Khadgar's Whisker"] = "卡德加的胡须",
-		["Wintersbite"] = "冬刺草",
-		["Firebloom"] = "火焰花",
-		["Purple Lotus"] = "紫莲花",
+		["Adder's Tongue"] = "蛇信草",
+		["Ancient Lichen"] = "远古苔",
 		["Arthas' Tears"] = "阿尔萨斯之泪",
-		["Sungrass"] = "太阳草",
-		["Blindweed"] = "盲目草",
-		["Ghost Mushroom"] = "幽灵菇",
-		["Gromsblood"] = "格罗姆之血",
-		["Golden Sansam"] = "黄金参",
-		["Dreamfoil"] = "梦叶草",
-		["Mountain Silversage"] = "山鼠草",
-		["Plaguebloom"] = "瘟疫花",
-		["Icecap"] = "冰盖草",
 		["Black Lotus"] = "黑莲花",
-	},
-	ruRU = {
-		["Peacebloom"] = "Мироцвет",
-		["Silverleaf"] = "Сребролист",
-		["Earthroot"] = "Земляной корень",
-		["Mageroyal"] = "Магороза",
-		["Briarthorn"] = "Острошип",
-		["Stranglekelp"] = "Удавник",
-		["Bruiseweed"] = "Синячник",
-		["Wild Steelbloom"] = "Дикий сталецвет",
-		["Grave Moss"] = "Могильный мох",
-		["Kingsblood"] = "Королевская кровь",
-		["Liferoot"] = "Жизнекорень",
-		["Fadeleaf"] = "Бледнолист",
-		["Goldthorn"] = "Златошип",
-		["Khadgar's Whisker"] = "Кадгаров ус",
-		["Wintersbite"] = "Морозник",
-		["Firebloom"] = "Огнецвет",
-		["Purple Lotus"] = "Лиловый лотос",
-		["Arthas' Tears"] = "Слезы Артаса",
-		["Sungrass"] = "Солнечник",
-		["Blindweed"] = "Пастушья сумка",
-		["Ghost Mushroom"] = "Призрачная поганка",
-		["Gromsblood"] = "Кровь Грома",
-		["Golden Sansam"] = "Золотой сансам",
-		["Dreamfoil"] = "Снолист",
-		["Mountain Silversage"] = "Горный серебряный шалфей",
-		["Plaguebloom"] = "Чумоцвет",
-		["Icecap"] = "Ледяной зев",
-		["Black Lotus"] = "Черный лотос",
+		["Blindweed"] = "盲目草",
+		["Briarthorn"] = "石南草",
+		["Bruiseweed"] = "跌打草",
+		["Dreamfoil"] = "梦叶草",
+		["Dreaming Glory"] = "梦露花",
+		["Earthroot"] = "地根草",
+		["Fadeleaf"] = "枯叶草",
+		["Felweed"] = "魔草",
+		["Firebloom"] = "火焰花",
+		["Firethorn"] = "火棘",
+		["Frost Lotus"] = "雪莲花",
+		["Frozen Herb"] = "冰冷的草药",
+		["Ghost Mushroom"] = "幽灵菇",
+		["Goldclover"] = "金苜蓿",
+		["Golden Sansam"] = "黄金参",
+		["Goldthorn"] = "金棘草",
+		["Grave Moss"] = "墓地苔",
+		["Gromsblood"] = "格罗姆之血",
+		["Icecap"] = "冰盖草",
+		["Icethorn"] = "冰棘草",
+		["Khadgar's Whisker"] = "卡德加的胡须",
+		["Kingsblood"] = "皇血草",
+		["Lichbloom"] = "巫妖花",
+		["Liferoot"] = "活根草",
+		["Mageroyal"] = "魔皇草",
+		["Mana Thistle"] = "法力蓟",
+		["Mountain Silversage"] = "山鼠草",
+		["Netherbloom"] = "虚空花",
+		["Nightmare Vine"] = "噩梦藤",
+		["Peacebloom"] = "宁神花",
+		["Plaguebloom"] = "瘟疫花",
+		["Purple Lotus"] = "紫莲花",
+		["Ragveil"] = "邪雾草",
+		["Silverleaf"] = "银叶草",
+		["Stranglekelp"] = "荆棘藻",
+		["Sungrass"] = "太阳草",
+		["Talandra's Rose"] = "塔兰德拉的玫瑰",
+		["Terocone"] = "泰罗果",
+		["Tiger Lily"] = "卷丹",
+		["Wild Steelbloom"] = "野钢花",
+		["Wintersbite"] = "冬刺草",
 	},
 }
 
@@ -3305,17 +6236,21 @@ local herbs = {
 		itemID = 2447,
 		minLevel = 1,
 		zones = {
-			[1439] = 29,		-- Darkshore
-			[1426] = 79,		-- Dun Morogh
-			[1411] = 90,		-- Durotar
-			[1429] = 67,		-- Elwynn Forest
-			[1432] = 39,		-- Loch Modan
-			[1412] = 79,		-- Mulgore
-			[1421] = 40,		-- Silverpine Forest
-			[1438] = 96,		-- Teldrassil
-			[1413] = 81,		-- The Barrens
-			[1420] = 81,		-- Tirisfal Glades
-			[1436] = 32,		-- Westfall
+			[1439] = true,		-- Darkshore
+			[1426] = true,		-- Dun Morogh
+			[1411] = true,		-- Durotar
+			[1429] = true,		-- Elwynn Forest
+			[1432] = true,		-- Loch Modan
+			[1412] = true,		-- Mulgore
+			[1421] = true,		-- Silverpine Forest
+			[1438] = true,		-- Teldrassil
+			[1413] = true,		-- The Barrens
+			[1420] = true,		-- Tirisfal Glades
+			[1436] = true,		-- Westfall
+			[1943] = true,		-- Azuremyst Isle
+			[1950] = true,		-- Bloodmyst Isle
+			[1941] = true,		-- Eversong Woods
+			[1942] = true,		-- Ghostlands			
 		},
 	},
 	[765] = {
@@ -3323,17 +6258,21 @@ local herbs = {
 		itemID = 765,
 		minLevel = 1,
 		zones = {
-			[1439] = 39,		-- Darkshore
-			[1426] = 77,		-- Dun Morogh
-			[1411] = 79,		-- Durotar
-			[1429] = 115,		-- Elwynn Forest
-			[1432] = 49,		-- Loch Modan
-			[1412] = 90,		-- Mulgore
-			[1421] = 69,		-- Silverpine Forest
-			[1438] = 108,		-- Teldrassil
-			[1413] = 63,		-- The Barrens
-			[1420] = 106,		-- Tirisfal Glades
-			[1436] = 49,		-- Westfall
+			[1439] = true,		-- Darkshore
+			[1426] = true,		-- Dun Morogh
+			[1411] = true,		-- Durotar
+			[1429] = true,		-- Elwynn Forest
+			[1432] = true,		-- Loch Modan
+			[1412] = true,		-- Mulgore
+			[1421] = true,		-- Silverpine Forest
+			[1438] = true,		-- Teldrassil
+			[1413] = true,		-- The Barrens
+			[1420] = true,		-- Tirisfal Glades
+			[1436] = true,		-- Westfall
+			[1943] = true,		-- Azuremyst Isle
+			[1950] = true,		-- Bloodmyst Isle
+			[1941] = true,		-- Eversong Woods
+			[1942] = true,		-- Ghostlands
 		},
 	},
 	[2449] = {
@@ -3341,18 +6280,22 @@ local herbs = {
 		itemID = 2449,
 		minLevel = 15,
 		zones = {
-			[1439] = 32,		-- Darkshore
-			[1426] = 53,		-- Dun Morogh
-			[1411] = 49,		-- Durotar
-			[1429] = 44,		-- Elwynn Forest
-			[1432] = 15,		-- Loch Modan
-			[1412] = 42,		-- Mulgore
-			[1433] = 39,		-- Redridge Mountains
-			[1421] = 20,		-- Silverpine Forest
-			[1438] = 64,		-- Teldrassil
-			[1413] = 56,		-- The Barrens
-			[1420] = 49,		-- Tirisfal Glades
-			[1436] = 23,		-- Westfall
+			[1439] = true,		-- Darkshore
+			[1426] = true,		-- Dun Morogh
+			[1411] = true,		-- Durotar
+			[1429] = true,		-- Elwynn Forest
+			[1432] = true,		-- Loch Modan
+			[1412] = true,		-- Mulgore
+			[1433] = true,		-- Redridge Mountains
+			[1421] = true,		-- Silverpine Forest
+			[1438] = true,		-- Teldrassil
+			[1413] = true,		-- The Barrens
+			[1420] = true,		-- Tirisfal Glades
+			[1436] = true,		-- Westfall
+			[1943] = true,		-- Azuremyst Isle
+			[1950] = true,		-- Bloodmyst Isle
+			[1941] = true,		-- Eversong Woods
+			[1942] = true,		-- Ghostlands
 		},
 	},
 	[785] = {
@@ -3360,19 +6303,21 @@ local herbs = {
 		itemID = 785,
 		minLevel = 50,
 		zones = {
-			[1440] = 28,		-- Ashenvale
-			[1439] = 56,		-- Darkshore
-			[1411] = 15,		-- Durotar
-			[1431] = 26,		-- Duskwood
-			[1424] = 15,		-- Hillsbrad Foothills
-			[1432] = 44,		-- Loch Modan
-			[1433] = 33,		-- Redridge Mountains
-			[1421] = 48,		-- Silverpine Forest
-			[1442] = 27,		-- Stonetalon Mountains
-			[1438] = 21,		-- Teldrassil
-			[1413] = 159,		-- The Barrens
-			[1436] = 54,		-- Westfall
-			[1437] = 35,		-- Wetlands
+			[1440] = true,		-- Ashenvale
+			[1439] = true,		-- Darkshore
+			[1411] = true,		-- Durotar
+			[1431] = true,		-- Duskwood
+			[1424] = true,		-- Hillsbrad Foothills
+			[1432] = true,		-- Loch Modan
+			[1433] = true,		-- Redridge Mountains
+			[1421] = true,		-- Silverpine Forest
+			[1442] = true,		-- Stonetalon Mountains
+			[1438] = true,		-- Teldrassil
+			[1413] = true,		-- The Barrens
+			[1436] = true,		-- Westfall
+			[1437] = true,		-- Wetlands
+			[1950] = true,		-- Bloodmyst Isle
+			[1942] = true,		-- Ghostlands
 		},
 	},
 	[2450] = {
@@ -3380,17 +6325,19 @@ local herbs = {
 		itemID = 2450,
 		minLevel = 70,
 		zones = {
-			[1440] = 47,		-- Ashenvale
-			[1439] = 49,		-- Darkshore
-			[1431] = 62,		-- Duskwood
-			[1424] = 43,		-- Hillsbrad Foothills
-			[1432] = 42,		-- Loch Modan
-			[1433] = 46,		-- Redridge Mountains
-			[1421] = 51,		-- Silverpine Forest
-			[1442] = 44,		-- Stonetalon Mountains
-			[1413] = 156,		-- The Barrens
-			[1436] = 62,		-- Westfall
-			[1437] = 46,		-- Wetlands
+			[1440] = true,		-- Ashenvale
+			[1439] = true,		-- Darkshore
+			[1431] = true,		-- Duskwood
+			[1424] = true,		-- Hillsbrad Foothills
+			[1432] = true,		-- Loch Modan
+			[1433] = true,		-- Redridge Mountains
+			[1421] = true,		-- Silverpine Forest
+			[1442] = true,		-- Stonetalon Mountains
+			[1413] = true,		-- The Barrens
+			[1436] = true,		-- Westfall
+			[1437] = true,		-- Wetlands
+			[1950] = true,		-- Bloodmyst Isle
+			[1942] = true,		-- Ghostlands
 		},
 	},
 	[3820] = {
@@ -3398,20 +6345,22 @@ local herbs = {
 		itemID = 3820,
 		minLevel = 85,
 		zones = {
-			[1440] = 50,		-- Ashenvale
-			[1439] = 32,		-- Darkshore
-			[1443] = 49,		-- Desolace
-			[1445] = 7,			-- Dustwallow Marsh
-			[1444] = 16,		-- Feralas
-			[1424] = 11,		-- Hillsbrad Foothills
-			[1421] = 3,			-- Silverpine Forest
-			[1434] = 57,		-- Stranglethorn Vale
-			[1435] = 2,			-- Swamp of Sorrows
-			[1446] = 5,			-- Tanaris
-			[1413] = 34,		-- The Barrens
-			[1425] = 3,			-- The Hinterlands
-			[1436] = 33,		-- Westfall
-			[1437] = 46,		-- Wetlands
+			[1440] = true,		-- Ashenvale
+			[1439] = true,		-- Darkshore
+			[1443] = true,		-- Desolace
+			[1445] = true,		-- Dustwallow Marsh
+			[1444] = true,		-- Feralas
+			[1424] = true,		-- Hillsbrad Foothills
+			[1421] = true,		-- Silverpine Forest
+			[1434] = true,		-- Stranglethorn Vale
+			[1435] = true,		-- Swamp of Sorrows
+			[1446] = true,		-- Tanaris
+			[1413] = true,		-- The Barrens
+			[1425] = true,		-- The Hinterlands
+			[1436] = true,		-- Westfall
+			[1437] = true,		-- Wetlands
+			[1950] = true,		-- Bloodmyst Isle
+			[1942] = true,		-- Ghostlands
 		},
 	},
 	[2453] = {
@@ -3419,21 +6368,23 @@ local herbs = {
 		itemID = 2453,
 		minLevel = 100,
 		zones = {
-			[1416] = 10,		-- Alterac Mountains
-			[1417] = 8,			-- Arathi Highlands
-			[1440] = 51,		-- Ashenvale
-			[1439] = 22,		-- Darkshore
-			[1443] = 21,		-- Desolace
-			[1431] = 41,		-- Duskwood
-			[1424] = 44,		-- Hillsbrad Foothills
-			[1432] = 13,		-- Loch Modan
-			[1433] = 40,		-- Redridge Mountains
-			[1421] = 15,		-- Silverpine Forest
-			[1442] = 81,		-- Stonetalon Mountains
-			[1413] = 65,		-- The Barrens
-			[1441] = 35,		-- Thousand Needles
-			[1436] = 40,		-- Westfall
-			[1437] = 37,		-- Wetlands
+			[1416] = true,		-- Alterac Mountains
+			[1417] = true,		-- Arathi Highlands
+			[1440] = true,		-- Ashenvale
+			[1439] = true,		-- Darkshore
+			[1443] = true,		-- Desolace
+			[1431] = true,		-- Duskwood
+			[1424] = true,		-- Hillsbrad Foothills
+			[1432] = true,		-- Loch Modan
+			[1433] = true,		-- Redridge Mountains
+			[1421] = true,		-- Silverpine Forest
+			[1442] = true,		-- Stonetalon Mountains
+			[1413] = true,		-- The Barrens
+			[1441] = true,		-- Thousand Needles
+			[1436] = true,		-- Westfall
+			[1437] = true,		-- Wetlands
+			[1950] = true,		-- Bloodmyst Isle
+			[1942] = true,		-- Ghostlands
 		},
 	},
 	[3355] = {
@@ -3441,16 +6392,16 @@ local herbs = {
 		itemID = 3355,
 		minLevel = 115,
 		zones = {
-			[1417] = 51,		-- Arathi Highlands
-			[1440] = 10,		-- Ashenvale
-			[1418] = 15,		-- Badlands
-			[1431] = 17,		-- Duskwood
-			[1424] = 28,		-- Hillsbrad Foothills
-			[1442] = 62,		-- Stonetalon Mountains
-			[1434] = 62,		-- Stranglethorn Vale
-			[1413] = 26,		-- The Barrens
-			[1441] = 37,		-- Thousand Needles
-			[1437] = 22,		-- Wetlands
+			[1417] = true,		-- Arathi Highlands
+			[1440] = true,		-- Ashenvale
+			[1418] = true,		-- Badlands
+			[1431] = true,		-- Duskwood
+			[1424] = true,		-- Hillsbrad Foothills
+			[1442] = true,		-- Stonetalon Mountains
+			[1434] = true,		-- Stranglethorn Vale
+			[1413] = true,		-- The Barrens
+			[1441] = true,		-- Thousand Needles
+			[1437] = true,		-- Wetlands
 		},
 	},
 	[3369] = {
@@ -3458,13 +6409,13 @@ local herbs = {
 		itemID = 3369,
 		minLevel = 120,
 		zones = {
-			[1416] = 2,			-- Alterac Mountains
-			[1417] = 3,			-- Arathi Highlands
-			[1443] = 31,		-- Desolace
-			[1431] = 27,		-- Duskwood
-			[1423] = 4,			-- Eastern Plaguelands
-			[1413] = 4,			-- The Barrens
-			[1437] = 5,			-- Wetlands
+			[1416] = true,		-- Alterac Mountains
+			[1417] = true,		-- Arathi Highlands
+			[1443] = true,		-- Desolace
+			[1431] = true,		-- Duskwood
+			[1423] = true,		-- Eastern Plaguelands
+			[1413] = true,		-- The Barrens
+			[1437] = true,		-- Wetlands
 		},
 	},
 	[3356] = {
@@ -3472,20 +6423,20 @@ local herbs = {
 		itemID = 3356,
 		minLevel = 125,
 		zones = {
-			[1416] = 42,		-- Alterac Mountains
-			[1417] = 45,		-- Arathi Highlands
-			[1440] = 70,		-- Ashenvale
-			[1418] = 34,		-- Badlands
-			[1443] = 32,		-- Desolace
-			[1431] = 41,		-- Duskwood
-			[1445] = 26,		-- Dustwallow Marsh
-			[1424] = 52,		-- Hillsbrad Foothills
-			[1442] = 71,		-- Stonetalon Mountains
-			[1434] = 96,		-- Stranglethorn Vale
-			[1435] = 32,		-- Swamp of Sorrows
-			[1413] = 39,		-- The Barrens
-			[1441] = 40,		-- Thousand Needles
-			[1437] = 66,		-- Wetlands
+			[1416] = true,		-- Alterac Mountains
+			[1417] = true,		-- Arathi Highlands
+			[1440] = true,		-- Ashenvale
+			[1418] = true,		-- Badlands
+			[1443] = true,		-- Desolace
+			[1431] = true,		-- Duskwood
+			[1445] = true,		-- Dustwallow Marsh
+			[1424] = true,		-- Hillsbrad Foothills
+			[1442] = true,		-- Stonetalon Mountains
+			[1434] = true,		-- Stranglethorn Vale
+			[1435] = true,		-- Swamp of Sorrows
+			[1413] = true,		-- The Barrens
+			[1441] = true,		-- Thousand Needles
+			[1437] = true,		-- Wetlands
 		},
 	},
 	[3357] = {
@@ -3493,17 +6444,17 @@ local herbs = {
 		itemID = 3357,
 		minLevel = 150,
 		zones = {
-			[1416] = 32,		-- Alterac Mountains
-			[1417] = 27,		-- Arathi Highlands
-			[1440] = 26,		-- Ashenvale
-			[1443] = 33,		-- Desolace
-			[1445] = 72,		-- Dustwallow Marsh
-			[1444] = 14,		-- Feralas
-			[1424] = 15,		-- Hillsbrad Foothills
-			[1434] = 76,		-- Stranglethorn Vale
-			[1435] = 61,		-- Swamp of Sorrows
-			[1425] = 10,		-- The Hinterlands
-			[1437] = 61,		-- Wetlands
+			[1416] = true,		-- Alterac Mountains
+			[1417] = true,		-- Arathi Highlands
+			[1440] = true,		-- Ashenvale
+			[1443] = true,		-- Desolace
+			[1445] = true,		-- Dustwallow Marsh
+			[1444] = true,		-- Feralas
+			[1424] = true,		-- Hillsbrad Foothills
+			[1434] = true,		-- Stranglethorn Vale
+			[1435] = true,		-- Swamp of Sorrows
+			[1425] = true,		-- The Hinterlands
+			[1437] = true,		-- Wetlands
 		},
 	},
 	[3818] = {
@@ -3511,13 +6462,13 @@ local herbs = {
 		itemID = 3818,
 		minLevel = 160,
 		zones = {
-			[1416] = 24,		-- Alterac Mountains
-			[1417] = 32,		-- Arathi Highlands
-			[1418] = 16,		-- Badlands
-			[1445] = 43,		-- Dustwallow Marsh
-			[1434] = 37,		-- Stranglethorn Vale
-			[1435] = 29,		-- Swamp of Sorrows
-			[1425] = 13,		-- The Hinterlands
+			[1416] = true,		-- Alterac Mountains
+			[1417] = true,		-- Arathi Highlands
+			[1418] = true,		-- Badlands
+			[1445] = true,		-- Dustwallow Marsh
+			[1434] = true,		-- Stranglethorn Vale
+			[1435] = true,		-- Swamp of Sorrows
+			[1425] = true,		-- The Hinterlands
 		},
 	},
 	[3821] = {
@@ -3525,15 +6476,15 @@ local herbs = {
 		itemID = 3821,
 		minLevel = 170,
 		zones = {
-			[1416] = 34,		-- Alterac Mountains
-			[1417] = 58,		-- Arathi Highlands
-			[1447] = 7,			-- Azshara
-			[1418] = 27,		-- Badlands
-			[1445] = 45,		-- Dustwallow Marsh
-			[1444] = 69,		-- Feralas
-			[1434] = 101,		-- Stranglethorn Vale
-			[1435] = 44,		-- Swamp of Sorrows
-			[1425] = 35,		-- The Hinterlands
+			[1416] = true,		-- Alterac Mountains
+			[1417] = true,		-- Arathi Highlands
+			[1447] = true,		-- Azshara
+			[1418] = true,		-- Badlands
+			[1445] = true,		-- Dustwallow Marsh
+			[1444] = true,		-- Feralas
+			[1434] = true,		-- Stranglethorn Vale
+			[1435] = true,		-- Swamp of Sorrows
+			[1425] = true,		-- The Hinterlands
 		},
 	},
 	[3358] = {
@@ -3541,15 +6492,15 @@ local herbs = {
 		itemID = 3358,
 		minLevel = 185,
 		zones = {
-			[1416] = 29,		-- Alterac Mountains
-			[1417] = 50,		-- Arathi Highlands
-			[1447] = 20,		-- Azshara
-			[1418] = 26,		-- Badlands
-			[1445] = 44,		-- Dustwallow Marsh
-			[1444] = 61,		-- Feralas
-			[1434] = 94,		-- Stranglethorn Vale
-			[1435] = 43,		-- Swamp of Sorrows
-			[1425] = 13,		-- The Hinterlands
+			[1416] = true,		-- Alterac Mountains
+			[1417] = true,		-- Arathi Highlands
+			[1447] = true,		-- Azshara
+			[1418] = true,		-- Badlands
+			[1445] = true,		-- Dustwallow Marsh
+			[1444] = true,		-- Feralas
+			[1434] = true,		-- Stranglethorn Vale
+			[1435] = true,		-- Swamp of Sorrows
+			[1425] = true,		-- The Hinterlands
 		},
 	},
 	[3819] = {
@@ -3557,7 +6508,7 @@ local herbs = {
 		itemID = 3819,
 		minLevel = 195,
 		zones = {
-			[1416] = 37,		-- Alterac Mountains
+			[1416] = true,		-- Alterac Mountains
 		},
 	},
 	[4625] = {
@@ -3565,10 +6516,10 @@ local herbs = {
 		itemID = 4625,
 		minLevel = 205,
 		zones = {
-			[1418] = 21,		-- Badlands
-			[1419] = 22,		-- Blasted Lands
-			[1427] = 68,		-- Searing Gorge
-			[1446] = 101,		-- Tanaris
+			[1418] = true,		-- Badlands
+			[1419] = true,		-- Blasted Lands
+			[1427] = true,		-- Searing Gorge
+			[1446] = true,		-- Tanaris
 		},
 	},
 	[8831] = {
@@ -3576,13 +6527,13 @@ local herbs = {
 		itemID = 8831,
 		minLevel = 210,
 		zones = {
-			[1440] = 2,			-- Ashenvale
-			[1447] = 49,		-- Azshara
-			[1418] = 5,			-- Badlands
-			[1444] = 51,		-- Feralas
-			[1434] = 31,		-- Stranglethorn Vale
-			[1446] = 40,		-- Tanaris
-			[1425] = 39,		-- The Hinterlands
+			[1440] = true,		-- Ashenvale
+			[1447] = true,		-- Azshara
+			[1418] = true,		-- Badlands
+			[1444] = true,		-- Feralas
+			[1434] = true,		-- Stranglethorn Vale
+			[1446] = true,		-- Tanaris
+			[1425] = true,		-- The Hinterlands
 		},
 	},
 	[8836] = {
@@ -3590,9 +6541,9 @@ local herbs = {
 		itemID = 8836,
 		minLevel = 220,
 		zones = {
-			[1423] = 51,		-- Eastern Plaguelands
-			[1448] = 25,		-- Felwood
-			[1422] = 45,		-- Western Plaguelands
+			[1423] = true,		-- Eastern Plaguelands
+			[1448] = true,		-- Felwood
+			[1422] = true,		-- Western Plaguelands
 		},
 	},
 	[8838] = {
@@ -3600,16 +6551,16 @@ local herbs = {
 		itemID = 8838,
 		minLevel = 230,
 		zones = {
-			[1447] = 75,		-- Azshara
-			[1419] = 22,		-- Blasted Lands
-			[1428] = 15,		-- Burning Steppes
-			[1423] = 30,		-- Eastern Plaguelands
-			[1448] = 19,		-- Felwood
-			[1444] = 98,		-- Feralas
-			[1451] = 9,			-- Silithus
-			[1425] = 78,		-- The Hinterlands
-			[1449] = 46,		-- Un'Goro Crater
-			[1422] = 36,		-- Western Plaguelands
+			[1447] = true,		-- Azshara
+			[1419] = true,		-- Blasted Lands
+			[1428] = true,		-- Burning Steppes
+			[1423] = true,		-- Eastern Plaguelands
+			[1448] = true,		-- Felwood
+			[1444] = true,		-- Feralas
+			[1451] = true,		-- Silithus
+			[1425] = true,		-- The Hinterlands
+			[1449] = true,		-- Un'Goro Crater
+			[1422] = true,		-- Western Plaguelands
 		},
 	},
 	[8839] = {
@@ -3617,8 +6568,8 @@ local herbs = {
 		itemID = 8839,
 		minLevel = 235,
 		zones = {
-			[1435] = 129,		-- Swamp of Sorrows
-			[1449] = 17,		-- Un'Goro Crater
+			[1435] = true,		-- Swamp of Sorrows
+			[1449] = true,		-- Un'Goro Crater
 		},
 	},
 	[8845] = {
@@ -3626,8 +6577,8 @@ local herbs = {
 		itemID = 8845,
 		minLevel = 245,
 		zones = {
-			[1443] = 7,			-- Desolace
-			[1425] = 41,		-- The Hinterlands
+			[1443] = true,		-- Desolace
+			[1425] = true,		-- The Hinterlands
 		},
 	},
 	[8846] = {
@@ -3635,10 +6586,10 @@ local herbs = {
 		itemID = 8846,
 		minLevel = 250,
 		zones = {
-			[1440] = 8,			-- Ashenvale
-			[1419] = 40,		-- Blasted Lands
-			[1443] = 18,		-- Desolace
-			[1448] = 53,		-- Felwood
+			[1440] = true,		-- Ashenvale
+			[1419] = true,		-- Blasted Lands
+			[1443] = true,		-- Desolace
+			[1448] = true,		-- Felwood
 		},
 	},
 	[13464] = {
@@ -3646,14 +6597,14 @@ local herbs = {
 		itemID = 13464,
 		minLevel = 260,
 		zones = {
-			[1447] = 72,		-- Azshara
-			[1428] = 19,		-- Burning Steppes
-			[1423] = 22,		-- Eastern Plaguelands
-			[1448] = 24,		-- Felwood
-			[1444] = 16,		-- Feralas
-			[1451] = 14,		-- Silithus
-			[1425] = 18,		-- The Hinterlands
-			[1449] = 59,		-- Un'Goro Crater
+			[1447] = true,		-- Azshara
+			[1428] = true,		-- Burning Steppes
+			[1423] = true,		-- Eastern Plaguelands
+			[1448] = true,		-- Felwood
+			[1444] = true,		-- Feralas
+			[1451] = true,		-- Silithus
+			[1425] = true,		-- The Hinterlands
+			[1449] = true,		-- Un'Goro Crater
 		},
 	},
 	[13463] = {
@@ -3661,13 +6612,14 @@ local herbs = {
 		itemID = 13463,
 		minLevel = 270,
 		zones = {
-			[1447] = 77,		-- Azshara
-			[1428] = 31,		-- Burning Steppes
-			[1423] = 66,		-- Eastern Plaguelands
-			[1448] = 38,		-- Felwood
-			[1451] = 28,		-- Silithus
-			[1449] = 60,		-- Un'Goro Crater
-			[1422] = 31,		-- Western Plaguelands
+			[1447] = true,		-- Azshara
+			[1428] = true,		-- Burning Steppes
+			[1423] = true,		-- Eastern Plaguelands
+			[1448] = true,		-- Felwood
+			[1451] = true,		-- Silithus
+			[1449] = true,		-- Un'Goro Crater
+			[1422] = true,		-- Western Plaguelands
+	
 		},
 	},
 	[13465] = {
@@ -3675,14 +6627,14 @@ local herbs = {
 		itemID = 13465,
 		minLevel = 280,
 		zones = {
-			[1447] = 52,		-- Azshara
-			[1428] = 28,		-- Burning Steppes
-			[1423] = 53,		-- Eastern Plaguelands
-			[1448] = 31,		-- Felwood
-			[1451] = 25,		-- Silithus
-			[1449] = 49,		-- Un'Goro Crater
-			[1422] = 18,		-- Western Plaguelands
-			[1452] = 78,		-- Winterspring
+			[1447] = true,		-- Azshara
+			[1428] = true,		-- Burning Steppes
+			[1423] = true,		-- Eastern Plaguelands
+			[1448] = true,		-- Felwood
+			[1451] = true,		-- Silithus
+			[1449] = true,		-- Un'Goro Crater
+			[1422] = true,		-- Western Plaguelands
+			[1452] = true,		-- Winterspring		
 		},
 	},
 	[13466] = {
@@ -3690,9 +6642,9 @@ local herbs = {
 		itemID = 13466,
 		minLevel = 285,
 		zones = {
-			[1423] = 133,		-- Eastern Plaguelands
-			[1448] = 60,		-- Felwood
-			[1422] = 58,		-- Western Plaguelands
+			[1423] = true,		-- Eastern Plaguelands
+			[1448] = true,		-- Felwood
+			[1422] = true,		-- Western Plaguelands
 		},
 	},
 	[13467] = {
@@ -3700,7 +6652,7 @@ local herbs = {
 		itemID = 13467,
 		minLevel = 290,
 		zones = {
-			[1452] = 152,		-- Winterspring
+			[1452] = true,		-- Winterspring
 		},
 	},
 	[13468] = {
@@ -3708,12 +6660,276 @@ local herbs = {
 		itemID = 13468,
 		minLevel = 300,
 		zones = {
-			[1428] = 10,		-- Burning Steppes
-			[1423] = 11,		-- Eastern Plaguelands
-			[1451] = 7,			-- Silithus
-			[1452] = 12,		-- Winterspring
+			[1428] = true,		-- Burning Steppes
+			[1423] = true,		-- Eastern Plaguelands
+			[1451] = true,		-- Silithus
+			[1452] = true,		-- Winterspring
 		},
 	},
+	-- TBC Herbs
+	[142143] = {
+		name = LHerbs("Blindweed"),
+		itemID = 142143,
+		minLevel = 235,
+		zones = {
+			[1944] = true,		-- Hellfire Peninsula
+			[1946] = true,		-- Zangarmarsh
+		},
+	},
+	[142144] = {
+		name = LHerbs("Ghost Mushroom"),
+		itemID = 142144,
+		minLevel = 245,
+		zones = {
+			[1944] = true,		-- Hellfire Peninsula
+			[1946] = true,		-- Zangarmarsh
+		},
+	},
+	[176583] = {
+		name = LHerbs("Golden Sansam"),
+		itemID = 176583,
+		minLevel = 260,
+		zones = {
+			[1944] = true,		-- Hellfire Peninsula
+			[1946] = true,		-- Zangarmarsh
+		},
+	},
+	[176584] = {
+		name = LHerbs("Dreamfoil"),
+		itemID = 176584,
+		minLevel = 270,
+		zones = {
+			[1944] = true,		-- Hellfire Peninsula
+			[1946] = true,		-- Zangarmarsh
+		},
+	},
+	[176586] = {
+		name = LHerbs("Mountain Silversage"),
+		itemID = 176586,
+		minLevel = 280,
+		zones = {
+			[1944] = true,		-- Hellfire Peninsula
+			[1946] = true,		-- Zangarmarsh
+		},
+	},
+	[181270] = {
+		name = LHerbs("Felweed"),
+		itemID = 181270,
+		minLevel = 300,
+		zones = {
+			[1949] = true,		-- Blade's Edge Mountains
+			[1944] = true,		-- Hellfire Peninsula
+			[1951] = true,		-- Nagrand
+			[1953] = true,		-- Netherstorm
+			[332] = true,		-- Serpentshrine Cavern
+			[1948] = true,		-- Shadowmoon Valley
+			[1952] = true,		-- Terokkar Forest
+			[266] = true,		-- The Botanica
+			[265] = true,		-- The Slave Pens
+			[263] = true,		-- The Steamvault
+			[262] = true,		-- The Underbog
+			[1946] = true,		-- Zangarmarsh
+		},
+	},
+	[181271] = {
+		name = LHerbs("Dreaming Glory"),
+		itemID = 181271,
+		minLevel = 315,
+		zones = {
+			[1949] = true,		-- Blade's Edge Mountains
+			[1944] = true,		-- Hellfire Peninsula
+			[1951] = true,		-- Nagrand
+			[1953] = true,		-- Netherstorm
+			[1948] = true,		-- Shadowmoon Valley
+			[1952] = true,		-- Terokkar Forest
+			[266] = true,		-- The Botanica
+			[1946] = true,		-- Zangarmarsh
+		},
+	},
+	[181277] = {
+		name = LHerbs("Terocone"),
+		itemID = 181277,
+		minLevel = 325,
+		zones = {
+			[1948] = true,		-- Shadowmoon Valley
+			[1952] = true,		-- Terokkar Forest
+			[266] = true,		-- The Botanica
+		},
+	},
+	[181275] = {
+		name = LHerbs("Ragveil"),
+		itemID = 181275,
+		minLevel = 325,
+		zones = {
+			[265] = true,		-- The Slave Pens
+			[263] = true,		-- The Steamvault
+			[262] = true,		-- The Underbog
+			[1946] = true,		-- Zangarmarsh
+		},
+	},
+	[181278] = {
+		name = LHerbs("Ancient Lichen"),
+		itemID = 181278,
+		minLevel = 340,
+		zones = {
+			[256] = true,		-- Auchenai Crypts
+			[272] = true,		-- Mana-Tombs
+			[332] = true,		-- Serpentshrine Cavern
+			[258] = true,		-- Sethekk Halls
+			[260] = true,		-- Shadow Labyrinth
+			[265] = true,		-- The Slave Pens
+			[263] = true,		-- The Steamvault
+			[262] = true,		-- The Underbog
+		},
+	},
+	[181279] = {
+		name = LHerbs("Netherbloom"),
+		itemID = 181279,
+		minLevel = 350,
+		zones = {
+			[1953] = true,		-- Netherstorm
+			[266] = true,		-- The Botanica
+		},
+	},
+	[181280] = {
+		name = LHerbs("Nightmare Vine"),
+		itemID = 181280,
+		minLevel = 365,
+		zones = {
+			[1949] = true,		-- Blade's Edge Mountains
+			[1948] = true,		-- Shadowmoon Valley
+		},
+	},
+	[181281] = {
+		name = LHerbs("Mana Thistle"),
+		itemID = 181281,
+		minLevel = 375,
+		zones = {
+			[1949] = true,		-- Blade's Edge Mountains
+			[1951] = true,		-- Nagrand
+			[1953] = true,		-- Netherstorm
+			[1948] = true,		-- Shadowmoon Valley
+			[1952] = true,		-- Terokkar Forest
+		},
+	},	
+	-- WotLK Herbs
+	[189973] = {
+		name = LHerbs("Goldclover"),
+		itemID = 189973,
+		minLevel = 350,
+		zones = {
+			[132] = true,		-- Ahn'kahet: The Old Kingdom
+			[157] = true,		-- Azjol-Nerub
+			[114] = true,		-- Borean Tundra
+			[115] = true,		-- Dragonblight
+			[116] = true,		-- Grizzly Hills
+			[117] = true,		-- Howling Fjord
+			[119] = true,		-- Sholazar Basin
+			[147] = true,		-- Ulduar
+		},
+	},
+	[191303] = {
+		name = LHerbs("Firethorn"),
+		itemID = 191303,
+		minLevel = 360,
+		zones = {
+			[114] = true,		-- Borean Tundra
+		},
+	},
+	[190169] = {
+		name = LHerbs("Tiger Lily"),
+		itemID = 190169,
+		minLevel = 375,
+		zones = {
+			[132] = true,		-- Ahn'kahet: The Old Kingdom
+			[157] = true,		-- Azjol-Nerub
+			[116] = true,		-- Grizzly Hills
+			[117] = true,		-- Howling Fjord
+			[119] = true,		-- Sholazar Basin
+			[121] = true,		-- Zul'Drak
+		},
+	},
+	[190170] = {
+		name = LHerbs("Talandra's Rose"),
+		itemID = 190170,
+		minLevel = 385,
+		zones = {
+			[132] = true,		-- Ahn'kahet: The Old Kingdom
+			[160] = true,		-- Drak'Tharon Keep
+			[116] = true,		-- Grizzly Hills
+			[120] = true,		-- The Storm Peaks
+			[147] = true,		-- Ulduar
+			[121] = true,		-- Zul'Drak
+		},
+	},
+	[191019] = {
+		name = LHerbs("Adder's Tongue"),
+		itemID = 191019,
+		minLevel = 400,
+		zones = {
+			[114] = true,		-- Borean Tundra
+			[160] = true,		-- Drak'Tharon Keep
+			[153] = true,		-- Gundrak
+			[119] = true,		-- Sholazar Basin
+			[147] = true,		-- Ulduar
+		},
+	},
+	[190175] = {
+		name = LHerbs("Frozen Herb"),
+		itemID = 190175,
+		minLevel = 415,
+		zones = {
+			[114] = true,		-- Borean Tundra
+			[115] = true,		-- Dragonblight
+			[116] = true,		-- Grizzly Hills
+			[118] = true,		-- Icecrown
+			[119] = true,		-- Sholazar Basin
+			[120] = true,		-- The Storm Peaks
+			[123] = true,		-- Wintergrasp
+			[121] = true,		-- Zul'Drak
+		},
+	},
+	[190171] = {
+		name = LHerbs("Lichbloom"),
+		itemID = 190171,
+		minLevel = 425,
+		zones = {
+			[127] = true,		-- Crystalsong Forest
+			[115] = true,		-- Dragonblight
+			[118] = true,		-- Icecrown
+			[119] = true,		-- Sholazar Basin
+			[120] = true,		-- The Storm Peaks
+			[147] = true,		-- Ulduar
+			[123] = true,		-- Wintergrasp
+			[121] = true,		-- Zul'Drak
+		},
+	},
+	[190172] = {
+		name = LHerbs("Icethorn"),
+		itemID = 190172,
+		minLevel = 435,
+		zones = {
+			[127] = true,		-- Crystalsong Forest
+			[115] = true,		-- Dragonblight
+			[118] = true,		-- Icecrown
+			[119] = true,		-- Sholazar Basin
+			[142] = true,		-- The Oculus
+			[120] = true,		-- The Storm Peaks
+			[136] = true,		-- Utgarde Pinnacle
+			[123] = true,		-- Wintergrasp
+			[121] = true,		-- Zul'Drak
+		},
+	},
+	[190176] = {
+		name = LHerbs("Frost Lotus"),
+		itemID = 190176,
+		minLevel = 450,
+		zones = {
+			[119] = true,		-- Sholazar Basin
+			[147] = true,		-- Ulduar
+			[123] = true,		-- Wintergrasp
+		},
+	},	
 }
 
 
@@ -3725,49 +6941,41 @@ local herbsByZone = {
 			name = LHerbs("Bruiseweed"),
 			itemID = 2453,
 			minLevel = 100,
-			numNodes = 10,
 		},
 		[3369] = {
 			name = LHerbs("Grave Moss"),
 			itemID = 3369,
 			minLevel = 120,
-			numNodes = 2,
 		},
 		[3356] = {
 			name = LHerbs("Kingsblood"),
 			itemID = 3356,
 			minLevel = 125,
-			numNodes = 42,
 		},
 		[3357] = {
 			name = LHerbs("Liferoot"),
 			itemID = 3357,
 			minLevel = 150,
-			numNodes = 32,
 		},
 		[3818] = {
 			name = LHerbs("Fadeleaf"),
 			itemID = 3818,
 			minLevel = 160,
-			numNodes = 24,
 		},
 		[3821] = {
 			name = LHerbs("Goldthorn"),
 			itemID = 3821,
 			minLevel = 170,
-			numNodes = 34,
 		},
 		[3358] = {
 			name = LHerbs("Khadgar's Whisker"),
 			itemID = 3358,
 			minLevel = 185,
-			numNodes = 29,
 		},
 		[3819] = {
 			name = LHerbs("Wintersbite"),
 			itemID = 3819,
 			minLevel = 195,
-			numNodes = 37,
 		},
 	},
 	-- Arathi Highlands
@@ -3776,49 +6984,41 @@ local herbsByZone = {
 			name = LHerbs("Bruiseweed"),
 			itemID = 2453,
 			minLevel = 100,
-			numNodes = 8,
 		},
 		[3355] = {
 			name = LHerbs("Wild Steelbloom"),
 			itemID = 3355,
 			minLevel = 115,
-			numNodes = 51,
 		},
 		[3369] = {
 			name = LHerbs("Grave Moss"),
 			itemID = 3369,
 			minLevel = 120,
-			numNodes = 3,
 		},
 		[3356] = {
 			name = LHerbs("Kingsblood"),
 			itemID = 3356,
 			minLevel = 125,
-			numNodes = 45,
 		},
 		[3357] = {
 			name = LHerbs("Liferoot"),
 			itemID = 3357,
 			minLevel = 150,
-			numNodes = 27,
 		},
 		[3818] = {
 			name = LHerbs("Fadeleaf"),
 			itemID = 3818,
 			minLevel = 160,
-			numNodes = 32,
 		},
 		[3821] = {
 			name = LHerbs("Goldthorn"),
 			itemID = 3821,
 			minLevel = 170,
-			numNodes = 58,
 		},
 		[3358] = {
 			name = LHerbs("Khadgar's Whisker"),
 			itemID = 3358,
 			minLevel = 185,
-			numNodes = 50,
 		},
 	},
 	-- Ashenvale
@@ -3827,55 +7027,46 @@ local herbsByZone = {
 			name = LHerbs("Mageroyal"),
 			itemID = 785,
 			minLevel = 50,
-			numNodes = 28,
 		},
 		[2450] = {
 			name = LHerbs("Briarthorn"),
 			itemID = 2450,
 			minLevel = 70,
-			numNodes = 47,
 		},
 		[3820] = {
 			name = LHerbs("Stranglekelp"),
 			itemID = 3820,
 			minLevel = 85,
-			numNodes = 50,
 		},
 		[2453] = {
 			name = LHerbs("Bruiseweed"),
 			itemID = 2453,
 			minLevel = 100,
-			numNodes = 51,
 		},
 		[3355] = {
 			name = LHerbs("Wild Steelbloom"),
 			itemID = 3355,
 			minLevel = 115,
-			numNodes = 10,
 		},
 		[3356] = {
 			name = LHerbs("Kingsblood"),
 			itemID = 3356,
 			minLevel = 125,
-			numNodes = 70,
 		},
 		[3357] = {
 			name = LHerbs("Liferoot"),
 			itemID = 3357,
 			minLevel = 150,
-			numNodes = 26,
 		},
 		[8831] = {
 			name = LHerbs("Purple Lotus"),
 			itemID = 8831,
 			minLevel = 210,
-			numNodes = 2,
 		},
 		[8846] = {
 			name = LHerbs("Gromsblood"),
 			itemID = 8846,
 			minLevel = 250,
-			numNodes = 8,
 		},
 	},
 	-- Azshara
@@ -3884,43 +7075,36 @@ local herbsByZone = {
 			name = LHerbs("Goldthorn"),
 			itemID = 3821,
 			minLevel = 170,
-			numNodes = 7,
 		},
 		[3358] = {
 			name = LHerbs("Khadgar's Whisker"),
 			itemID = 3358,
 			minLevel = 185,
-			numNodes = 20,
 		},
 		[8831] = {
 			name = LHerbs("Purple Lotus"),
 			itemID = 8831,
 			minLevel = 210,
-			numNodes = 49,
 		},
 		[8838] = {
 			name = LHerbs("Sungrass"),
 			itemID = 8838,
 			minLevel = 230,
-			numNodes = 75,
 		},
 		[13464] = {
 			name = LHerbs("Golden Sansam"),
 			itemID = 13464,
 			minLevel = 260,
-			numNodes = 72,
 		},
 		[13463] = {
 			name = LHerbs("Dreamfoil"),
 			itemID = 13463,
 			minLevel = 270,
-			numNodes = 77,
 		},
 		[13465] = {
 			name = LHerbs("Mountain Silversage"),
 			itemID = 13465,
 			minLevel = 280,
-			numNodes = 52,
 		},
 	},
 	-- Badlands
@@ -3929,43 +7113,36 @@ local herbsByZone = {
 			name = LHerbs("Wild Steelbloom"),
 			itemID = 3355,
 			minLevel = 115,
-			numNodes = 15,
 		},
 		[3356] = {
 			name = LHerbs("Kingsblood"),
 			itemID = 3356,
 			minLevel = 125,
-			numNodes = 34,
 		},
 		[3818] = {
 			name = LHerbs("Fadeleaf"),
 			itemID = 3818,
 			minLevel = 160,
-			numNodes = 16,
 		},
 		[3821] = {
 			name = LHerbs("Goldthorn"),
 			itemID = 3821,
 			minLevel = 170,
-			numNodes = 27,
 		},
 		[3358] = {
 			name = LHerbs("Khadgar's Whisker"),
 			itemID = 3358,
 			minLevel = 185,
-			numNodes = 26,
 		},
 		[4625] = {
 			name = LHerbs("Firebloom"),
 			itemID = 4625,
 			minLevel = 205,
-			numNodes = 21,
 		},
 		[8831] = {
 			name = LHerbs("Purple Lotus"),
 			itemID = 8831,
 			minLevel = 210,
-			numNodes = 5,
 		},
 	},
 	-- Blasted Lands
@@ -3974,19 +7151,16 @@ local herbsByZone = {
 			name = LHerbs("Firebloom"),
 			itemID = 4625,
 			minLevel = 205,
-			numNodes = 22,
 		},
 		[8838] = {
 			name = LHerbs("Sungrass"),
 			itemID = 8838,
 			minLevel = 230,
-			numNodes = 22,
 		},
 		[8846] = {
 			name = LHerbs("Gromsblood"),
 			itemID = 8846,
 			minLevel = 250,
-			numNodes = 40,
 		},
 	},
 	-- Burning Steppes
@@ -3995,31 +7169,26 @@ local herbsByZone = {
 			name = LHerbs("Sungrass"),
 			itemID = 8838,
 			minLevel = 230,
-			numNodes = 15,
 		},
 		[13464] = {
 			name = LHerbs("Golden Sansam"),
 			itemID = 13464,
 			minLevel = 260,
-			numNodes = 19,
 		},
 		[13463] = {
 			name = LHerbs("Dreamfoil"),
 			itemID = 13463,
 			minLevel = 270,
-			numNodes = 31,
 		},
 		[13465] = {
 			name = LHerbs("Mountain Silversage"),
 			itemID = 13465,
 			minLevel = 280,
-			numNodes = 28,
 		},
 		[13468] = {
 			name = LHerbs("Black Lotus"),
 			itemID = 13468,
 			minLevel = 300,
-			numNodes = 10,
 		},
 	},
 	-- Darkshore
@@ -4028,43 +7197,36 @@ local herbsByZone = {
 			name = LHerbs("Peacebloom"),
 			itemID = 2447,
 			minLevel = 1,
-			numNodes = 29,
 		},
 		[765] = {
 			name = LHerbs("Silverleaf"),
 			itemID = 765,
 			minLevel = 1,
-			numNodes = 39,
 		},
 		[2449] = {
 			name = LHerbs("Earthroot"),
 			itemID = 2449,
 			minLevel = 15,
-			numNodes = 32,
 		},
 		[785] = {
 			name = LHerbs("Mageroyal"),
 			itemID = 785,
 			minLevel = 50,
-			numNodes = 56,
 		},
 		[2450] = {
 			name = LHerbs("Briarthorn"),
 			itemID = 2450,
 			minLevel = 70,
-			numNodes = 49,
 		},
 		[3820] = {
 			name = LHerbs("Stranglekelp"),
 			itemID = 3820,
 			minLevel = 85,
-			numNodes = 32,
 		},
 		[2453] = {
 			name = LHerbs("Bruiseweed"),
 			itemID = 2453,
 			minLevel = 100,
-			numNodes = 22,
 		},
 	},
 	-- Desolace
@@ -4073,43 +7235,36 @@ local herbsByZone = {
 			name = LHerbs("Stranglekelp"),
 			itemID = 3820,
 			minLevel = 85,
-			numNodes = 49,
 		},
 		[2453] = {
 			name = LHerbs("Bruiseweed"),
 			itemID = 2453,
 			minLevel = 100,
-			numNodes = 21,
 		},
 		[3369] = {
 			name = LHerbs("Grave Moss"),
 			itemID = 3369,
 			minLevel = 120,
-			numNodes = 31,
 		},
 		[3356] = {
 			name = LHerbs("Kingsblood"),
 			itemID = 3356,
 			minLevel = 125,
-			numNodes = 32,
 		},
 		[3357] = {
 			name = LHerbs("Liferoot"),
 			itemID = 3357,
 			minLevel = 150,
-			numNodes = 33,
 		},
 		[8845] = {
 			name = LHerbs("Ghost Mushroom"),
 			itemID = 8845,
 			minLevel = 245,
-			numNodes = 7,
 		},
 		[8846] = {
 			name = LHerbs("Gromsblood"),
 			itemID = 8846,
 			minLevel = 250,
-			numNodes = 18,
 		},
 	},
 	-- Dun Morogh
@@ -4118,19 +7273,16 @@ local herbsByZone = {
 			name = LHerbs("Peacebloom"),
 			itemID = 2447,
 			minLevel = 1,
-			numNodes = 79,
 		},
 		[765] = {
 			name = LHerbs("Silverleaf"),
 			itemID = 765,
 			minLevel = 1,
-			numNodes = 77,
 		},
 		[2449] = {
 			name = LHerbs("Earthroot"),
 			itemID = 2449,
 			minLevel = 15,
-			numNodes = 53,
 		},
 	},
 	-- Durotar
@@ -4139,25 +7291,21 @@ local herbsByZone = {
 			name = LHerbs("Peacebloom"),
 			itemID = 2447,
 			minLevel = 1,
-			numNodes = 90,
 		},
 		[765] = {
 			name = LHerbs("Silverleaf"),
 			itemID = 765,
 			minLevel = 1,
-			numNodes = 79,
 		},
 		[2449] = {
 			name = LHerbs("Earthroot"),
 			itemID = 2449,
 			minLevel = 15,
-			numNodes = 49,
 		},
 		[785] = {
 			name = LHerbs("Mageroyal"),
 			itemID = 785,
 			minLevel = 50,
-			numNodes = 15,
 		},
 	},
 	-- Duskwood
@@ -4166,37 +7314,31 @@ local herbsByZone = {
 			name = LHerbs("Mageroyal"),
 			itemID = 785,
 			minLevel = 50,
-			numNodes = 26,
 		},
 		[2450] = {
 			name = LHerbs("Briarthorn"),
 			itemID = 2450,
 			minLevel = 70,
-			numNodes = 62,
 		},
 		[2453] = {
 			name = LHerbs("Bruiseweed"),
 			itemID = 2453,
 			minLevel = 100,
-			numNodes = 41,
 		},
 		[3355] = {
 			name = LHerbs("Wild Steelbloom"),
 			itemID = 3355,
 			minLevel = 115,
-			numNodes = 17,
 		},
 		[3369] = {
 			name = LHerbs("Grave Moss"),
 			itemID = 3369,
 			minLevel = 120,
-			numNodes = 27,
 		},
 		[3356] = {
 			name = LHerbs("Kingsblood"),
 			itemID = 3356,
 			minLevel = 125,
-			numNodes = 41,
 		},
 	},
 	-- Dustwallow Marsh
@@ -4205,37 +7347,31 @@ local herbsByZone = {
 			name = LHerbs("Stranglekelp"),
 			itemID = 3820,
 			minLevel = 85,
-			numNodes = 7,
 		},
 		[3356] = {
 			name = LHerbs("Kingsblood"),
 			itemID = 3356,
 			minLevel = 125,
-			numNodes = 26,
 		},
 		[3357] = {
 			name = LHerbs("Liferoot"),
 			itemID = 3357,
 			minLevel = 150,
-			numNodes = 72,
 		},
 		[3818] = {
 			name = LHerbs("Fadeleaf"),
 			itemID = 3818,
 			minLevel = 160,
-			numNodes = 43,
 		},
 		[3821] = {
 			name = LHerbs("Goldthorn"),
 			itemID = 3821,
 			minLevel = 170,
-			numNodes = 45,
 		},
 		[3358] = {
 			name = LHerbs("Khadgar's Whisker"),
 			itemID = 3358,
 			minLevel = 185,
-			numNodes = 44,
 		},
 	},
 	-- Eastern Plaguelands
@@ -4244,49 +7380,41 @@ local herbsByZone = {
 			name = LHerbs("Grave Moss"),
 			itemID = 3369,
 			minLevel = 120,
-			numNodes = 4,
 		},
 		[8836] = {
 			name = LHerbs("Arthas' Tears"),
 			itemID = 8836,
 			minLevel = 220,
-			numNodes = 51,
 		},
 		[8838] = {
 			name = LHerbs("Sungrass"),
 			itemID = 8838,
 			minLevel = 230,
-			numNodes = 30,
 		},
 		[13464] = {
 			name = LHerbs("Golden Sansam"),
 			itemID = 13464,
 			minLevel = 260,
-			numNodes = 22,
 		},
 		[13463] = {
 			name = LHerbs("Dreamfoil"),
 			itemID = 13463,
 			minLevel = 270,
-			numNodes = 66,
 		},
 		[13465] = {
 			name = LHerbs("Mountain Silversage"),
 			itemID = 13465,
 			minLevel = 280,
-			numNodes = 53,
 		},
 		[13466] = {
 			name = LHerbs("Plaguebloom"),
 			itemID = 13466,
 			minLevel = 285,
-			numNodes = 133,
 		},
 		[13468] = {
 			name = LHerbs("Black Lotus"),
 			itemID = 13468,
 			minLevel = 300,
-			numNodes = 11,
 		},
 	},
 	-- Elwynn Forest
@@ -4295,19 +7423,16 @@ local herbsByZone = {
 			name = LHerbs("Peacebloom"),
 			itemID = 2447,
 			minLevel = 1,
-			numNodes = 67,
 		},
 		[765] = {
 			name = LHerbs("Silverleaf"),
 			itemID = 765,
 			minLevel = 1,
-			numNodes = 115,
 		},
 		[2449] = {
 			name = LHerbs("Earthroot"),
 			itemID = 2449,
 			minLevel = 15,
-			numNodes = 44,
 		},
 	},
 	-- Felwood
@@ -4316,43 +7441,36 @@ local herbsByZone = {
 			name = LHerbs("Arthas' Tears"),
 			itemID = 8836,
 			minLevel = 220,
-			numNodes = 25,
 		},
 		[8838] = {
 			name = LHerbs("Sungrass"),
 			itemID = 8838,
 			minLevel = 230,
-			numNodes = 19,
 		},
 		[8846] = {
 			name = LHerbs("Gromsblood"),
 			itemID = 8846,
 			minLevel = 250,
-			numNodes = 53,
 		},
 		[13464] = {
 			name = LHerbs("Golden Sansam"),
 			itemID = 13464,
 			minLevel = 260,
-			numNodes = 24,
 		},
 		[13463] = {
 			name = LHerbs("Dreamfoil"),
 			itemID = 13463,
 			minLevel = 270,
-			numNodes = 38,
 		},
 		[13465] = {
 			name = LHerbs("Mountain Silversage"),
 			itemID = 13465,
 			minLevel = 280,
-			numNodes = 31,
 		},
 		[13466] = {
 			name = LHerbs("Plaguebloom"),
 			itemID = 13466,
 			minLevel = 285,
-			numNodes = 60,
 		},
 	},
 	-- Feralas
@@ -4361,43 +7479,36 @@ local herbsByZone = {
 			name = LHerbs("Stranglekelp"),
 			itemID = 3820,
 			minLevel = 85,
-			numNodes = 16,
 		},
 		[3357] = {
 			name = LHerbs("Liferoot"),
 			itemID = 3357,
 			minLevel = 150,
-			numNodes = 14,
 		},
 		[3821] = {
 			name = LHerbs("Goldthorn"),
 			itemID = 3821,
 			minLevel = 170,
-			numNodes = 69,
 		},
 		[3358] = {
 			name = LHerbs("Khadgar's Whisker"),
 			itemID = 3358,
 			minLevel = 185,
-			numNodes = 61,
 		},
 		[8831] = {
 			name = LHerbs("Purple Lotus"),
 			itemID = 8831,
 			minLevel = 210,
-			numNodes = 51,
 		},
 		[8838] = {
 			name = LHerbs("Sungrass"),
 			itemID = 8838,
 			minLevel = 230,
-			numNodes = 98,
 		},
 		[13464] = {
 			name = LHerbs("Golden Sansam"),
 			itemID = 13464,
 			minLevel = 260,
-			numNodes = 16,
 		},
 	},
 	-- Hillsbrad Foothills
@@ -4406,43 +7517,36 @@ local herbsByZone = {
 			name = LHerbs("Mageroyal"),
 			itemID = 785,
 			minLevel = 50,
-			numNodes = 15,
 		},
 		[2450] = {
 			name = LHerbs("Briarthorn"),
 			itemID = 2450,
 			minLevel = 70,
-			numNodes = 43,
 		},
 		[3820] = {
 			name = LHerbs("Stranglekelp"),
 			itemID = 3820,
 			minLevel = 85,
-			numNodes = 11,
 		},
 		[2453] = {
 			name = LHerbs("Bruiseweed"),
 			itemID = 2453,
 			minLevel = 100,
-			numNodes = 44,
 		},
 		[3355] = {
 			name = LHerbs("Wild Steelbloom"),
 			itemID = 3355,
 			minLevel = 115,
-			numNodes = 28,
 		},
 		[3356] = {
 			name = LHerbs("Kingsblood"),
 			itemID = 3356,
 			minLevel = 125,
-			numNodes = 52,
 		},
 		[3357] = {
 			name = LHerbs("Liferoot"),
 			itemID = 3357,
 			minLevel = 150,
-			numNodes = 15,
 		},
 	},
 	-- Loch Modan
@@ -4451,37 +7555,31 @@ local herbsByZone = {
 			name = LHerbs("Peacebloom"),
 			itemID = 2447,
 			minLevel = 1,
-			numNodes = 39,
 		},
 		[765] = {
 			name = LHerbs("Silverleaf"),
 			itemID = 765,
 			minLevel = 1,
-			numNodes = 49,
 		},
 		[2449] = {
 			name = LHerbs("Earthroot"),
 			itemID = 2449,
 			minLevel = 15,
-			numNodes = 15,
 		},
 		[785] = {
 			name = LHerbs("Mageroyal"),
 			itemID = 785,
 			minLevel = 50,
-			numNodes = 44,
 		},
 		[2450] = {
 			name = LHerbs("Briarthorn"),
 			itemID = 2450,
 			minLevel = 70,
-			numNodes = 42,
 		},
 		[2453] = {
 			name = LHerbs("Bruiseweed"),
 			itemID = 2453,
 			minLevel = 100,
-			numNodes = 13,
 		},
 	},
 	-- Mulgore
@@ -4490,19 +7588,16 @@ local herbsByZone = {
 			name = LHerbs("Peacebloom"),
 			itemID = 2447,
 			minLevel = 1,
-			numNodes = 79,
 		},
 		[765] = {
 			name = LHerbs("Silverleaf"),
 			itemID = 765,
 			minLevel = 1,
-			numNodes = 90,
 		},
 		[2449] = {
 			name = LHerbs("Earthroot"),
 			itemID = 2449,
 			minLevel = 15,
-			numNodes = 42,
 		},
 	},
 	-- Redridge Mountains
@@ -4511,25 +7606,21 @@ local herbsByZone = {
 			name = LHerbs("Earthroot"),
 			itemID = 2449,
 			minLevel = 15,
-			numNodes = 39,
 		},
 		[785] = {
 			name = LHerbs("Mageroyal"),
 			itemID = 785,
 			minLevel = 50,
-			numNodes = 33,
 		},
 		[2450] = {
 			name = LHerbs("Briarthorn"),
 			itemID = 2450,
 			minLevel = 70,
-			numNodes = 46,
 		},
 		[2453] = {
 			name = LHerbs("Bruiseweed"),
 			itemID = 2453,
 			minLevel = 100,
-			numNodes = 40,
 		},
 	},
 	-- Searing Gorge
@@ -4538,7 +7629,6 @@ local herbsByZone = {
 			name = LHerbs("Firebloom"),
 			itemID = 4625,
 			minLevel = 205,
-			numNodes = 68,
 		},
 	},
 	-- Silithus
@@ -4547,31 +7637,26 @@ local herbsByZone = {
 			name = LHerbs("Sungrass"),
 			itemID = 8838,
 			minLevel = 230,
-			numNodes = 9,
 		},
 		[13464] = {
 			name = LHerbs("Golden Sansam"),
 			itemID = 13464,
 			minLevel = 260,
-			numNodes = 14,
 		},
 		[13463] = {
 			name = LHerbs("Dreamfoil"),
 			itemID = 13463,
 			minLevel = 270,
-			numNodes = 28,
 		},
 		[13465] = {
 			name = LHerbs("Mountain Silversage"),
 			itemID = 13465,
 			minLevel = 280,
-			numNodes = 25,
 		},
 		[13468] = {
 			name = LHerbs("Black Lotus"),
 			itemID = 13468,
 			minLevel = 300,
-			numNodes = 7,
 		},
 	},
 	-- Silverpine Forest
@@ -4580,43 +7665,36 @@ local herbsByZone = {
 			name = LHerbs("Peacebloom"),
 			itemID = 2447,
 			minLevel = 1,
-			numNodes = 40,
 		},
 		[765] = {
 			name = LHerbs("Silverleaf"),
 			itemID = 765,
 			minLevel = 1,
-			numNodes = 69,
 		},
 		[2449] = {
 			name = LHerbs("Earthroot"),
 			itemID = 2449,
 			minLevel = 15,
-			numNodes = 20,
 		},
 		[785] = {
 			name = LHerbs("Mageroyal"),
 			itemID = 785,
 			minLevel = 50,
-			numNodes = 48,
 		},
 		[2450] = {
 			name = LHerbs("Briarthorn"),
 			itemID = 2450,
 			minLevel = 70,
-			numNodes = 51,
 		},
 		[3820] = {
 			name = LHerbs("Stranglekelp"),
 			itemID = 3820,
 			minLevel = 85,
-			numNodes = 3,
 		},
 		[2453] = {
 			name = LHerbs("Bruiseweed"),
 			itemID = 2453,
 			minLevel = 100,
-			numNodes = 15,
 		},
 	},
 	-- Stonetalon Mountains
@@ -4625,31 +7703,26 @@ local herbsByZone = {
 			name = LHerbs("Mageroyal"),
 			itemID = 785,
 			minLevel = 50,
-			numNodes = 27,
 		},
 		[2450] = {
 			name = LHerbs("Briarthorn"),
 			itemID = 2450,
 			minLevel = 70,
-			numNodes = 44,
 		},
 		[2453] = {
 			name = LHerbs("Bruiseweed"),
 			itemID = 2453,
 			minLevel = 100,
-			numNodes = 81,
 		},
 		[3355] = {
 			name = LHerbs("Wild Steelbloom"),
 			itemID = 3355,
 			minLevel = 115,
-			numNodes = 62,
 		},
 		[3356] = {
 			name = LHerbs("Kingsblood"),
 			itemID = 3356,
 			minLevel = 125,
-			numNodes = 71,
 		},
 	},
 	-- Stranglethorn Vale
@@ -4658,49 +7731,41 @@ local herbsByZone = {
 			name = LHerbs("Stranglekelp"),
 			itemID = 3820,
 			minLevel = 85,
-			numNodes = 57,
 		},
 		[3355] = {
 			name = LHerbs("Wild Steelbloom"),
 			itemID = 3355,
 			minLevel = 115,
-			numNodes = 62,
 		},
 		[3356] = {
 			name = LHerbs("Kingsblood"),
 			itemID = 3356,
 			minLevel = 125,
-			numNodes = 96,
 		},
 		[3357] = {
 			name = LHerbs("Liferoot"),
 			itemID = 3357,
 			minLevel = 150,
-			numNodes = 76,
 		},
 		[3818] = {
 			name = LHerbs("Fadeleaf"),
 			itemID = 3818,
 			minLevel = 160,
-			numNodes = 37,
 		},
 		[3821] = {
 			name = LHerbs("Goldthorn"),
 			itemID = 3821,
 			minLevel = 170,
-			numNodes = 101,
 		},
 		[3358] = {
 			name = LHerbs("Khadgar's Whisker"),
 			itemID = 3358,
 			minLevel = 185,
-			numNodes = 94,
 		},
 		[8831] = {
 			name = LHerbs("Purple Lotus"),
 			itemID = 8831,
 			minLevel = 210,
-			numNodes = 31,
 		},
 	},
 	-- Swamp of Sorrows
@@ -4709,43 +7774,36 @@ local herbsByZone = {
 			name = LHerbs("Stranglekelp"),
 			itemID = 3820,
 			minLevel = 85,
-			numNodes = 2,
 		},
 		[3356] = {
 			name = LHerbs("Kingsblood"),
 			itemID = 3356,
 			minLevel = 125,
-			numNodes = 32,
 		},
 		[3357] = {
 			name = LHerbs("Liferoot"),
 			itemID = 3357,
 			minLevel = 150,
-			numNodes = 61,
 		},
 		[3818] = {
 			name = LHerbs("Fadeleaf"),
 			itemID = 3818,
 			minLevel = 160,
-			numNodes = 29,
 		},
 		[3821] = {
 			name = LHerbs("Goldthorn"),
 			itemID = 3821,
 			minLevel = 170,
-			numNodes = 44,
 		},
 		[3358] = {
 			name = LHerbs("Khadgar's Whisker"),
 			itemID = 3358,
 			minLevel = 185,
-			numNodes = 43,
 		},
 		[8839] = {
 			name = LHerbs("Blindweed"),
 			itemID = 8839,
 			minLevel = 235,
-			numNodes = 129,
 		},
 	},
 	-- Tanaris
@@ -4754,19 +7812,16 @@ local herbsByZone = {
 			name = LHerbs("Stranglekelp"),
 			itemID = 3820,
 			minLevel = 85,
-			numNodes = 5,
 		},
 		[4625] = {
 			name = LHerbs("Firebloom"),
 			itemID = 4625,
 			minLevel = 205,
-			numNodes = 101,
 		},
 		[8831] = {
 			name = LHerbs("Purple Lotus"),
 			itemID = 8831,
 			minLevel = 210,
-			numNodes = 40,
 		},
 	},
 	-- Teldrassil
@@ -4775,25 +7830,21 @@ local herbsByZone = {
 			name = LHerbs("Peacebloom"),
 			itemID = 2447,
 			minLevel = 1,
-			numNodes = 96,
 		},
 		[765] = {
 			name = LHerbs("Silverleaf"),
 			itemID = 765,
 			minLevel = 1,
-			numNodes = 108,
 		},
 		[2449] = {
 			name = LHerbs("Earthroot"),
 			itemID = 2449,
 			minLevel = 15,
-			numNodes = 64,
 		},
 		[785] = {
 			name = LHerbs("Mageroyal"),
 			itemID = 785,
 			minLevel = 50,
-			numNodes = 21,
 		},
 	},
 	-- The Barrens
@@ -4802,61 +7853,51 @@ local herbsByZone = {
 			name = LHerbs("Peacebloom"),
 			itemID = 2447,
 			minLevel = 1,
-			numNodes = 81,
 		},
 		[765] = {
 			name = LHerbs("Silverleaf"),
 			itemID = 765,
 			minLevel = 1,
-			numNodes = 63,
 		},
 		[2449] = {
 			name = LHerbs("Earthroot"),
 			itemID = 2449,
 			minLevel = 15,
-			numNodes = 56,
 		},
 		[785] = {
 			name = LHerbs("Mageroyal"),
 			itemID = 785,
 			minLevel = 50,
-			numNodes = 159,
 		},
 		[2450] = {
 			name = LHerbs("Briarthorn"),
 			itemID = 2450,
 			minLevel = 70,
-			numNodes = 156,
 		},
 		[3820] = {
 			name = LHerbs("Stranglekelp"),
 			itemID = 3820,
 			minLevel = 85,
-			numNodes = 34,
 		},
 		[2453] = {
 			name = LHerbs("Bruiseweed"),
 			itemID = 2453,
 			minLevel = 100,
-			numNodes = 65,
 		},
 		[3355] = {
 			name = LHerbs("Wild Steelbloom"),
 			itemID = 3355,
 			minLevel = 115,
-			numNodes = 26,
 		},
 		[3369] = {
 			name = LHerbs("Grave Moss"),
 			itemID = 3369,
 			minLevel = 120,
-			numNodes = 4,
 		},
 		[3356] = {
 			name = LHerbs("Kingsblood"),
 			itemID = 3356,
 			minLevel = 125,
-			numNodes = 39,
 		},
 	},
 	-- The Hinterlands
@@ -4865,55 +7906,46 @@ local herbsByZone = {
 			name = LHerbs("Stranglekelp"),
 			itemID = 3820,
 			minLevel = 85,
-			numNodes = 3,
 		},
 		[3357] = {
 			name = LHerbs("Liferoot"),
 			itemID = 3357,
 			minLevel = 150,
-			numNodes = 10,
 		},
 		[3818] = {
 			name = LHerbs("Fadeleaf"),
 			itemID = 3818,
 			minLevel = 160,
-			numNodes = 13,
 		},
 		[3821] = {
 			name = LHerbs("Goldthorn"),
 			itemID = 3821,
 			minLevel = 170,
-			numNodes = 35,
 		},
 		[3358] = {
 			name = LHerbs("Khadgar's Whisker"),
 			itemID = 3358,
 			minLevel = 185,
-			numNodes = 13,
 		},
 		[8831] = {
 			name = LHerbs("Purple Lotus"),
 			itemID = 8831,
 			minLevel = 210,
-			numNodes = 39,
 		},
 		[8838] = {
 			name = LHerbs("Sungrass"),
 			itemID = 8838,
 			minLevel = 230,
-			numNodes = 78,
 		},
 		[8845] = {
 			name = LHerbs("Ghost Mushroom"),
 			itemID = 8845,
 			minLevel = 245,
-			numNodes = 41,
 		},
 		[13464] = {
 			name = LHerbs("Golden Sansam"),
 			itemID = 13464,
 			minLevel = 260,
-			numNodes = 18,
 		},
 	},
 	-- Thousand Needles
@@ -4922,19 +7954,16 @@ local herbsByZone = {
 			name = LHerbs("Bruiseweed"),
 			itemID = 2453,
 			minLevel = 100,
-			numNodes = 35,
 		},
 		[3355] = {
 			name = LHerbs("Wild Steelbloom"),
 			itemID = 3355,
 			minLevel = 115,
-			numNodes = 37,
 		},
 		[3356] = {
 			name = LHerbs("Kingsblood"),
 			itemID = 3356,
 			minLevel = 125,
-			numNodes = 40,
 		},
 	},
 	-- Tirisfal Glades
@@ -4943,19 +7972,16 @@ local herbsByZone = {
 			name = LHerbs("Peacebloom"),
 			itemID = 2447,
 			minLevel = 1,
-			numNodes = 81,
 		},
 		[765] = {
 			name = LHerbs("Silverleaf"),
 			itemID = 765,
 			minLevel = 1,
-			numNodes = 106,
 		},
 		[2449] = {
 			name = LHerbs("Earthroot"),
 			itemID = 2449,
 			minLevel = 15,
-			numNodes = 49,
 		},
 	},
 	-- Un'Goro Crater
@@ -4964,31 +7990,26 @@ local herbsByZone = {
 			name = LHerbs("Sungrass"),
 			itemID = 8838,
 			minLevel = 230,
-			numNodes = 46,
 		},
 		[8839] = {
 			name = LHerbs("Blindweed"),
 			itemID = 8839,
 			minLevel = 235,
-			numNodes = 17,
 		},
 		[13464] = {
 			name = LHerbs("Golden Sansam"),
 			itemID = 13464,
 			minLevel = 260,
-			numNodes = 59,
 		},
 		[13463] = {
 			name = LHerbs("Dreamfoil"),
 			itemID = 13463,
 			minLevel = 270,
-			numNodes = 60,
 		},
 		[13465] = {
 			name = LHerbs("Mountain Silversage"),
 			itemID = 13465,
 			minLevel = 280,
-			numNodes = 49,
 		},
 	},
 	-- Western Plaguelands
@@ -4997,31 +8018,26 @@ local herbsByZone = {
 			name = LHerbs("Arthas' Tears"),
 			itemID = 8836,
 			minLevel = 220,
-			numNodes = 45,
 		},
 		[8838] = {
 			name = LHerbs("Sungrass"),
 			itemID = 8838,
 			minLevel = 230,
-			numNodes = 36,
 		},
 		[13463] = {
 			name = LHerbs("Dreamfoil"),
 			itemID = 13463,
 			minLevel = 270,
-			numNodes = 31,
 		},
 		[13465] = {
 			name = LHerbs("Mountain Silversage"),
 			itemID = 13465,
 			minLevel = 280,
-			numNodes = 18,
 		},
 		[13466] = {
 			name = LHerbs("Plaguebloom"),
 			itemID = 13466,
 			minLevel = 285,
-			numNodes = 58,
 		},
 	},
 	-- Westfall
@@ -5030,43 +8046,36 @@ local herbsByZone = {
 			name = LHerbs("Peacebloom"),
 			itemID = 2447,
 			minLevel = 1,
-			numNodes = 32,
 		},
 		[765] = {
 			name = LHerbs("Silverleaf"),
 			itemID = 765,
 			minLevel = 1,
-			numNodes = 49,
 		},
 		[2449] = {
 			name = LHerbs("Earthroot"),
 			itemID = 2449,
 			minLevel = 15,
-			numNodes = 23,
 		},
 		[785] = {
 			name = LHerbs("Mageroyal"),
 			itemID = 785,
 			minLevel = 50,
-			numNodes = 54,
 		},
 		[2450] = {
 			name = LHerbs("Briarthorn"),
 			itemID = 2450,
 			minLevel = 70,
-			numNodes = 62,
 		},
 		[3820] = {
 			name = LHerbs("Stranglekelp"),
 			itemID = 3820,
 			minLevel = 85,
-			numNodes = 33,
 		},
 		[2453] = {
 			name = LHerbs("Bruiseweed"),
 			itemID = 2453,
 			minLevel = 100,
-			numNodes = 40,
 		},
 	},
 	-- Wetlands
@@ -5075,49 +8084,41 @@ local herbsByZone = {
 			name = LHerbs("Mageroyal"),
 			itemID = 785,
 			minLevel = 50,
-			numNodes = 35,
 		},
 		[2450] = {
 			name = LHerbs("Briarthorn"),
 			itemID = 2450,
 			minLevel = 70,
-			numNodes = 46,
 		},
 		[3820] = {
 			name = LHerbs("Stranglekelp"),
 			itemID = 3820,
 			minLevel = 85,
-			numNodes = 46,
 		},
 		[2453] = {
 			name = LHerbs("Bruiseweed"),
 			itemID = 2453,
 			minLevel = 100,
-			numNodes = 37,
 		},
 		[3355] = {
 			name = LHerbs("Wild Steelbloom"),
 			itemID = 3355,
 			minLevel = 115,
-			numNodes = 22,
 		},
 		[3369] = {
 			name = LHerbs("Grave Moss"),
 			itemID = 3369,
 			minLevel = 120,
-			numNodes = 5,
 		},
 		[3356] = {
 			name = LHerbs("Kingsblood"),
 			itemID = 3356,
 			minLevel = 125,
-			numNodes = 66,
 		},
 		[3357] = {
 			name = LHerbs("Liferoot"),
 			itemID = 3357,
 			minLevel = 150,
-			numNodes = 61,
 		},
 	},
 	-- Winterspring
@@ -5126,19 +8127,769 @@ local herbsByZone = {
 			name = LHerbs("Mountain Silversage"),
 			itemID = 13465,
 			minLevel = 280,
-			numNodes = 78,
 		},
 		[13467] = {
 			name = LHerbs("Icecap"),
 			itemID = 13467,
 			minLevel = 290,
-			numNodes = 152,
 		},
 		[13468] = {
 			name = LHerbs("Black Lotus"),
 			itemID = 13468,
 			minLevel = 300,
-			numNodes = 12,
+		},
+	},
+	-- TBC Zones
+	-- Auchenai Crypts
+	[256] = {
+		[181278] = {
+			name = LHerbs("Ancient Lichen"),
+			itemID = 181278,
+			minLevel = 340,
+		},
+	},
+	-- Azuremyst Isle
+	[1943] = {
+		[765] = {
+			name = LHerbs("Silverleaf"),
+			itemID = 765,
+			minLevel = 1,
+		},
+		[2449] = {
+			name = LHerbs("Earthroot"),
+			itemID = 2449,
+			minLevel = 15,
+		},
+		[2447] = {
+			name = LHerbs("Peacebloom"),
+			itemID = 2447,
+			minLevel = 1,
+		},
+	},	
+	-- Blade's Edge Mountains
+	[1949] = {
+		[181270] = {
+			name = LHerbs("Felweed"),
+			itemID = 181270,
+			minLevel = 300,
+		},
+		[181271] = {
+			name = LHerbs("Dreaming Glory"),
+			itemID = 181271,
+			minLevel = 315,
+		},
+		[181280] = {
+			name = LHerbs("Nightmare Vine"),
+			itemID = 181280,
+			minLevel = 365,
+		},
+		[181281] = {
+			name = LHerbs("Mana Thistle"),
+			itemID = 181281,
+			minLevel = 375,
+		},
+	},
+	-- Bloodmyst Isle
+	[1950] = {
+		[2450] = {
+			name = LHerbs("Briarthorn"),
+			itemID = 2450,
+			minLevel = 70,
+		},
+		[785] = {
+			name = LHerbs("Mageroyal"),
+			itemID = 785,
+			minLevel = 50,
+		},
+		[765] = {
+			name = LHerbs("Silverleaf"),
+			itemID = 765,
+			minLevel = 1,
+		},
+		[2449] = {
+			name = LHerbs("Earthroot"),
+			itemID = 2449,
+			minLevel = 15,
+		},
+		[2453] = {
+			name = LHerbs("Bruiseweed"),
+			itemID = 2453,
+			minLevel = 100,
+		},
+		[2447] = {
+			name = LHerbs("Peacebloom"),
+			itemID = 2447,
+			minLevel = 1,
+		},
+		[3820] = {
+			name = LHerbs("Stranglekelp"),
+			itemID = 3820,
+			minLevel = 85,
+		},
+	},
+	-- Eversong Woods
+	[1941] = {
+		[765] = {
+			name = LHerbs("Silverleaf"),
+			itemID = 765,
+			minLevel = 1,
+		},
+		[2449] = {
+			name = LHerbs("Earthroot"),
+			itemID = 2449,
+			minLevel = 15,
+		},
+		[2447] = {
+			name = LHerbs("Peacebloom"),
+			itemID = 2447,
+			minLevel = 1,
+		},
+	},
+	-- Ghostlands
+	[1942] = {
+		[2450] = {
+			name = LHerbs("Briarthorn"),
+			itemID = 2450,
+			minLevel = 70,
+		},
+		[785] = {
+			name = LHerbs("Mageroyal"),
+			itemID = 785,
+			minLevel = 50,
+		},
+		[765] = {
+			name = LHerbs("Silverleaf"),
+			itemID = 765,
+			minLevel = 1,
+		},
+		[2449] = {
+			name = LHerbs("Earthroot"),
+			itemID = 2449,
+			minLevel = 15,
+		},
+		[2453] = {
+			name = LHerbs("Bruiseweed"),
+			itemID = 2453,
+			minLevel = 100,
+		},
+		[2447] = {
+			name = LHerbs("Peacebloom"),
+			itemID = 2447,
+			minLevel = 1,
+		},
+		[3820] = {
+			name = LHerbs("Stranglekelp"),
+			itemID = 3820,
+			minLevel = 85,
+		},
+	},
+	-- Hellfire Peninsula
+	[1944] = {
+		[181270] = {
+			name = LHerbs("Felweed"),
+			itemID = 181270,
+			minLevel = 300,
+		},
+		[181271] = {
+			name = LHerbs("Dreaming Glory"),
+			itemID = 181271,
+			minLevel = 315,
+		},
+		[176584] = {
+			name = LHerbs("Dreamfoil"),
+			itemID = 176584,
+			minLevel = 270,
+		},
+		[176583] = {
+			name = LHerbs("Golden Sansam"),
+			itemID = 176583,
+			minLevel = 260,
+		},
+		[176586] = {
+			name = LHerbs("Mountain Silversage"),
+			itemID = 176586,
+			minLevel = 280,
+		},
+		[142143] = {
+			name = LHerbs("Blindweed"),
+			itemID = 142143,
+			minLevel = 235,
+		},
+		[142144] = {
+			name = LHerbs("Ghost Mushroom"),
+			itemID = 142144,
+			minLevel = 245,
+		},
+	},
+	-- Mana-Tombs
+	[272] = {
+		[181278] = {
+			name = LHerbs("Ancient Lichen"),
+			itemID = 181278,
+			minLevel = 340,
+		},
+	},
+	-- Nagrand
+	[1951] = {
+		[181270] = {
+			name = LHerbs("Felweed"),
+			itemID = 181270,
+			minLevel = 300,
+		},
+		[181271] = {
+			name = LHerbs("Dreaming Glory"),
+			itemID = 181271,
+			minLevel = 315,
+		},
+		[181281] = {
+			name = LHerbs("Mana Thistle"),
+			itemID = 181281,
+			minLevel = 375,
+		},
+	},
+	-- Netherstorm
+	[1953] = {
+		[181270] = {
+			name = LHerbs("Felweed"),
+			itemID = 181270,
+			minLevel = 300,
+		},
+		[181271] = {
+			name = LHerbs("Dreaming Glory"),
+			itemID = 181271,
+			minLevel = 315,
+		},
+		[181279] = {
+			name = LHerbs("Netherbloom"),
+			itemID = 181279,
+			minLevel = 350,
+		},
+		[181281] = {
+			name = LHerbs("Mana Thistle"),
+			itemID = 181281,
+			minLevel = 375,
+		},
+	},
+	-- Serpentshrine Cavern
+	[332] = {
+		[181270] = {
+			name = LHerbs("Felweed"),
+			itemID = 181270,
+			minLevel = 300,
+		},
+		[181278] = {
+			name = LHerbs("Ancient Lichen"),
+			itemID = 181278,
+			minLevel = 340,
+		},
+	},
+	-- Sethekk Halls
+	[258] = {
+		[181278] = {
+			name = LHerbs("Ancient Lichen"),
+			itemID = 181278,
+			minLevel = 340,
+		},
+	},
+	-- Shadow Labyrinth
+	[260] = {
+		[181278] = {
+			name = LHerbs("Ancient Lichen"),
+			itemID = 181278,
+			minLevel = 340,
+		},
+	},
+	-- Shadowmoon Valley
+	[1948] = {
+		[181270] = {
+			name = LHerbs("Felweed"),
+			itemID = 181270,
+			minLevel = 300,
+		},
+		[181271] = {
+			name = LHerbs("Dreaming Glory"),
+			itemID = 181271,
+			minLevel = 315,
+		},
+		[181277] = {
+			name = LHerbs("Terocone"),
+			itemID = 181277,
+			minLevel = 325,
+		},
+		[181280] = {
+			name = LHerbs("Nightmare Vine"),
+			itemID = 181280,
+			minLevel = 365,
+		},
+		[181281] = {
+			name = LHerbs("Mana Thistle"),
+			itemID = 181281,
+			minLevel = 375,
+		},
+	},
+	-- Terokkar Forest
+	[1952] = {
+		[181270] = {
+			name = LHerbs("Felweed"),
+			itemID = 181270,
+			minLevel = 300,
+		},
+		[181271] = {
+			name = LHerbs("Dreaming Glory"),
+			itemID = 181271,
+			minLevel = 315,
+		},
+		[181277] = {
+			name = LHerbs("Terocone"),
+			itemID = 181277,
+			minLevel = 325,
+		},
+		[181281] = {
+			name = LHerbs("Mana Thistle"),
+			itemID = 181281,
+			minLevel = 375,
+		},
+	},
+	-- The Botanica
+	[266] = {
+		[181270] = {
+			name = LHerbs("Felweed"),
+			itemID = 181270,
+			minLevel = 300,
+		},
+		[181271] = {
+			name = LHerbs("Dreaming Glory"),
+			itemID = 181271,
+			minLevel = 315,
+		},
+		[181277] = {
+			name = LHerbs("Terocone"),
+			itemID = 181277,
+			minLevel = 325,
+		},
+		[181279] = {
+			name = LHerbs("Netherbloom"),
+			itemID = 181279,
+			minLevel = 350,
+		},
+	},
+	-- The Slave Pens
+	[265] = {
+		[181270] = {
+			name = LHerbs("Felweed"),
+			itemID = 181270,
+			minLevel = 300,
+		},
+		[181275] = {
+			name = LHerbs("Ragveil"),
+			itemID = 181275,
+			minLevel = 325,
+		},
+		[181278] = {
+			name = LHerbs("Ancient Lichen"),
+			itemID = 181278,
+			minLevel = 340,
+		},
+	},
+	-- The Steamvault
+	[263] = {
+		[181270] = {
+			name = LHerbs("Felweed"),
+			itemID = 181270,
+			minLevel = 300,
+		},
+		[181275] = {
+			name = LHerbs("Ragveil"),
+			itemID = 181275,
+			minLevel = 325,
+		},
+		[181278] = {
+			name = LHerbs("Ancient Lichen"),
+			itemID = 181278,
+			minLevel = 340,
+		},
+	},
+	-- The Underbog
+	[262] = {
+		[181270] = {
+			name = LHerbs("Felweed"),
+			itemID = 181270,
+			minLevel = 300,
+		},
+		[181275] = {
+			name = LHerbs("Ragveil"),
+			itemID = 181275,
+			minLevel = 325,
+		},
+		[181278] = {
+			name = LHerbs("Ancient Lichen"),
+			itemID = 181278,
+			minLevel = 340,
+		},
+	},
+	-- Zangarmarsh
+	[1946] = {
+		[181270] = {
+			name = LHerbs("Felweed"),
+			itemID = 181270,
+			minLevel = 300,
+		},
+		[181271] = {
+			name = LHerbs("Dreaming Glory"),
+			itemID = 181271,
+			minLevel = 315,
+		},
+		[181275] = {
+			name = LHerbs("Ragveil"),
+			itemID = 181275,
+			minLevel = 325,
+		},
+		[176584] = {
+			name = LHerbs("Dreamfoil"),
+			itemID = 176584,
+			minLevel = 270,
+		},
+		[176583] = {
+			name = LHerbs("Golden Sansam"),
+			itemID = 176583,
+			minLevel = 260,
+		},
+		[176586] = {
+			name = LHerbs("Mountain Silversage"),
+			itemID = 176586,
+			minLevel = 280,
+		},
+		[142143] = {
+			name = LHerbs("Blindweed"),
+			itemID = 142143,
+			minLevel = 235,
+		},
+		[142144] = {
+			name = LHerbs("Ghost Mushroom"),
+			itemID = 142144,
+			minLevel = 245,
+		},
+	},
+	-- WotLK zones
+	-- Ahn'kahet: The Old Kingdom
+	[132] = {
+		[189973] = {
+			name = LHerbs("Goldclover"),
+			itemID = 189973,
+			minLevel = 350,
+		},
+		[190169] = {
+			name = LHerbs("Tiger Lily"),
+			itemID = 190169,
+			minLevel = 375,
+		},
+		[190170] = {
+			name = LHerbs("Talandra's Rose"),
+			itemID = 190170,
+			minLevel = 385,
+		},
+	},
+	-- Azjol-Nerub
+	[157] = {
+		[189973] = {
+			name = LHerbs("Goldclover"),
+			itemID = 189973,
+			minLevel = 350,
+		},
+		[190169] = {
+			name = LHerbs("Tiger Lily"),
+			itemID = 190169,
+			minLevel = 375,
+		},
+	},
+	-- Borean Tundra
+	[114] = {
+		[189973] = {
+			name = LHerbs("Goldclover"),
+			itemID = 189973,
+			minLevel = 350,
+		},
+		[191019] = {
+			name = LHerbs("Adder's Tongue"),
+			itemID = 191019,
+			minLevel = 400,
+		},
+		[190175] = {
+			name = LHerbs("Frozen Herb"),
+			itemID = 190175,
+			minLevel = 415,
+		},
+		[191303] = {
+			name = LHerbs("Firethorn"),
+			itemID = 191303,
+			minLevel = 360,
+		},
+	},
+	-- Crystalsong Forest
+	[127] = {
+		[190171] = {
+			name = LHerbs("Lichbloom"),
+			itemID = 190171,
+			minLevel = 425,
+		},
+		[190172] = {
+			name = LHerbs("Icethorn"),
+			itemID = 190172,
+			minLevel = 435,
+		},
+	},
+	-- Dragonblight
+	[115] = {
+		[189973] = {
+			name = LHerbs("Goldclover"),
+			itemID = 189973,
+			minLevel = 350,
+		},
+		[190171] = {
+			name = LHerbs("Lichbloom"),
+			itemID = 190171,
+			minLevel = 425,
+		},
+		[190172] = {
+			name = LHerbs("Icethorn"),
+			itemID = 190172,
+			minLevel = 435,
+		},
+		[190175] = {
+			name = LHerbs("Frozen Herb"),
+			itemID = 190175,
+			minLevel = 415,
+		},
+	},
+	-- Drak'Tharon Keep
+	[160] = {
+		[191019] = {
+			name = LHerbs("Adder's Tongue"),
+			itemID = 191019,
+			minLevel = 400,
+		},
+		[190170] = {
+			name = LHerbs("Talandra's Rose"),
+			itemID = 190170,
+			minLevel = 385,
+		},
+	},
+	-- Grizzly Hills
+	[116] = {
+		[189973] = {
+			name = LHerbs("Goldclover"),
+			itemID = 189973,
+			minLevel = 350,
+		},
+		[190169] = {
+			name = LHerbs("Tiger Lily"),
+			itemID = 190169,
+			minLevel = 375,
+		},
+		[190170] = {
+			name = LHerbs("Talandra's Rose"),
+			itemID = 190170,
+			minLevel = 385,
+		},
+		[190175] = {
+			name = LHerbs("Frozen Herb"),
+			itemID = 190175,
+			minLevel = 415,
+		},
+	},
+	-- Gundrak
+	[153] = {
+		[191019] = {
+			name = LHerbs("Adder's Tongue"),
+			itemID = 191019,
+			minLevel = 400,
+		},
+	},
+	-- Howling Fjord
+	[117] = {
+		[189973] = {
+			name = LHerbs("Goldclover"),
+			itemID = 189973,
+			minLevel = 350,
+		},
+		[190169] = {
+			name = LHerbs("Tiger Lily"),
+			itemID = 190169,
+			minLevel = 375,
+		},
+	},
+	-- Icecrown
+	[118] = {
+		[190171] = {
+			name = LHerbs("Lichbloom"),
+			itemID = 190171,
+			minLevel = 425,
+		},
+		[190172] = {
+			name = LHerbs("Icethorn"),
+			itemID = 190172,
+			minLevel = 435,
+		},
+		[190175] = {
+			name = LHerbs("Frozen Herb"),
+			itemID = 190175,
+			minLevel = 415,
+		},
+	},
+	-- Sholazar Basin
+	[119] = {
+		[189973] = {
+			name = LHerbs("Goldclover"),
+			itemID = 189973,
+			minLevel = 350,
+		},
+		[190169] = {
+			name = LHerbs("Tiger Lily"),
+			itemID = 190169,
+			minLevel = 375,
+		},
+		[191019] = {
+			name = LHerbs("Adder's Tongue"),
+			itemID = 191019,
+			minLevel = 400,
+		},
+		[190171] = {
+			name = LHerbs("Lichbloom"),
+			itemID = 190171,
+			minLevel = 425,
+		},
+		[190176] = {
+			name = LHerbs("Frost Lotus"),
+			itemID = 190176,
+			minLevel = 450,
+		},
+		[190172] = {
+			name = LHerbs("Icethorn"),
+			itemID = 190172,
+			minLevel = 435,
+		},
+		[190175] = {
+			name = LHerbs("Frozen Herb"),
+			itemID = 190175,
+			minLevel = 415,
+		},
+	},
+	-- The Oculus
+	[142] = {
+		[190172] = {
+			name = LHerbs("Icethorn"),
+			itemID = 190172,
+			minLevel = 435,
+		},
+	},
+	-- The Storm Peaks
+	[120] = {
+		[190170] = {
+			name = LHerbs("Talandra's Rose"),
+			itemID = 190170,
+			minLevel = 385,
+		},
+		[190171] = {
+			name = LHerbs("Lichbloom"),
+			itemID = 190171,
+			minLevel = 425,
+		},
+		[190172] = {
+			name = LHerbs("Icethorn"),
+			itemID = 190172,
+			minLevel = 435,
+		},
+		[190175] = {
+			name = LHerbs("Frozen Herb"),
+			itemID = 190175,
+			minLevel = 415,
+		},
+	},
+	-- Ulduar
+	[147] = {
+		[189973] = {
+			name = LHerbs("Goldclover"),
+			itemID = 189973,
+			minLevel = 350,
+		},
+		[191019] = {
+			name = LHerbs("Adder's Tongue"),
+			itemID = 191019,
+			minLevel = 400,
+		},
+		[190170] = {
+			name = LHerbs("Talandra's Rose"),
+			itemID = 190170,
+			minLevel = 385,
+		},
+		[190171] = {
+			name = LHerbs("Lichbloom"),
+			itemID = 190171,
+			minLevel = 425,
+		},
+		[190176] = {
+			name = LHerbs("Frost Lotus"),
+			itemID = 190176,
+			minLevel = 450,
+		},
+	},
+	-- Utgarde Pinnacle
+	[136] = {
+		[190172] = {
+			name = LHerbs("Icethorn"),
+			itemID = 190172,
+			minLevel = 435,
+		},
+	},
+	-- Wintergrasp
+	[123] = {
+		[190171] = {
+			name = LHerbs("Lichbloom"),
+			itemID = 190171,
+			minLevel = 425,
+		},
+		[190176] = {
+			name = LHerbs("Frost Lotus"),
+			itemID = 190176,
+			minLevel = 450,
+		},
+		[190172] = {
+			name = LHerbs("Icethorn"),
+			itemID = 190172,
+			minLevel = 435,
+		},
+		[190175] = {
+			name = LHerbs("Frozen Herb"),
+			itemID = 190175,
+			minLevel = 415,
+		},
+	},
+	-- Zul'Drak
+	[121] = {
+		[190169] = {
+			name = LHerbs("Tiger Lily"),
+			itemID = 190169,
+			minLevel = 375,
+		},
+		[190170] = {
+			name = LHerbs("Talandra's Rose"),
+			itemID = 190170,
+			minLevel = 385,
+		},
+		[190171] = {
+			name = LHerbs("Lichbloom"),
+			itemID = 190171,
+			minLevel = 425,
+		},
+		[190172] = {
+			name = LHerbs("Icethorn"),
+			itemID = 190172,
+			minLevel = 435,
+		},
+		[190175] = {
+			name = LHerbs("Frozen Herb"),
+			itemID = 190175,
+			minLevel = 415,
 		},
 	},
 }
@@ -5153,7 +8904,7 @@ local herbsByZone = {
 --  - name
 --  - itemID
 --  - minLevel
---  - zones; table: k = mapID, v = number of nodes in the zone 
+--  - zones; table: k = mapID
 function Tourist:GetHerb(herbItemID)
 	return herbs[herbItemID]
 end
@@ -5177,7 +8928,7 @@ end
 --  - name
 --  - itemID
 --  - minLevel
---  - zones; table: k = mapID, v = number of nodes in the zone 
+--  - zones; table: k = mapID
 function Tourist:IterateHerbs()
 	for k in pairs(t) do
 		t[k] = nil
@@ -5194,7 +8945,6 @@ end
 --  - name
 --  - itemID
 --  - minLevel
---  - numNodes
 function Tourist:IterateHerbsByZone(mapID)
 	local zoneHerbs = herbsByZone[mapID]
 	if type(zoneHerbs) == "table" then
@@ -5245,189 +8995,385 @@ end
 --                                        MINING TRANSLATIONS                                         --
 --------------------------------------------------------------------------------------------------------
 
--- Pulled from GatherMate2 Classic
+-- Pulled from GatherMate2 Classic (except the ores)
 local miningTranslations = {
 	koKR = {
-		["Rich Thorium Vein"] = "풍부한 토륨 광맥",
-		["Ooze Covered Gold Vein"] = "진흙으로 덮인 금 광맥",
-		["Tin Vein"] = "주석 광맥",
-		["Copper Vein"] = "구리 광맥",
-		["Ooze Covered Rich Thorium Vein"] = "진흙으로 덮인 풍부한 토륨 광맥",
-		["Truesilver Deposit"] = "진은 광맥",
-		["Dark Iron Deposit"] = "검은무쇠 광맥",
-		["Silver Vein"] = "은 광맥",
-		["Iron Deposit"] = "철 광맥",
-		["Ooze Covered Mithril Deposit"] = "진흙으로 덮인 미스릴 광맥",
-		["Ooze Covered Silver Vein"] = "진흙으로 덮인 은 광맥",
-		["Gold Vein"] = "금 광맥",
-		["Ooze Covered Thorium Vein"] = "진흙으로 덮인 토륨 광맥",
-		["Small Thorium Vein"] = "작은 토륨 광맥",
-		["Mithril Deposit"] = "미스릴 광맥",
+		["Adamantite Deposit"] = "아다만타이트 광맥",
+		["Adamantite Ore"] = "아다만타이트 광석",
+		["Cobalt Deposit"] = "코발트 광맥",
+		["Cobalt Ore"] = "코발트 광석",
 		["Copper Ore"] = "구리 광석",
-		["Tin Ore"] = "주석 광석",
-		["Silver Ore"] = "은 광석",
-		["Iron Ore"] = "철광석",
-		["Gold Ore"] = "금 광석",
-		["Mithril Ore"] = "미스릴 광석",
-		["Truesilver Ore"] = "진은 광석",
+		["Copper Vein"] = "구리 광맥",
+		["Dark Iron Deposit"] = "검은무쇠 광맥",
 		["Dark Iron Ore"] = "검은 무쇠 광석",
+		["Fel Iron Deposit"] = "지옥무쇠 광맥",
+		["Fel Iron Ore"] = "지옥무쇠 광석",
+		["Gold Ore"] = "금 광석",
+		["Gold Vein"] = "금 광맥",
+		["Iron Deposit"] = "철 광맥",
+		["Iron Ore"] = "철광석",
+		["Khorium Ore"] = "코륨 광석",
+		["Khorium Vein"] = "코륨 광맥",
+		["Mithril Deposit"] = "미스릴 광맥",
+		["Mithril Ore"] = "미스릴 광석",
+		["Ooze Covered Gold Vein"] = "진흙으로 덮인 금 광맥",
+		["Ooze Covered Mithril Deposit"] = "진흙으로 덮인 미스릴 광맥",
+		["Ooze Covered Rich Thorium Vein"] = "진흙으로 덮인 풍부한 토륨 광맥",
+		["Ooze Covered Silver Vein"] = "진흙으로 덮인 은 광맥",
+		["Ooze Covered Thorium Vein"] = "진흙으로 덮인 토륨 광맥",
+		["Pure Saronite Deposit"] = "순수한 사로나이트 광맥",
+		["Rich Adamantite Deposit"] = "풍부한 아다만타이트 광맥",
+		["Rich Cobalt Deposit"] = "풍부한 코발트 광맥",
+		["Rich Saronite Deposit"] = "풍부한 사로나이트 광맥",
+		["Rich Thorium Vein"] = "풍부한 토륨 광맥",
+		["Saronite Deposit"] = "사로나이트 광맥",
+		["Saronite Ore"] = "사로나이트 광석",
+		["Silver Ore"] = "은 광석",
+		["Silver Vein"] = "은 광맥",
+		["Small Thorium Vein"] = "작은 토륨 광맥",
 		["Thorium Ore"] = "토륨 광석",
+		["Tin Ore"] = "주석 광석",
+		["Tin Vein"] = "주석 광맥",
+		["Titanium Ore"] = "티타늄 광석",
+		["Titanium Vein"] = "티타늄 광맥",
+		["Truesilver Deposit"] = "진은 광맥",
+		["Truesilver Ore"] = "진은 광석",
 	},
 	deDE = {
-		["Rich Thorium Vein"] = "Reiches Thoriumvorkommen",
-		["Ooze Covered Gold Vein"] = "Schlammbedecktes Goldvorkommen",
-		["Tin Vein"] = "Zinnvorkommen",
-		["Copper Vein"] = "Kupfervorkommen",
-		["Ooze Covered Rich Thorium Vein"] = "Schlammbedecktes reiches Thoriumvorkommen",
-		["Truesilver Deposit"] = "Echtsilbervorkommen",
-		["Dark Iron Deposit"] = "Dunkeleisenablagerung",
-		["Silver Vein"] = "Silbervorkommen",
-		["Iron Deposit"] = "Eisenvorkommen",
-		["Ooze Covered Mithril Deposit"] = "Schlammbedeckte Mithrilablagerung",
-		["Ooze Covered Silver Vein"] = "Schlammbedecktes Silbervorkommen",
-		["Gold Vein"] = "Goldvorkommen",
-		["Ooze Covered Thorium Vein"] = "Schlammbedeckte Thoriumader",
-		["Small Thorium Vein"] = "Kleines Thoriumvorkommen",
-		["Mithril Deposit"] = "Mithrilablagerung",
+		["Adamantite Deposit"] = "Adamantitvorkommen",
+		["Adamantite Ore"] = "Adamantiterz",
+		["Cobalt Deposit"] = "Kobaltvorkommen",
+		["Cobalt Ore"] = "Kobaltertz",
 		["Copper Ore"] = "Kupfererz",
-		["Tin Ore"] = "Zinnerz",
-		["Silver Ore"] = "Silbererz",
-		["Iron Ore"] = "Eisenerz",
-		["Gold Ore"] = "Golderz",
-		["Mithril Ore"] = "Mithrilerz",
-		["Truesilver Ore"] = "Echtsilbererz",
+		["Copper Vein"] = "Kupfervorkommen",
+		["Dark Iron Deposit"] = "Dunkeleisenablagerung",
 		["Dark Iron Ore"] = "Dunkeleisenerz",
+		["Fel Iron Deposit"] = "Teufelseisenvorkommen",
+		["Fel Iron Ore"] = "Teufelseisenerz",
+		["Gold Ore"] = "Golderz",
+		["Gold Vein"] = "Goldvorkommen",
+		["Iron Deposit"] = "Eisenvorkommen",
+		["Iron Ore"] = "Eisenerz",
+		["Khorium Ore"] = "Khoriumerz",
+		["Khorium Vein"] = "Khoriumader",
+		["Mithril Deposit"] = "Mithrilablagerung",
+		["Mithril Ore"] = "Mithrilerz",
+		["Ooze Covered Gold Vein"] = "Schlammbedecktes Goldvorkommen",
+		["Ooze Covered Mithril Deposit"] = "Schlammbedeckte Mithrilablagerung",
+		["Ooze Covered Rich Thorium Vein"] = "Schlammbedecktes reiches Thoriumvorkommen",
+		["Ooze Covered Silver Vein"] = "Schlammbedecktes Silbervorkommen",
+		["Ooze Covered Thorium Vein"] = "Schlammbedeckte Thoriumader",
+		["Pure Saronite Deposit"] = "Reine Saronitablagerung",
+		["Rich Adamantite Deposit"] = "Reiches Adamantitvorkommen",
+		["Rich Cobalt Deposit"] = "Reiches Kobaltvorkommen",
+		["Rich Saronite Deposit"] = "Reiches Saronitvorkommen",
+		["Rich Thorium Vein"] = "Reiches Thoriumvorkommen",
+		["Saronite Deposit"] = "Saronitvorkommen",
+		["Saronite Ore"] = "Saronitertz",
+		["Silver Ore"] = "Silbererz",
+		["Silver Vein"] = "Silbervorkommen",
+		["Small Thorium Vein"] = "Kleines Thoriumvorkommen",
 		["Thorium Ore"] = "Thoriumerz",
+		["Tin Ore"] = "Zinnerz",
+		["Tin Vein"] = "Zinnvorkommen",
+		["Titanium Ore"] = "Titanertz",
+		["Titanium Vein"] = "Titanader",
+		["Truesilver Deposit"] = "Echtsilbervorkommen",
+		["Truesilver Ore"] = "Echtsilbererz",	
 	},
 	frFR = {
-		["Rich Thorium Vein"] = "Riche filon de thorium",
-		["Ooze Covered Gold Vein"] = "Filon d'or couvert de limon",
-		["Tin Vein"] = "Filon d'étain",
-		["Copper Vein"] = "Filon de cuivre",
-		["Ooze Covered Rich Thorium Vein"] = "Riche filon de thorium couvert de limon",
-		["Truesilver Deposit"] = "Gisement de vrai-argent",
-		["Dark Iron Deposit"] = "Gisement de sombrefer",
-		["Silver Vein"] = "Filon d'argent",
-		["Iron Deposit"] = "Gisement de fer",
-		["Ooze Covered Mithril Deposit"] = "Gisement de mithril couvert de vase",
-		["Ooze Covered Silver Vein"] = "Filon d'argent couvert de limon",
-		["Gold Vein"] = "Filon d'or",
-		["Ooze Covered Thorium Vein"] = "Filon de thorium couvert de limon",
-		["Small Thorium Vein"] = "Petit filon de thorium",
-		["Mithril Deposit"] = "Gisement de mithril",
+		["Adamantite Deposit"] = "Gisement d'adamantite",
+		["Adamantite Ore"] = "Minerai d'adamantite",
+		["Cobalt Deposit"] = "Gisement de cobalt",
+		["Cobalt Ore"] = "Minerai de cobalt",
 		["Copper Ore"] = "Minerai de cuivre",
-		["Tin Ore"] = "Minerai d'étain",
-		["Silver Ore"] = "Minerai d'argent",
-		["Iron Ore"] = "Minerai de fer",
-		["Gold Ore"] = "Minerai d'or",
-		["Mithril Ore"] = "Minerai de mithril",
-		["Truesilver Ore"] = "Minerai de vrai-argent",
+		["Copper Vein"] = "Filon de cuivre",
+		["Dark Iron Deposit"] = "Gisement de sombrefer",
 		["Dark Iron Ore"] = "Minerai de sombrefer",
+		["Fel Iron Deposit"] = "Gisement de gangrefer",
+		["Fel Iron Ore"] = "Minerai de gangrefer",
+		["Gold Ore"] = "Minerai d'or",
+		["Gold Vein"] = "Filon d'or",
+		["Iron Deposit"] = "Gisement de fer",
+		["Iron Ore"] = "Minerai de fer",
+		["Khorium Ore"] = "Minerai de khorium",
+		["Khorium Vein"] = "Filon de khorium",
+		["Mithril Deposit"] = "Gisement de mithril",
+		["Mithril Ore"] = "Minerai de mithril",
+		["Ooze Covered Gold Vein"] = "Filon d'or couvert de limon",
+		["Ooze Covered Mithril Deposit"] = "Gisement de mithril couvert de vase",
+		["Ooze Covered Rich Thorium Vein"] = "Filon de thorium riche couvert de limon",
+		["Ooze Covered Silver Vein"] = "Filon d'argent couvert de limon",
+		["Ooze Covered Thorium Vein"] = "Filon de thorium couvert de limon",
+		["Pure Saronite Deposit"] = "Gisement de saronite pure",
+		["Rich Adamantite Deposit"] = "Gisement d'adamantite riche",
+		["Rich Cobalt Deposit"] = "Gisement de cobalt riche",
+		["Rich Saronite Deposit"] = "Gisement de saronite riche",
+		["Rich Thorium Vein"] = "Filon de thorium riche",
+		["Saronite Deposit"] = "Gisement de saronite",
+		["Saronite Ore"] = "Minerai de saronite",
+		["Silver Ore"] = "Minerai d'argent",
+		["Silver Vein"] = "Filon d'argent",
+		["Small Thorium Vein"] = "Petit filon de thorium",
 		["Thorium Ore"] = "Minerai de thorium",
+		["Tin Ore"] = "Minerai d'étain",
+		["Tin Vein"] = "Filon d'étain",
+		["Titanium Ore"] = "Minerai de titane",
+		["Titanium Vein"] = "Veine de titane",
+		["Truesilver Deposit"] = "Gisement de vrai-argent",
+		["Truesilver Ore"] = "Minerai de vrai-argent",	
 	},
 	esES = {
-		["Rich Thorium Vein"] = "Filón de torio enriquecido",
-		["Ooze Covered Gold Vein"] = "Filón de oro cubierto de moco",
-		["Tin Vein"] = "Filón de estaño",
-		["Copper Vein"] = "Filón de cobre",
-		["Ooze Covered Rich Thorium Vein"] = "Filón de torio enriquecido cubierto de moco",
-		["Truesilver Deposit"] = "Depósito de veraplata",
-		["Dark Iron Deposit"] = "Depósito de hierro negro",
-		["Silver Vein"] = "Filón de plata",
-		["Iron Deposit"] = "Depósito de hierro",
-		["Ooze Covered Mithril Deposit"] = "Filón de mitril cubierto de moco",
-		["Ooze Covered Silver Vein"] = "Filón de plata cubierto de moco",
-		["Gold Vein"] = "Filón de oro",
-		["Ooze Covered Thorium Vein"] = "Filón de torio cubierto de moco",
-		["Small Thorium Vein"] = "Filón pequeño de torio",
-		["Mithril Deposit"] = "Depósito de mitril",
+		["Adamantite Deposit"] = "Depósito de adamantita",
+		["Adamantite Ore"] = "Mena de adamantita",
+		["Cobalt Deposit"] = "Depósito de cobalto",
+		["Cobalt Ore"] = "Mineral de cobalto",
 		["Copper Ore"] = "Mineral de cobre",
-		["Tin Ore"] = "Mineral de estaño",
-		["Silver Ore"] = "Mineral de plata",
-		["Iron Ore"] = "Mineral de hierro negro",
-		["Gold Ore"] = "Mineral de oro",
-		["Mithril Ore"] = "Mineral de mitril",
-		["Truesilver Ore"] = "Mineral de veraplata",
+		["Copper Vein"] = "Filón de cobre",
+		["Dark Iron Deposit"] = "Depósito de hierro negro",
 		["Dark Iron Ore"] = "Mineral de hierro negro",
+		["Fel Iron Deposit"] = "Depósito de hierro vil",
+		["Fel Iron Ore"] = "Mena de hierro vil",
+		["Gold Ore"] = "Mineral de oro",
+		["Gold Vein"] = "Filón de oro",
+		["Iron Deposit"] = "Depósito de hierro",
+		["Iron Ore"] = "Mineral de hierro negro",
+		["Khorium Ore"] = "Mena de korio",
+		["Khorium Vein"] = "Filón de korio",
+		["Mithril Deposit"] = "Depósito de mitril",
+		["Mithril Ore"] = "Mineral de mitril",
+		["Ooze Covered Gold Vein"] = "Filón de oro cubierto de moco",
+		["Ooze Covered Mithril Deposit"] = "Filón de mitril cubierto de moco",
+		["Ooze Covered Rich Thorium Vein"] = "Filón de torio enriquecido cubierto de moco",
+		["Ooze Covered Silver Vein"] = "Filón de plata cubierto de moco",
+		["Ooze Covered Thorium Vein"] = "Filón de torio cubierto de moco",
+		["Pure Saronite Deposit"] = "Deposito de Saronita Puro",
+		["Rich Adamantite Deposit"] = "Depósito rico en adamantita",
+		["Rich Cobalt Deposit"] = "Depósito de cobalto rico",
+		["Rich Saronite Deposit"] = "Depósito de saronita rico",
+		["Rich Thorium Vein"] = "Filón de torio enriquecido",
+		["Saronite Deposit"] = "Depósito de saronita",
+		["Saronite Ore"] = "Mineral de saronita",
+		["Silver Ore"] = "Mineral de plata",
+		["Silver Vein"] = "Filón de plata",
+		["Small Thorium Vein"] = "Filón pequeño de torio",
 		["Thorium Ore"] = "Mineral de torio",
+		["Tin Ore"] = "Mineral de estaño",
+		["Tin Vein"] = "Filón de estaño",
+		["Titanium Ore"] = "Mineral de titanio",
+		["Titanium Vein"] = "Filón de titanio",
+		["Truesilver Deposit"] = "Depósito de veraplata",
+		["Truesilver Ore"] = "Mineral de veraplata",		
+	},
+	esMX = {
+		["Adamantite Deposit"] = "Depósito de adamantita",
+		["Adamantite Ore"] = "Mena de adamantita",
+		["Cobalt Deposit"] = "Depósito de cobalto",
+		["Cobalt Ore"] = "Mineral de cobalto",
+		["Copper Ore"] = "Mineral de cobre",
+		["Copper Vein"] = "Filón de cobre",
+		["Dark Iron Deposit"] = "Depósito de hierro negro",
+		["Dark Iron Ore"] = "Mineral de hierro negro",
+		["Fel Iron Deposit"] = "Depósito de hierro vil",
+		["Fel Iron Ore"] = "Mena de hierro vil",
+		["Gold Ore"] = "Mineral de oro",
+		["Gold Vein"] = "Filón de oro",
+		["Iron Deposit"] = "Depósito de hierro",
+		["Iron Ore"] = "Mineral de hierro negro",
+		["Khorium Ore"] = "Mena de korio",
+		["Khorium Vein"] = "Filón de korio",
+		["Mithril Deposit"] = "Depósito de mitril",
+		["Mithril Ore"] = "Mineral de mitril",
+		["Ooze Covered Gold Vein"] = "Filón de oro cubierto de moco",
+		["Ooze Covered Mithril Deposit"] = "Filón de mitril cubierto de moco",
+		["Ooze Covered Rich Thorium Vein"] = "Filón de torio enriquecido cubierto de moco",
+		["Ooze Covered Silver Vein"] = "Filón de plata cubierto de moco",
+		["Ooze Covered Thorium Vein"] = "Filón de torio cubierto de moco",
+		["Pure Saronite Deposit"] = "Deposito de Saronita Puro",
+		["Rich Adamantite Deposit"] = "Depósito rico en adamantita",
+		["Rich Cobalt Deposit"] = "Depósito de cobalto rico",
+		["Rich Saronite Deposit"] = "Depósito de saronita rico",
+		["Rich Thorium Vein"] = "Filón de torio enriquecido",
+		["Saronite Deposit"] = "Depósito de saronita",
+		["Saronite Ore"] = "Mineral de saronita",
+		["Silver Ore"] = "Mineral de plata",
+		["Silver Vein"] = "Filón de plata",
+		["Small Thorium Vein"] = "Filón pequeño de torio",
+		["Thorium Ore"] = "Mineral de torio",
+		["Tin Ore"] = "Mineral de estaño",
+		["Tin Vein"] = "Filón de estaño",
+		["Titanium Ore"] = "Mineral de titanio",
+		["Titanium Vein"] = "Filón de titanio",
+		["Truesilver Deposit"] = "Depósito de veraplata",
+		["Truesilver Ore"] = "Mineral de veraplata",		
+	},
+	itIT = {
+		["Adamantite Deposit"] = "Deposito di Adamantite",	
+		["Adamantite Ore"] = "Minerale di Adamantite",	
+		["Cobalt Deposit"] = "Deposito di Cobalto",	
+		["Cobalt Ore"] = "Minerale di Cobalto",	
+		["Copper Ore"] = "Minerale di Rame",	
+		["Copper Vein"] = "Vena di Rame",	
+		["Dark Iron Deposit"] = "Deposito di Ferroscuro",	
+		["Dark Iron Ore"] = "Minerale di Ferroscuro",	
+		["Fel Iron Deposit"] = "Deposito di Vilferro",	
+		["Fel Iron Ore"] = "Minerale di Vilferro",	
+		["Gold Ore"] = "Minerale d'Oro",	
+		["Gold Vein"] = "Vena d'Oro",	
+		["Iron Deposit"] = "Deposito di Ferro",	
+		["Iron Ore"] = "Minerale di Ferro",	
+		["Khorium Ore"] = "Minerale di Korio",	
+		["Khorium Vein"] = "Vena di Korio",	
+		["Mithril Deposit"] = "Deposito di Mithril"	,
+		["Mithril Ore"] = "Minerale di Mithril",	
+		["Ooze Covered Gold Vein"] = "Vena d'Oro Coperta di Melma",
+		["Ooze Covered Mithril Deposit"] = "Vena di Mithril Coperta di Melma",	
+		["Ooze Covered Rich Thorium Vein"] = "Vena Ricca di Torio Coperta di Melma",	
+		["Ooze Covered Silver Vein"] = "Vena d'Argento Coperta di Melma",	
+		["Ooze Covered Thorium Vein"] = "Vena di Torio Coperta di Melma",	
+		["Pure Saronite Deposit"] = "Deposito di Minerale di Saronite pura",	
+		["Rich Adamantite Deposit"] = "Deposito Ricco di Adamantite",	
+		["Rich Cobalt Deposit"] = "Deposito Ricco di Cobalto",	
+		["Rich Saronite Deposit"] = "Deposito Ricco di Saronite",	
+		["Rich Thorium Vein"] = "Vena Ricca di Torio",	
+		["Saronite Deposit"] = "Deposito di Saronite",	
+		["Saronite Ore"] = "Minerale di Saronite",	
+		["Silver Ore"] = "Minerale d'Argento",	
+		["Silver Vein"] = "Vena d'Argento",	
+		["Small Thorium Vein"] = "Vena Piccola di Torio",	
+		["Thorium Ore"] = "Minerale di Torio",	
+		["Tin Ore"] = "Minerale di Stagno",	
+		["Tin Vein"] = "Vena di Stagno",	
+		["Titanium Ore"] = "Minerale di Titanio",	
+		["Titanium Vein"] = "Vena di Titanio",	
+		["Truesilver Deposit"] = "Deposito di Verargento",	
+		["Truesilver Ore"] = "Minerale di Verargento",		
+	},
+	ptBR = {
+		["Adamantite Deposit"] = "Depósito de Adamantita",	
+		["Adamantite Ore"] = "Minério de Adamantita",	
+		["Cobalt Deposit"] = "Depósito de Cobalto",	
+		["Cobalt Ore"] = "Minério de Cobalto",	
+		["Copper Ore"] = "Minério de Cobre",	
+		["Copper Vein"] = "Veio de Cobre",	
+		["Dark Iron Deposit"] = "Depósito de Ferro Negro",	
+		["Dark Iron Ore"] = "Minério de Ferro Negro",	
+		["Fel Iron Deposit"] = "Depósito de Ferrovil",	
+		["Fel Iron Ore"] = "Minério de Ferrovil",	
+		["Gold Ore"] = "Minério de Ouro",	
+		["Gold Vein"] = "Veio de Ouro",	
+		["Iron Deposit"] = "Depósito de Ferro",	
+		["Iron Ore"] = "Minério de Ferro",	
+		["Khorium Ore"] = "Minério de Kório",	
+		["Khorium Vein"] = "Veio de Kório",	
+		["Mithril Deposit"] = "Depósito de Mithril"	,
+		["Mithril Ore"] = "Minério de Mithril",	
+		["Ooze Covered Gold Vein"] = "Veio de Ouro Coberto de Gosma",	
+		["Ooze Covered Mithril Deposit"] = "Depósito de Mithril Coberto de Gosma",	
+		["Ooze Covered Rich Thorium Vein"] = "Veio de Tório Abundante Coberto de Gosma",	
+		["Ooze Covered Silver Vein"] = "Veio de Prata Coberto de Gosma",	
+		["Ooze Covered Thorium Vein"] = "Veio de Tório Coberto de Gosma",	
+		["Pure Saronite Deposit"] = "Depósito de Saronita Pura",	
+		["Rich Adamantite Deposit"] = "Depósito de Adamantita Abundante",	
+		["Rich Cobalt Deposit"] = "Depósito de Cobalto Abundante",	
+		["Rich Saronite Deposit"] = "Depósito de Saronita Abundante",	
+		["Rich Thorium Vein"] = "Veio de Tório Abundante",	
+		["Saronite Deposit"] = "Depósito de Saronita",	
+		["Saronite Ore"] = "Minério de Saronita",	
+		["Silver Ore"] = "Minério de Prata",	
+		["Silver Vein"] = "Veio de Prata",	
+		["Small Thorium Vein"] = "Veio de Tório Pequeno",	
+		["Thorium Ore"] = "Minério de Tório",	
+		["Tin Ore"] = "Minério de Estanho",	
+		["Tin Vein"] = "Veio de Estanho",	
+		["Titanium Ore"] = "Minério de Titânio",	
+		["Titanium Vein"] = "Veio de Titânio",	
+		["Truesilver Deposit"] = "Depósito de Veraprata",	
+		["Truesilver Ore"] = "Minério de Veraprata",		
 	},
 	zhTW = {
-		["Rich Thorium Vein"] = "富瑟銀礦脈",
-		["Ooze Covered Gold Vein"] = "軟泥覆蓋的金礦脈",
-		["Tin Vein"] = "錫礦脈",
-		["Copper Vein"] = "銅礦脈",
-		["Ooze Covered Rich Thorium Vein"] = "軟泥覆蓋的富瑟銀礦脈",
-		["Truesilver Deposit"] = "真銀礦床",
-		["Dark Iron Deposit"] = "黑鐵礦床",
-		["Silver Vein"] = "銀礦脈",
-		["Iron Deposit"] = "鐵礦床",
-		["Ooze Covered Mithril Deposit"] = "軟泥覆蓋的秘銀礦床",
-		["Ooze Covered Silver Vein"] = "軟泥覆蓋的銀礦脈",
-		["Gold Vein"] = "金礦脈",
-		["Ooze Covered Thorium Vein"] = "軟泥覆蓋的瑟銀礦脈",
-		["Small Thorium Vein"] = "瑟銀礦脈",
+		["Adamantite Deposit"] = "堅鋼礦床",	
+		["Adamantite Ore"] = "堅鋼礦石",	
+		["Cobalt Deposit"] = "鈷藍礦床",	
+		["Cobalt Ore"] = "鈷藍礦石",	
+		["Copper Ore"] = "銅礦",	
+		["Copper Vein"] = "銅礦脈",	
+		["Dark Iron Deposit"] = "黑鐵礦床",	
+		["Dark Iron Ore"] = "黑鐵礦",	
+		["Fel Iron Deposit"] = "魔鐵礦床",	
+		["Fel Iron Ore"] = "魔鐵礦石",	
+		["Gold Ore"] = "金礦",	
+		["Gold Vein"] = "金礦脈",	
+		["Iron Deposit"] = "鐵礦床",	
+		["Iron Ore"] = "鐵礦",	
+		["Khorium Ore"] = "克銀礦石",	
+		["Khorium Vein"] = "克銀礦脈",	
 		["Mithril Deposit"] = "秘銀礦床"	,
-		["Copper Ore"] = "銅礦",
-		["Tin Ore"] = "錫礦",
-		["Silver Ore"] = "銀礦石",
-		["Iron Ore"] = "鐵礦",
-		["Gold Ore"] = "金礦",
-		["Mithril Ore"] = "秘銀礦石",
-		["Truesilver Ore"] = "真銀礦石",
-		["Dark Iron Ore"] = "黑鐵礦",
-		["Thorium Ore"] = "釷礦石",
+		["Mithril Ore"] = "秘銀礦石",	
+		["Ooze Covered Gold Vein"] = "軟泥覆蓋的金礦脈",	
+		["Ooze Covered Mithril Deposit"] = "軟泥覆蓋的秘銀礦床",	
+		["Ooze Covered Rich Thorium Vein"] = "軟泥覆蓋的富瑟銀礦脈",	
+		["Ooze Covered Silver Vein"] = "軟泥覆蓋的銀礦脈",	
+		["Ooze Covered Thorium Vein"] = "軟泥覆蓋的瑟銀礦脈",	
+		["Pure Saronite Deposit"] = "純淨薩鋼礦床",	
+		["Rich Adamantite Deposit"] = "豐沃的堅鋼礦床",	
+		["Rich Cobalt Deposit"] = "豐沃的鈷藍礦床",	
+		["Rich Saronite Deposit"] = "豐沃的薩鋼礦床",	
+		["Rich Thorium Vein"] = "富瑟銀礦脈",	
+		["Saronite Deposit"] = "薩鋼礦床",	
+		["Saronite Ore"] = "薩鋼礦石",	
+		["Silver Ore"] = "銀礦石",	
+		["Silver Vein"] = "銀礦脈",	
+		["Small Thorium Vein"] = "瑟銀礦脈",	
+		["Thorium Ore"] = "釷礦石",	
+		["Tin Ore"] = "錫礦",	
+		["Tin Vein"] = "錫礦脈",	
+		["Titanium Ore"] = "泰坦鋼礦石",	
+		["Titanium Vein"] = "泰坦鋼礦脈",	
+		["Truesilver Deposit"] = "真銀礦床",	
+		["Truesilver Ore"] = "真銀礦石",		
 	},
 	zhCN = {
-		["Rich Thorium Vein"] = "富瑟银矿",
-		["Ooze Covered Gold Vein"] = "软泥覆盖的金矿脉",
-		["Tin Vein"] = "锡矿",
-		["Copper Vein"] = "铜矿",
-		["Ooze Covered Rich Thorium Vein"] = "软泥覆盖的富瑟银矿脉",
-		["Truesilver Deposit"] = "真银矿石",
-		["Dark Iron Deposit"] = "黑铁矿脉",
-		["Silver Vein"] = "银矿",
-		["Iron Deposit"] = "铁矿石",
-		["Ooze Covered Mithril Deposit"] = "软泥覆盖的秘银矿脉",
-		["Ooze Covered Silver Vein"] = "软泥覆盖的银矿脉",
-		["Gold Vein"] = "金矿石",
-		["Ooze Covered Thorium Vein"] = "软泥覆盖的瑟银矿脉",
-		["Small Thorium Vein"] = "瑟银矿脉",
-		["Mithril Deposit"] = "秘银矿脉",
+		["Adamantite Deposit"] = "精金矿脉",
+		["Adamantite Ore"] = "精金矿石",
+		["Cobalt Deposit"] = "钴矿脉",
+		["Cobalt Ore"] = "钴矿",
 		["Copper Ore"] = "铜矿",
-		["Tin Ore"] = "锡矿",
-		["Silver Ore"] = "银矿",
-		["Iron Ore"] = "铁矿",
-		["Gold Ore"] = "金矿",
-		["Mithril Ore"] = "秘银矿",
-		["Truesilver Ore"] = "真银矿",
+		["Copper Vein"] = "铜矿",
+		["Dark Iron Deposit"] = "黑铁矿脉",
 		["Dark Iron Ore"] = "黑铁矿",
+		["Fel Iron Deposit"] = "魔铁矿脉",
+		["Fel Iron Ore"] = "魔铁矿石",
+		["Gold Ore"] = "金矿",
+		["Gold Vein"] = "金矿石",
+		["Iron Deposit"] = "铁矿石",
+		["Iron Ore"] = "铁矿",
+		["Khorium Ore"] = "氪金矿石",
+		["Khorium Vein"] = "氪金矿脉",
+		["Mithril Deposit"] = "秘银矿脉",
+		["Mithril Ore"] = "秘银矿",
+		["Ooze Covered Gold Vein"] = "软泥覆盖的金矿脉",
+		["Ooze Covered Mithril Deposit"] = "软泥覆盖的秘银矿脉",
+		["Ooze Covered Rich Thorium Vein"] = "软泥覆盖的富瑟银矿脉",
+		["Ooze Covered Silver Vein"] = "软泥覆盖的银矿脉",
+		["Ooze Covered Thorium Vein"] = "软泥覆盖的瑟银矿脉",
+		["Pure Saronite Deposit"] = "纯净的萨隆邪铁矿脉",
+		["Rich Adamantite Deposit"] = "富精金矿脉",
+		["Rich Cobalt Deposit"] = "富钴矿脉",
+		["Rich Saronite Deposit"] = "富萨隆邪铁矿脉",
+		["Rich Thorium Vein"] = "富瑟银矿",
+		["Saronite Deposit"] = "萨隆邪铁矿脉",
+		["Saronite Ore"] = "萨龙石",
+		["Silver Ore"] = "银矿",
+		["Silver Vein"] = "银矿",
+		["Small Thorium Vein"] = "瑟银矿脉",
 		["Thorium Ore"] = "钍矿",
-	},
-	ruRU = {
-		["Rich Thorium Vein"] = "Богатая ториевая жила",
-		["Ooze Covered Gold Vein"] = "Покрытая слизью золотая жила",
-		["Tin Vein"] = "Оловянная жила",
-		["Copper Vein"] = "Медная жила",
-		["Ooze Covered Rich Thorium Vein"] = "Покрытая слизью богатая ториевая жила",
-		["Truesilver Deposit"] = "Залежи истинного серебра",
-		["Dark Iron Deposit"] = "Залежи черного железа",
-		["Silver Vein"] = "Серебряная жила",
-		["Iron Deposit"] = "Залежи железа",
-		["Ooze Covered Mithril Deposit"] = "Покрытые слизью мифриловые залежи",
-		["Ooze Covered Silver Vein"] = "Покрытая слизью серебрянная жила",
-		["Gold Vein"] = "Золотая жила",
-		["Ooze Covered Thorium Vein"] = "Покрытая слизью ториевая жила",
-		["Small Thorium Vein"] = "Малая ториевая жила",
-		["Mithril Deposit"] = "Мифриловые залежи",
-		["Copper Ore"] = "медная руда",
-		["Tin Ore"] = "Оловянная руда",
-		["Silver Ore"] = "серебряная руда",
-		["Iron Ore"] = "железная руда",
-		["Gold Ore"] = "Золотая руда",
-		["Mithril Ore"] = "мифриловая руда",
-		["Truesilver Ore"] = "истинно серебряная руда",
-		["Dark Iron Ore"] = "темная железная руда",
-		["Thorium Ore"] = "ториевая руда",
+		["Tin Ore"] = "锡矿",
+		["Tin Vein"] = "锡矿",
+		["Titanium Ore"] = "钛矿石",
+		["Titanium Vein"] = "锡矿",
+		["Truesilver Deposit"] = "真银矿石",
+		["Truesilver Ore"] = "真银矿",		
 	},
 }
 
@@ -5443,8 +9389,9 @@ end
 --                                            MINING DATA                                             --
 --------------------------------------------------------------------------------------------------------
 
--- Most node types are represented by multiple object IDs
+-- Some Classic and TBC node types are represented by multiple object IDs
 -- This table maps these IDs to the most common ones
+-- (source: WowHead)
 local miningNodeIDMapping = {
 	[2055] = 1731,   -- Copper 
 	[3763] = 1731,
@@ -5476,24 +9423,28 @@ local miningNodes = {
 		oreItemID = 2770,
 		minLevel = 1,
 		zones = {
-			[1440] = 41,		-- Ashenvale
-			[1439] = 107,		-- Darkshore
-			[1443] = 12,		-- Desolace
-			[1426] = 159,		-- Dun Morogh
-			[1411] = 149,		-- Durotar
-			[1431] = 42,		-- Duskwood
-			[1429] = 149,		-- Elwynn Forest
-			[1424] = 31,		-- Hillsbrad Foothills
-			[1432] = 120,		-- Loch Modan
-			[1412] = 76,		-- Mulgore
-			[1433] = 88,		-- Redridge Mountains
-			[1421] = 59,		-- Silverpine Forest
-			[1442] = 48,		-- Stonetalon Mountains
-			[1413] = 209,		-- The Barrens
-			[1441] = 40,		-- Thousand Needles
-			[1420] = 81,		-- Tirisfal Glades
-			[1436] = 94,		-- Westfall
-			[1437] = 28,		-- Wetlands
+			[1440] = true,		-- Ashenvale
+			[1439] = true,		-- Darkshore
+			[1443] = true,		-- Desolace
+			[1426] = true,		-- Dun Morogh
+			[1411] = true,		-- Durotar
+			[1431] = true,		-- Duskwood
+			[1429] = true,		-- Elwynn Forest
+			[1424] = true,		-- Hillsbrad Foothills
+			[1432] = true,		-- Loch Modan
+			[1412] = true,		-- Mulgore
+			[1433] = true,		-- Redridge Mountains
+			[1421] = true,		-- Silverpine Forest
+			[1442] = true,		-- Stonetalon Mountains
+			[1413] = true,		-- The Barrens
+			[1441] = true,		-- Thousand Needles
+			[1420] = true,		-- Tirisfal Glades
+			[1436] = true,		-- Westfall
+			[1437] = true,		-- Wetlands
+			[1943] = true,		-- Azuremyst Isle
+			[1950] = true,		-- Bloodmyst Isle
+			[1941] = true,		-- Eversong Woods
+			[1942] = true,		-- Ghostlands			
 		},
 	},
 	[1732] = {
@@ -5503,23 +9454,25 @@ local miningNodes = {
 		oreItemID = 2771,
 		minLevel = 65,
 		zones = {
-			[1416] = 10,		-- Alterac Mountains
-			[1417] = 39,		-- Arathi Highlands
-			[1440] = 50,		-- Ashenvale
-			[1439] = 47,		-- Darkshore
-			[1443] = 45,		-- Desolace
-			[1431] = 52,		-- Duskwood
-			[1445] = 4,			-- Dustwallow Marsh
-			[1424] = 88,		-- Hillsbrad Foothills
-			[1432] = 53,		-- Loch Modan
-			[1433] = 76,		-- Redridge Mountains
-			[1421] = 26,		-- Silverpine Forest
-			[1442] = 57,		-- Stonetalon Mountains
-			[1434] = 15,		-- Stranglethorn Vale
-			[1413] = 124,		-- The Barrens
-			[1441] = 68,		-- Thousand Needles
-			[1436] = 37,		-- Westfall
-			[1437] = 53,		-- Wetlands
+			[1416] = true,		-- Alterac Mountains
+			[1417] = true,		-- Arathi Highlands
+			[1440] = true,		-- Ashenvale
+			[1439] = true,		-- Darkshore
+			[1443] = true,		-- Desolace
+			[1431] = true,		-- Duskwood
+			[1445] = true,		-- Dustwallow Marsh
+			[1424] = true,		-- Hillsbrad Foothills
+			[1432] = true,		-- Loch Modan
+			[1433] = true,		-- Redridge Mountains
+			[1421] = true,		-- Silverpine Forest
+			[1442] = true,		-- Stonetalon Mountains
+			[1434] = true,		-- Stranglethorn Vale
+			[1413] = true,		-- The Barrens
+			[1441] = true,		-- Thousand Needles
+			[1436] = true,		-- Westfall
+			[1437] = true,		-- Wetlands
+			[1950] = true,		-- Bloodmyst Isle
+			[1942] = true,		-- Ghostlands
 		},
 	},
 	[1733] = {
@@ -5529,23 +9482,25 @@ local miningNodes = {
 		oreItemID = 2775,
 		minLevel = 75,
 		zones = {
-			[1416] = 4,			-- Alterac Mountains
-			[1417] = 18,		-- Arathi Highlands
-			[1418] = 2,			-- Badlands
-			[1439] = 1,			-- Darkshore
-			[1443] = 3,			-- Desolace
-			[1431] = 7,			-- Duskwood
-			[1444] = 1,			-- Feralas
-			[1424] = 17,		-- Hillsbrad Foothills
-			[1432] = 3,			-- Loch Modan
-			[1433] = 7,			-- Redridge Mountains
-			[1421] = 2,			-- Silverpine Forest
-			[1442] = 7,			-- Stonetalon Mountains
-			[1434] = 5,			-- Stranglethorn Vale
-			[1413] = 24,		-- The Barrens
-			[1441] = 7,			-- Thousand Needles
-			[1436] = 1,			-- Westfall
-			[1437] = 7,			-- Wetlands
+			[1416] = true,		-- Alterac Mountains
+			[1417] = true,		-- Arathi Highlands
+			[1418] = true,		-- Badlands
+			[1439] = true,		-- Darkshore
+			[1443] = true,		-- Desolace
+			[1431] = true,		-- Duskwood
+			[1444] = true,		-- Feralas
+			[1424] = true,		-- Hillsbrad Foothills
+			[1432] = true,		-- Loch Modan
+			[1433] = true,		-- Redridge Mountains
+			[1421] = true,		-- Silverpine Forest
+			[1442] = true,		-- Stonetalon Mountains
+			[1434] = true,		-- Stranglethorn Vale
+			[1413] = true,		-- The Barrens
+			[1441] = true,		-- Thousand Needles
+			[1436] = true,		-- Westfall
+			[1437] = true,		-- Wetlands
+			[1950] = true,		-- Bloodmyst Isle
+			[1942] = true,		-- Ghostlands
 		},
 	},
 	[73940] = {
@@ -5555,7 +9510,7 @@ local miningNodes = {
 		oreItemID = 2775,
 		minLevel = 75,
 		zones = {
-			[1441] = 4,			-- Thousand Needles
+			[1441] = true,		-- Thousand Needles
 		},
 	},
 	[1735] = {
@@ -5565,23 +9520,23 @@ local miningNodes = {
 		oreItemID = 2772,
 		minLevel = 125,
 		zones = {
-			[1416] = 73,		-- Alterac Mountains
-			[1417] = 124,		-- Arathi Highlands
-			[1440] = 21,		-- Ashenvale
-			[1418] = 70,		-- Badlands
-			[1443] = 92,		-- Desolace
-			[1431] = 26,		-- Duskwood
-			[1445] = 28,		-- Dustwallow Marsh
-			[1444] = 16,		-- Feralas
-			[1424] = 36,		-- Hillsbrad Foothills
-			[1427] = 12,		-- Searing Gorge
-			[1442] = 14,		-- Stonetalon Mountains
-			[1434] = 97,		-- Stranglethorn Vale
-			[1435] = 32,		-- Swamp of Sorrows
-			[1446] = 32,		-- Tanaris
-			[1425] = 12,		-- The Hinterlands
-			[1441] = 102,		-- Thousand Needles
-			[1437] = 14,		-- Wetlands
+			[1416] = true,		-- Alterac Mountains
+			[1417] = true,		-- Arathi Highlands
+			[1440] = true,		-- Ashenvale
+			[1418] = true,		-- Badlands
+			[1443] = true,		-- Desolace
+			[1431] = true,		-- Duskwood
+			[1445] = true,		-- Dustwallow Marsh
+			[1444] = true,		-- Feralas
+			[1424] = true,		-- Hillsbrad Foothills
+			[1427] = true,		-- Searing Gorge
+			[1442] = true,		-- Stonetalon Mountains
+			[1434] = true,		-- Stranglethorn Vale
+			[1435] = true,		-- Swamp of Sorrows
+			[1446] = true,		-- Tanaris
+			[1425] = true,		-- The Hinterlands
+			[1441] = true,		-- Thousand Needles
+			[1437] = true,		-- Wetlands
 		},
 	},
 	[1734] = {
@@ -5591,19 +9546,19 @@ local miningNodes = {
 		oreItemID = 2776,
 		minLevel = 155,
 		zones = {
-			[1416] = 2,			-- Alterac Mountains
-			[1417] = 4,			-- Arathi Highlands
-			[1418] = 5,			-- Badlands
-			[1419] = 1,			-- Blasted Lands
-			[1443] = 3,			-- Desolace
-			[1444] = 12,		-- Feralas
-			[1424] = 1,			-- Hillsbrad Foothills
-			[1434] = 3,			-- Stranglethorn Vale
-			[1435] = 1,			-- Swamp of Sorrows
-			[1446] = 2,			-- Tanaris
-			[1425] = 2,			-- The Hinterlands
-			[1441] = 1,			-- Thousand Needles
-			[1452] = 1,			-- Winterspring
+			[1416] = true,		-- Alterac Mountains
+			[1417] = true,		-- Arathi Highlands
+			[1418] = true,		-- Badlands
+			[1419] = true,		-- Blasted Lands
+			[1443] = true,		-- Desolace
+			[1444] = true,		-- Feralas
+			[1424] = true,		-- Hillsbrad Foothills
+			[1434] = true,		-- Stranglethorn Vale
+			[1435] = true,		-- Swamp of Sorrows
+			[1446] = true,		-- Tanaris
+			[1425] = true,		-- The Hinterlands
+			[1441] = true,		-- Thousand Needles
+			[1452] = true,		-- Winterspring
 		},
 	},
 	[73941] = {
@@ -5613,8 +9568,8 @@ local miningNodes = {
 		oreItemID = 2776,
 		minLevel = 155,
 		zones = {
-			[1444] = 10,		-- Feralas
-			[1441] = 4,			-- Thousand Needles
+			[1444] = true,		-- Feralas
+			[1441] = true,		-- Thousand Needles
 		},
 	},
 	[2040] = {
@@ -5624,29 +9579,29 @@ local miningNodes = {
 		oreItemID = 3858,
 		minLevel = 175,
 		zones = {
-			[1416] = 23,		-- Alterac Mountains
-			[1417] = 38,		-- Arathi Highlands
-			[1447] = 39,		-- Azshara
-			[1418] = 62,		-- Badlands
-			[1419] = 22,		-- Blasted Lands
-			[1428] = 34,		-- Burning Steppes
-			[1443] = 48,		-- Desolace
-			[1445] = 21,		-- Dustwallow Marsh
-			[1423] = 13,		-- Eastern Plaguelands
-			[1448] = 44,		-- Felwood
-			[1444] = 41,		-- Feralas
-			[1424] = 6,			-- Hillsbrad Foothills
-			[1427] = 46,		-- Searing Gorge
-			[1451] = 21,		-- Silithus
-			[1442] = 15,		-- Stonetalon Mountains
-			[1434] = 48,		-- Stranglethorn Vale
-			[1435] = 14,		-- Swamp of Sorrows
-			[1446] = 73,		-- Tanaris
-			[1425] = 85,		-- The Hinterlands
-			[1441] = 5,			-- Thousand Needles
-			[1449] = 20,		-- Un'Goro Crater
-			[1422] = 32,		-- Western Plaguelands
-			[1452] = 25,		-- Winterspring
+			[1416] = true,		-- Alterac Mountains
+			[1417] = true,		-- Arathi Highlands
+			[1447] = true,		-- Azshara
+			[1418] = true,		-- Badlands
+			[1419] = true,		-- Blasted Lands
+			[1428] = true,		-- Burning Steppes
+			[1443] = true,		-- Desolace
+			[1445] = true,		-- Dustwallow Marsh
+			[1423] = true,		-- Eastern Plaguelands
+			[1448] = true,		-- Felwood
+			[1444] = true,		-- Feralas
+			[1424] = true,		-- Hillsbrad Foothills
+			[1427] = true,		-- Searing Gorge
+			[1451] = true,		-- Silithus
+			[1442] = true,		-- Stonetalon Mountains
+			[1434] = true,		-- Stranglethorn Vale
+			[1435] = true,		-- Swamp of Sorrows
+			[1446] = true,		-- Tanaris
+			[1425] = true,		-- The Hinterlands
+			[1441] = true,		-- Thousand Needles
+			[1449] = true,		-- Un'Goro Crater
+			[1422] = true,		-- Western Plaguelands
+			[1452] = true,		-- Winterspring
 		},
 	},
 	[123310] = {
@@ -5656,8 +9611,8 @@ local miningNodes = {
 		oreItemID = 3858,
 		minLevel = 175,
 		zones = {
-			[1444] = 13,		-- Feralas
-			[1441] = 8,			-- Thousand Needles
+			[1444] = true,		-- Feralas
+			[1441] = true,		-- Thousand Needles
 		},
 	},
 	[2047] = {
@@ -5667,19 +9622,19 @@ local miningNodes = {
 		oreItemID = 7911,
 		minLevel = 230,
 		zones = {
-			[1416] = 1,			-- Alterac Mountains
-			[1418] = 1,			-- Badlands
-			[1419] = 5,			-- Blasted Lands
-			[1423] = 1,			-- Eastern Plaguelands
-			[1448] = 22,		-- Felwood
-			[1424] = 1,			-- Hillsbrad Foothills
-			[1427] = 2,			-- Searing Gorge
-			[1434] = 2,			-- Stranglethorn Vale
-			[1446] = 5,			-- Tanaris
-			[1425] = 11,		-- The Hinterlands
-			[1449] = 2,			-- Un'Goro Crater
-			[1422] = 1,			-- Western Plaguelands
-			[1452] = 1,			-- Winterspring
+			[1416] = true,		-- Alterac Mountains
+			[1418] = true,		-- Badlands
+			[1419] = true,		-- Blasted Lands
+			[1423] = true,		-- Eastern Plaguelands
+			[1448] = true,		-- Felwood
+			[1424] = true,		-- Hillsbrad Foothills
+			[1427] = true,		-- Searing Gorge
+			[1434] = true,		-- Stranglethorn Vale
+			[1446] = true,		-- Tanaris
+			[1425] = true,		-- The Hinterlands
+			[1449] = true,		-- Un'Goro Crater
+			[1422] = true,		-- Western Plaguelands
+			[1452] = true,		-- Winterspring
 		},
 	},
 	[165658] = {
@@ -5689,8 +9644,8 @@ local miningNodes = {
 		oreItemID = 11370,
 		minLevel = 230,
 		zones = {
-			[1428] = 25,		-- Burning Steppes
-			[1427] = 25,		-- Searing Gorge
+			[1428] = true,		-- Burning Steppes
+			[1427] = true,		-- Searing Gorge
 		},
 	},
 	[324] = {
@@ -5700,18 +9655,18 @@ local miningNodes = {
 		oreItemID = 10620,
 		minLevel = 245,
 		zones = {
-			[1419] = 39,		-- Blasted Lands
-			[1428] = 35,		-- Burning Steppes
-			[1423] = 28,		-- Eastern Plaguelands
-			[1448] = 42,		-- Felwood
-			[1444] = 6,			-- Feralas
-			[1427] = 15,		-- Searing Gorge
-			[1451] = 26,		-- Silithus
-			[1446] = 14,		-- Tanaris
-			[1425] = 10,		-- The Hinterlands
-			[1449] = 50,		-- Un'Goro Crater
-			[1422] = 26,		-- Western Plaguelands
-			[1452] = 40,		-- Winterspring
+			[1419] = true,		-- Blasted Lands
+			[1428] = true,		-- Burning Steppes
+			[1423] = true,		-- Eastern Plaguelands
+			[1448] = true,		-- Felwood
+			[1444] = true,		-- Feralas
+			[1427] = true,		-- Searing Gorge
+			[1451] = true,		-- Silithus
+			[1446] = true,		-- Tanaris
+			[1425] = true,		-- The Hinterlands
+			[1449] = true,		-- Un'Goro Crater
+			[1422] = true,		-- Western Plaguelands
+			[1452] = true,		-- Winterspring
 		},
 	},
 	[123848] = {
@@ -5721,8 +9676,8 @@ local miningNodes = {
 		oreItemID = 10620,
 		minLevel = 245,
 		zones = {
-			[1444] = 3,			-- Feralas
-			[1449] = 13,		-- Un'Goro Crater
+			[1444] = true,		-- Feralas
+			[1449] = true,		-- Un'Goro Crater
 		},
 	},
 	[175404] = {
@@ -5732,12 +9687,12 @@ local miningNodes = {
 		oreItemID = 10620,
 		minLevel = 275,
 		zones = {
-			[1447] = 34,		-- Azshara
-			[1428] = 26,		-- Burning Steppes
-			[1423] = 45,		-- Eastern Plaguelands
-			[1449] = 20,		-- Un'Goro Crater
-			[1422] = 11,		-- Western Plaguelands
-			[1452] = 62,		-- Winterspring
+			[1447] = true,		-- Azshara
+			[1428] = true,		-- Burning Steppes
+			[1423] = true,		-- Eastern Plaguelands
+			[1449] = true,		-- Un'Goro Crater
+			[1422] = true,		-- Western Plaguelands
+			[1452] = true,		-- Winterspring
 		},
 	},
 	[177388] = {
@@ -5747,10 +9702,172 @@ local miningNodes = {
 		oreItemID = 10620,
 		minLevel = 275,
 		zones = {
-			[1451] = 71,		-- Silithus
+			[1451] = true,		-- Silithus
 		},
 	},
+	-- TBC Mining Nodes
+	[181555] = {
+		nodeName = LMining("Fel Iron Deposit"),
+		nodeObjectID = 181555,
+		oreName = LMining("Fel Iron Ore"),
+		oreItemID = 23424,
+		minLevel = 300,
+		zones = {
+			[1949] = true,		-- Blade's Edge Mountains
+			[1944] = true,		-- Hellfire Peninsula
+			[1951] = true,		-- Nagrand
+			[1953] = true,		-- Netherstorm
+			[1948] = true,		-- Shadowmoon Valley
+			[1952] = true,		-- Terokkar Forest
+			[1946] = true,		-- Zangarmarsh
+		},
+	},
+	[181556] = {
+		nodeName = LMining("Adamantite Deposit"),
+		nodeObjectID = 181556,
+		oreName = LMining("Adamantite Ore"),
+		oreItemID = 23425,
+		minLevel = 325,
+		zones = {
+			[1949] = true,		-- Blade's Edge Mountains
+			[1951] = true,		-- Nagrand
+			[1953] = true,		-- Netherstorm
+			[1948] = true,		-- Shadowmoon Valley
+			[1952] = true,		-- Terokkar Forest
+			[1946] = true,		-- Zangarmarsh
+		},
+	},
+	[181569] = {
+		nodeName = LMining("Rich Adamantite Deposit"),
+		nodeObjectID = 181569,
+		oreName = LMining("Adamantite Ore"),
+		oreItemID = 23425,
+		minLevel = 350,
+		zones = {
+			[1949] = true,		-- Blade's Edge Mountains
+			[1951] = true,		-- Nagrand
+			[1953] = true,		-- Netherstorm
+			[1948] = true,		-- Shadowmoon Valley
+			[1952] = true,		-- Terokkar Forest
+			[1946] = true,		-- Zangarmarsh
+		},
+	},
+	[181557] = {
+		nodeName = LMining("Khorium Vein"),
+		nodeObjectID = 181557,
+		oreName = LMining("Khorium Ore"),
+		oreItemID = 23426,
+		minLevel = 375,
+		zones = {
+			[1949] = true,		-- Blade's Edge Mountains
+			[1951] = true,		-- Nagrand
+			[1953] = true,		-- Netherstorm
+			[1948] = true,		-- Shadowmoon Valley
+			[1952] = true,		-- Terokkar Forest
+		},
+	},
+	-- WotLK mining nodes
+	[189978] = {
+		nodeName = LMining("Cobalt Deposit"),
+		nodeObjectID = 189978,
+		oreName = LMining("Cobalt Ore"),
+		oreItemID = 36909,
+		minLevel = 350,
+		zones = {
+			[114] = true,		-- Borean Tundra
+			[127] = true,		-- Crystalsong Forest
+			[115] = true,		-- Dragonblight
+			[116] = true,		-- Grizzly Hills
+			[117] = true,		-- Howling Fjord
+			[119] = true,		-- Sholazar Basin
+			[120] = true,		-- The Storm Peaks
+			[133] = true,		-- Utgarde Keep
+			[121] = true,		-- Zul'Drak
+		},
+	},
+	[189979] = {
+		nodeName = LMining("Rich Cobalt Deposit"),
+		nodeObjectID = 189979,
+		oreName = LMining("Cobalt Ore"),
+		oreItemID = 36909,
+		minLevel = 375,
+		zones = {
+			[114] = true,		-- Borean Tundra
+			[127] = true,		-- Crystalsong Forest
+			[115] = true,		-- Dragonblight
+			[116] = true,		-- Grizzly Hills
+			[117] = true,		-- Howling Fjord
+			[119] = true,		-- Sholazar Basin
+			[120] = true,		-- The Storm Peaks
+			[121] = true,		-- Zul'Drak
+		},
+	},
+	[189980] = {
+		nodeName = LMining("Saronite Deposit"),
+		nodeObjectID = 189980,
+		oreName = LMining("Saronite Ore"),
+		oreItemID = 36912,
+		minLevel = 400,
+		zones = {
+			[114] = true,		-- Borean Tundra
+			[127] = true,		-- Crystalsong Forest
+			[125] = true,		-- Dalaran
+			[115] = true,		-- Dragonblight
+			[116] = true,		-- Grizzly Hills
+			[140] = true,		-- Halls of Stone
+			[118] = true,		-- Icecrown
+			[119] = true,		-- Sholazar Basin
+			[120] = true,		-- The Storm Peaks
+			[123] = true,		-- Wintergrasp
+			[121] = true,		-- Zul'Drak
+		},
+	},
+	[189981] = {
+		nodeName = LMining("Rich Saronite Deposit"),
+		nodeObjectID = 189981,
+		oreName = LMining("Saronite Ore"),
+		oreItemID = 36912,
+		minLevel = 425,
+		zones = {
+			[114] = true,		-- Borean Tundra
+			[127] = true,		-- Crystalsong Forest
+			[115] = true,		-- Dragonblight
+			[118] = true,		-- Icecrown
+			[119] = true,		-- Sholazar Basin
+			[120] = true,		-- The Storm Peaks
+			[123] = true,		-- Wintergrasp
+			[121] = true,		-- Zul'Drak
+		},
+	},
+	[191133] = {
+		nodeName = LMining("Titanium Vein"),
+		nodeObjectID = 191133,
+		oreName = LMining("Titanium Ore"),
+		oreItemID = 36910,
+		minLevel = 450,
+		zones = {
+			[114] = true,		-- Borean Tundra
+			[127] = true,		-- Crystalsong Forest
+			[115] = true,		-- Dragonblight
+			[118] = true,		-- Icecrown
+			[119] = true,		-- Sholazar Basin
+			[120] = true,		-- The Storm Peaks
+			[123] = true,		-- Wintergrasp
+			[121] = true,		-- Zul'Drak
+		},
+	},
+	[195036] = {
+		nodeName = LMining("Pure Saronite Deposit"),
+		nodeObjectID = 195036,
+		oreName = LMining("Saronite Ore"),
+		oreItemID = 36912,
+		minLevel = 450,
+		zones = {
+			[147] = true,		-- Ulduar
+		},
+	},	
 }
+
 
 
 local miningNodesByZone = {
@@ -5762,7 +9879,6 @@ local miningNodesByZone = {
 			oreName = LMining("Tin Ore"),
 			oreItemID = 2771,
 			minLevel = 65,
-			numNodes = 10,
 		},
 		[1733] = {
 			nodeName = LMining("Silver Vein"),
@@ -5770,7 +9886,6 @@ local miningNodesByZone = {
 			oreName = LMining("Silver Ore"),
 			oreItemID = 2775,
 			minLevel = 75,
-			numNodes = 4,
 		},
 		[1735] = {
 			nodeName = LMining("Iron Deposit"),
@@ -5778,7 +9893,6 @@ local miningNodesByZone = {
 			oreName = LMining("Iron Ore"),
 			oreItemID = 2772,
 			minLevel = 125,
-			numNodes = 73,
 		},
 		[1734] = {
 			nodeName = LMining("Gold Vein"),
@@ -5786,7 +9900,6 @@ local miningNodesByZone = {
 			oreName = LMining("Gold Ore"),
 			oreItemID = 2776,
 			minLevel = 155,
-			numNodes = 2,
 		},
 		[2040] = {
 			nodeName = LMining("Mithril Deposit"),
@@ -5794,7 +9907,6 @@ local miningNodesByZone = {
 			oreName = LMining("Mithril Ore"),
 			oreItemID = 3858,
 			minLevel = 175,
-			numNodes = 23,
 		},
 		[2047] = {
 			nodeName = LMining("Truesilver Deposit"),
@@ -5802,7 +9914,6 @@ local miningNodesByZone = {
 			oreName = LMining("Truesilver Ore"),
 			oreItemID = 7911,
 			minLevel = 230,
-			numNodes = 1,
 		},
 	},
 	-- Arathi Highlands
@@ -5813,7 +9924,6 @@ local miningNodesByZone = {
 			oreName = LMining("Tin Ore"),
 			oreItemID = 2771,
 			minLevel = 65,
-			numNodes = 39,
 		},
 		[1733] = {
 			nodeName = LMining("Silver Vein"),
@@ -5821,7 +9931,6 @@ local miningNodesByZone = {
 			oreName = LMining("Silver Ore"),
 			oreItemID = 2775,
 			minLevel = 75,
-			numNodes = 18,
 		},
 		[1735] = {
 			nodeName = LMining("Iron Deposit"),
@@ -5829,7 +9938,6 @@ local miningNodesByZone = {
 			oreName = LMining("Iron Ore"),
 			oreItemID = 2772,
 			minLevel = 125,
-			numNodes = 124,
 		},
 		[1734] = {
 			nodeName = LMining("Gold Vein"),
@@ -5837,7 +9945,6 @@ local miningNodesByZone = {
 			oreName = LMining("Gold Ore"),
 			oreItemID = 2776,
 			minLevel = 155,
-			numNodes = 4,
 		},
 		[2040] = {
 			nodeName = LMining("Mithril Deposit"),
@@ -5845,7 +9952,6 @@ local miningNodesByZone = {
 			oreName = LMining("Mithril Ore"),
 			oreItemID = 3858,
 			minLevel = 175,
-			numNodes = 38,
 		},
 	},
 	-- Ashenvale
@@ -5856,7 +9962,6 @@ local miningNodesByZone = {
 			oreName = LMining("Copper Ore"),
 			oreItemID = 2770,
 			minLevel = 1,
-			numNodes = 41,
 		},
 		[1732] = {
 			nodeName = LMining("Tin Vein"),
@@ -5864,7 +9969,6 @@ local miningNodesByZone = {
 			oreName = LMining("Tin Ore"),
 			oreItemID = 2771,
 			minLevel = 65,
-			numNodes = 50,
 		},
 		[1735] = {
 			nodeName = LMining("Iron Deposit"),
@@ -5872,7 +9976,6 @@ local miningNodesByZone = {
 			oreName = LMining("Iron Ore"),
 			oreItemID = 2772,
 			minLevel = 125,
-			numNodes = 21,
 		},
 	},
 	-- Azshara
@@ -5883,7 +9986,6 @@ local miningNodesByZone = {
 			oreName = LMining("Mithril Ore"),
 			oreItemID = 3858,
 			minLevel = 175,
-			numNodes = 39,
 		},
 		[175404] = {
 			nodeName = LMining("Rich Thorium Vein"),
@@ -5891,7 +9993,6 @@ local miningNodesByZone = {
 			oreName = LMining("Thorium Ore"),
 			oreItemID = 10620,
 			minLevel = 275,
-			numNodes = 34,
 		},
 	},
 	-- Badlands
@@ -5902,7 +10003,6 @@ local miningNodesByZone = {
 			oreName = LMining("Silver Ore"),
 			oreItemID = 2775,
 			minLevel = 75,
-			numNodes = 2,
 		},
 		[1735] = {
 			nodeName = LMining("Iron Deposit"),
@@ -5910,7 +10010,6 @@ local miningNodesByZone = {
 			oreName = LMining("Iron Ore"),
 			oreItemID = 2772,
 			minLevel = 125,
-			numNodes = 70,
 		},
 		[1734] = {
 			nodeName = LMining("Gold Vein"),
@@ -5918,7 +10017,6 @@ local miningNodesByZone = {
 			oreName = LMining("Gold Ore"),
 			oreItemID = 2776,
 			minLevel = 155,
-			numNodes = 5,
 		},
 		[2040] = {
 			nodeName = LMining("Mithril Deposit"),
@@ -5926,7 +10024,6 @@ local miningNodesByZone = {
 			oreName = LMining("Mithril Ore"),
 			oreItemID = 3858,
 			minLevel = 175,
-			numNodes = 62,
 		},
 		[2047] = {
 			nodeName = LMining("Truesilver Deposit"),
@@ -5934,7 +10031,6 @@ local miningNodesByZone = {
 			oreName = LMining("Truesilver Ore"),
 			oreItemID = 7911,
 			minLevel = 230,
-			numNodes = 1,
 		},
 	},
 	-- Blasted Lands
@@ -5945,7 +10041,6 @@ local miningNodesByZone = {
 			oreName = LMining("Gold Ore"),
 			oreItemID = 2776,
 			minLevel = 155,
-			numNodes = 1,
 		},
 		[2040] = {
 			nodeName = LMining("Mithril Deposit"),
@@ -5953,7 +10048,6 @@ local miningNodesByZone = {
 			oreName = LMining("Mithril Ore"),
 			oreItemID = 3858,
 			minLevel = 175,
-			numNodes = 22,
 		},
 		[2047] = {
 			nodeName = LMining("Truesilver Deposit"),
@@ -5961,7 +10055,6 @@ local miningNodesByZone = {
 			oreName = LMining("Truesilver Ore"),
 			oreItemID = 7911,
 			minLevel = 230,
-			numNodes = 5,
 		},
 		[324] = {
 			nodeName = LMining("Small Thorium Vein"),
@@ -5969,7 +10062,6 @@ local miningNodesByZone = {
 			oreName = LMining("Thorium Ore"),
 			oreItemID = 10620,
 			minLevel = 245,
-			numNodes = 39,
 		},
 	},
 	-- Burning Steppes
@@ -5980,7 +10072,6 @@ local miningNodesByZone = {
 			oreName = LMining("Mithril Ore"),
 			oreItemID = 3858,
 			minLevel = 175,
-			numNodes = 34,
 		},
 		[165658] = {
 			nodeName = LMining("Dark Iron Deposit"),
@@ -5988,7 +10079,6 @@ local miningNodesByZone = {
 			oreName = LMining("Dark Iron Ore"),
 			oreItemID = 11370,
 			minLevel = 230,
-			numNodes = 25,
 		},
 		[324] = {
 			nodeName = LMining("Small Thorium Vein"),
@@ -5996,7 +10086,6 @@ local miningNodesByZone = {
 			oreName = LMining("Thorium Ore"),
 			oreItemID = 10620,
 			minLevel = 245,
-			numNodes = 35,
 		},
 		[175404] = {
 			nodeName = LMining("Rich Thorium Vein"),
@@ -6004,7 +10093,6 @@ local miningNodesByZone = {
 			oreName = LMining("Thorium Ore"),
 			oreItemID = 10620,
 			minLevel = 275,
-			numNodes = 26,
 		},
 	},
 	-- Darkshore
@@ -6015,7 +10103,6 @@ local miningNodesByZone = {
 			oreName = LMining("Copper Ore"),
 			oreItemID = 2770,
 			minLevel = 1,
-			numNodes = 107,
 		},
 		[1732] = {
 			nodeName = LMining("Tin Vein"),
@@ -6023,7 +10110,6 @@ local miningNodesByZone = {
 			oreName = LMining("Tin Ore"),
 			oreItemID = 2771,
 			minLevel = 65,
-			numNodes = 47,
 		},
 		[1733] = {
 			nodeName = LMining("Silver Vein"),
@@ -6031,7 +10117,6 @@ local miningNodesByZone = {
 			oreName = LMining("Silver Ore"),
 			oreItemID = 2775,
 			minLevel = 75,
-			numNodes = 1,
 		},
 	},
 	-- Desolace
@@ -6042,7 +10127,6 @@ local miningNodesByZone = {
 			oreName = LMining("Copper Ore"),
 			oreItemID = 2770,
 			minLevel = 1,
-			numNodes = 12,
 		},
 		[1732] = {
 			nodeName = LMining("Tin Vein"),
@@ -6050,7 +10134,6 @@ local miningNodesByZone = {
 			oreName = LMining("Tin Ore"),
 			oreItemID = 2771,
 			minLevel = 65,
-			numNodes = 45,
 		},
 		[1733] = {
 			nodeName = LMining("Silver Vein"),
@@ -6058,7 +10141,6 @@ local miningNodesByZone = {
 			oreName = LMining("Silver Ore"),
 			oreItemID = 2775,
 			minLevel = 75,
-			numNodes = 3,
 		},
 		[1735] = {
 			nodeName = LMining("Iron Deposit"),
@@ -6066,7 +10148,6 @@ local miningNodesByZone = {
 			oreName = LMining("Iron Ore"),
 			oreItemID = 2772,
 			minLevel = 125,
-			numNodes = 92,
 		},
 		[1734] = {
 			nodeName = LMining("Gold Vein"),
@@ -6074,7 +10155,6 @@ local miningNodesByZone = {
 			oreName = LMining("Gold Ore"),
 			oreItemID = 2776,
 			minLevel = 155,
-			numNodes = 3,
 		},
 		[2040] = {
 			nodeName = LMining("Mithril Deposit"),
@@ -6082,7 +10162,6 @@ local miningNodesByZone = {
 			oreName = LMining("Mithril Ore"),
 			oreItemID = 3858,
 			minLevel = 175,
-			numNodes = 48,
 		},
 	},
 	-- Dun Morogh
@@ -6093,7 +10172,6 @@ local miningNodesByZone = {
 			oreName = LMining("Copper Ore"),
 			oreItemID = 2770,
 			minLevel = 1,
-			numNodes = 159,
 		},
 	},
 	-- Durotar
@@ -6104,7 +10182,6 @@ local miningNodesByZone = {
 			oreName = LMining("Copper Ore"),
 			oreItemID = 2770,
 			minLevel = 1,
-			numNodes = 149,
 		},
 	},
 	-- Duskwood
@@ -6115,7 +10192,6 @@ local miningNodesByZone = {
 			oreName = LMining("Copper Ore"),
 			oreItemID = 2770,
 			minLevel = 1,
-			numNodes = 42,
 		},
 		[1732] = {
 			nodeName = LMining("Tin Vein"),
@@ -6123,7 +10199,6 @@ local miningNodesByZone = {
 			oreName = LMining("Tin Ore"),
 			oreItemID = 2771,
 			minLevel = 65,
-			numNodes = 52,
 		},
 		[1733] = {
 			nodeName = LMining("Silver Vein"),
@@ -6131,7 +10206,6 @@ local miningNodesByZone = {
 			oreName = LMining("Silver Ore"),
 			oreItemID = 2775,
 			minLevel = 75,
-			numNodes = 7,
 		},
 		[1735] = {
 			nodeName = LMining("Iron Deposit"),
@@ -6139,7 +10213,6 @@ local miningNodesByZone = {
 			oreName = LMining("Iron Ore"),
 			oreItemID = 2772,
 			minLevel = 125,
-			numNodes = 26,
 		},
 	},
 	-- Dustwallow Marsh
@@ -6150,7 +10223,6 @@ local miningNodesByZone = {
 			oreName = LMining("Tin Ore"),
 			oreItemID = 2771,
 			minLevel = 65,
-			numNodes = 4,
 		},
 		[1735] = {
 			nodeName = LMining("Iron Deposit"),
@@ -6158,7 +10230,6 @@ local miningNodesByZone = {
 			oreName = LMining("Iron Ore"),
 			oreItemID = 2772,
 			minLevel = 125,
-			numNodes = 28,
 		},
 		[2040] = {
 			nodeName = LMining("Mithril Deposit"),
@@ -6166,7 +10237,6 @@ local miningNodesByZone = {
 			oreName = LMining("Mithril Ore"),
 			oreItemID = 3858,
 			minLevel = 175,
-			numNodes = 21,
 		},
 	},
 	-- Eastern Plaguelands
@@ -6177,7 +10247,6 @@ local miningNodesByZone = {
 			oreName = LMining("Mithril Ore"),
 			oreItemID = 3858,
 			minLevel = 175,
-			numNodes = 13,
 		},
 		[2047] = {
 			nodeName = LMining("Truesilver Deposit"),
@@ -6185,7 +10254,6 @@ local miningNodesByZone = {
 			oreName = LMining("Truesilver Ore"),
 			oreItemID = 7911,
 			minLevel = 230,
-			numNodes = 1,
 		},
 		[324] = {
 			nodeName = LMining("Small Thorium Vein"),
@@ -6193,7 +10261,6 @@ local miningNodesByZone = {
 			oreName = LMining("Thorium Ore"),
 			oreItemID = 10620,
 			minLevel = 245,
-			numNodes = 28,
 		},
 		[175404] = {
 			nodeName = LMining("Rich Thorium Vein"),
@@ -6201,7 +10268,6 @@ local miningNodesByZone = {
 			oreName = LMining("Thorium Ore"),
 			oreItemID = 10620,
 			minLevel = 275,
-			numNodes = 45,
 		},
 	},
 	-- Elwynn Forest
@@ -6212,7 +10278,6 @@ local miningNodesByZone = {
 			oreName = LMining("Copper Ore"),
 			oreItemID = 2770,
 			minLevel = 1,
-			numNodes = 149,
 		},
 	},
 	-- Felwood
@@ -6223,7 +10288,6 @@ local miningNodesByZone = {
 			oreName = LMining("Mithril Ore"),
 			oreItemID = 3858,
 			minLevel = 175,
-			numNodes = 44,
 		},
 		[2047] = {
 			nodeName = LMining("Truesilver Deposit"),
@@ -6231,7 +10295,6 @@ local miningNodesByZone = {
 			oreName = LMining("Truesilver Ore"),
 			oreItemID = 7911,
 			minLevel = 230,
-			numNodes = 22,
 		},
 		[324] = {
 			nodeName = LMining("Small Thorium Vein"),
@@ -6239,7 +10302,6 @@ local miningNodesByZone = {
 			oreName = LMining("Thorium Ore"),
 			oreItemID = 10620,
 			minLevel = 245,
-			numNodes = 42,
 		},
 	},
 	-- Feralas
@@ -6250,7 +10312,6 @@ local miningNodesByZone = {
 			oreName = LMining("Silver Ore"),
 			oreItemID = 2775,
 			minLevel = 75,
-			numNodes = 1,
 		},
 		[1735] = {
 			nodeName = LMining("Iron Deposit"),
@@ -6258,7 +10319,6 @@ local miningNodesByZone = {
 			oreName = LMining("Iron Ore"),
 			oreItemID = 2772,
 			minLevel = 125,
-			numNodes = 16,
 		},
 		[1734] = {
 			nodeName = LMining("Gold Vein"),
@@ -6266,7 +10326,6 @@ local miningNodesByZone = {
 			oreName = LMining("Gold Ore"),
 			oreItemID = 2776,
 			minLevel = 155,
-			numNodes = 12,
 		},
 		[73941] = {
 			nodeName = LMining("Ooze Covered Gold Vein"),
@@ -6274,7 +10333,6 @@ local miningNodesByZone = {
 			oreName = LMining("Gold Ore"),
 			oreItemID = 2776,
 			minLevel = 155,
-			numNodes = 10,
 		},
 		[2040] = {
 			nodeName = LMining("Mithril Deposit"),
@@ -6282,7 +10340,6 @@ local miningNodesByZone = {
 			oreName = LMining("Mithril Ore"),
 			oreItemID = 3858,
 			minLevel = 175,
-			numNodes = 41,
 		},
 		[123310] = {
 			nodeName = LMining("Ooze Covered Mithril Deposit"),
@@ -6290,7 +10347,6 @@ local miningNodesByZone = {
 			oreName = LMining("Mithril Ore"),
 			oreItemID = 3858,
 			minLevel = 175,
-			numNodes = 13,
 		},
 		[324] = {
 			nodeName = LMining("Small Thorium Vein"),
@@ -6298,7 +10354,6 @@ local miningNodesByZone = {
 			oreName = LMining("Thorium Ore"),
 			oreItemID = 10620,
 			minLevel = 245,
-			numNodes = 6,
 		},
 		[123848] = {
 			nodeName = LMining("Ooze Covered Thorium Vein"),
@@ -6306,7 +10361,6 @@ local miningNodesByZone = {
 			oreName = LMining("Thorium Ore"),
 			oreItemID = 10620,
 			minLevel = 245,
-			numNodes = 3,
 		},
 	},
 	-- Hillsbrad Foothills
@@ -6317,7 +10371,6 @@ local miningNodesByZone = {
 			oreName = LMining("Copper Ore"),
 			oreItemID = 2770,
 			minLevel = 1,
-			numNodes = 31,
 		},
 		[1732] = {
 			nodeName = LMining("Tin Vein"),
@@ -6325,7 +10378,6 @@ local miningNodesByZone = {
 			oreName = LMining("Tin Ore"),
 			oreItemID = 2771,
 			minLevel = 65,
-			numNodes = 88,
 		},
 		[1733] = {
 			nodeName = LMining("Silver Vein"),
@@ -6333,7 +10385,6 @@ local miningNodesByZone = {
 			oreName = LMining("Silver Ore"),
 			oreItemID = 2775,
 			minLevel = 75,
-			numNodes = 17,
 		},
 		[1735] = {
 			nodeName = LMining("Iron Deposit"),
@@ -6341,7 +10392,6 @@ local miningNodesByZone = {
 			oreName = LMining("Iron Ore"),
 			oreItemID = 2772,
 			minLevel = 125,
-			numNodes = 36,
 		},
 		[1734] = {
 			nodeName = LMining("Gold Vein"),
@@ -6349,7 +10399,6 @@ local miningNodesByZone = {
 			oreName = LMining("Gold Ore"),
 			oreItemID = 2776,
 			minLevel = 155,
-			numNodes = 1,
 		},
 		[2040] = {
 			nodeName = LMining("Mithril Deposit"),
@@ -6357,7 +10406,6 @@ local miningNodesByZone = {
 			oreName = LMining("Mithril Ore"),
 			oreItemID = 3858,
 			minLevel = 175,
-			numNodes = 6,
 		},
 		[2047] = {
 			nodeName = LMining("Truesilver Deposit"),
@@ -6365,7 +10413,6 @@ local miningNodesByZone = {
 			oreName = LMining("Truesilver Ore"),
 			oreItemID = 7911,
 			minLevel = 230,
-			numNodes = 1,
 		},
 	},
 	-- Loch Modan
@@ -6376,7 +10423,6 @@ local miningNodesByZone = {
 			oreName = LMining("Copper Ore"),
 			oreItemID = 2770,
 			minLevel = 1,
-			numNodes = 120,
 		},
 		[1732] = {
 			nodeName = LMining("Tin Vein"),
@@ -6384,7 +10430,6 @@ local miningNodesByZone = {
 			oreName = LMining("Tin Ore"),
 			oreItemID = 2771,
 			minLevel = 65,
-			numNodes = 53,
 		},
 		[1733] = {
 			nodeName = LMining("Silver Vein"),
@@ -6392,7 +10437,6 @@ local miningNodesByZone = {
 			oreName = LMining("Silver Ore"),
 			oreItemID = 2775,
 			minLevel = 75,
-			numNodes = 3,
 		},
 	},
 	-- Mulgore
@@ -6403,7 +10447,6 @@ local miningNodesByZone = {
 			oreName = LMining("Copper Ore"),
 			oreItemID = 2770,
 			minLevel = 1,
-			numNodes = 76,
 		},
 	},
 	-- Redridge Mountains
@@ -6414,7 +10457,6 @@ local miningNodesByZone = {
 			oreName = LMining("Copper Ore"),
 			oreItemID = 2770,
 			minLevel = 1,
-			numNodes = 88,
 		},
 		[1732] = {
 			nodeName = LMining("Tin Vein"),
@@ -6422,7 +10464,6 @@ local miningNodesByZone = {
 			oreName = LMining("Tin Ore"),
 			oreItemID = 2771,
 			minLevel = 65,
-			numNodes = 76,
 		},
 		[1733] = {
 			nodeName = LMining("Silver Vein"),
@@ -6430,7 +10471,6 @@ local miningNodesByZone = {
 			oreName = LMining("Silver Ore"),
 			oreItemID = 2775,
 			minLevel = 75,
-			numNodes = 7,
 		},
 	},
 	-- Searing Gorge
@@ -6441,7 +10481,6 @@ local miningNodesByZone = {
 			oreName = LMining("Iron Ore"),
 			oreItemID = 2772,
 			minLevel = 125,
-			numNodes = 12,
 		},
 		[2040] = {
 			nodeName = LMining("Mithril Deposit"),
@@ -6449,7 +10488,6 @@ local miningNodesByZone = {
 			oreName = LMining("Mithril Ore"),
 			oreItemID = 3858,
 			minLevel = 175,
-			numNodes = 46,
 		},
 		[2047] = {
 			nodeName = LMining("Truesilver Deposit"),
@@ -6457,7 +10495,6 @@ local miningNodesByZone = {
 			oreName = LMining("Truesilver Ore"),
 			oreItemID = 7911,
 			minLevel = 230,
-			numNodes = 2,
 		},
 		[165658] = {
 			nodeName = LMining("Dark Iron Deposit"),
@@ -6465,7 +10502,6 @@ local miningNodesByZone = {
 			oreName = LMining("Dark Iron Ore"),
 			oreItemID = 11370,
 			minLevel = 230,
-			numNodes = 25,
 		},
 		[324] = {
 			nodeName = LMining("Small Thorium Vein"),
@@ -6473,7 +10509,6 @@ local miningNodesByZone = {
 			oreName = LMining("Thorium Ore"),
 			oreItemID = 10620,
 			minLevel = 245,
-			numNodes = 15,
 		},
 	},
 	-- Silithus
@@ -6484,7 +10519,6 @@ local miningNodesByZone = {
 			oreName = LMining("Mithril Ore"),
 			oreItemID = 3858,
 			minLevel = 175,
-			numNodes = 21,
 		},
 		[324] = {
 			nodeName = LMining("Small Thorium Vein"),
@@ -6492,7 +10526,6 @@ local miningNodesByZone = {
 			oreName = LMining("Thorium Ore"),
 			oreItemID = 10620,
 			minLevel = 245,
-			numNodes = 26,
 		},
 		[177388] = {
 			nodeName = LMining("Ooze Covered Rich Thorium Vein"),
@@ -6500,7 +10533,6 @@ local miningNodesByZone = {
 			oreName = LMining("Thorium Ore"),
 			oreItemID = 10620,
 			minLevel = 275,
-			numNodes = 71,
 		},
 	},
 	-- Silverpine Forest
@@ -6511,7 +10543,6 @@ local miningNodesByZone = {
 			oreName = LMining("Copper Ore"),
 			oreItemID = 2770,
 			minLevel = 1,
-			numNodes = 59,
 		},
 		[1732] = {
 			nodeName = LMining("Tin Vein"),
@@ -6519,7 +10550,6 @@ local miningNodesByZone = {
 			oreName = LMining("Tin Ore"),
 			oreItemID = 2771,
 			minLevel = 65,
-			numNodes = 26,
 		},
 		[1733] = {
 			nodeName = LMining("Silver Vein"),
@@ -6527,7 +10557,6 @@ local miningNodesByZone = {
 			oreName = LMining("Silver Ore"),
 			oreItemID = 2775,
 			minLevel = 75,
-			numNodes = 2,
 		},
 	},
 	-- Stonetalon Mountains
@@ -6538,7 +10567,6 @@ local miningNodesByZone = {
 			oreName = LMining("Copper Ore"),
 			oreItemID = 2770,
 			minLevel = 1,
-			numNodes = 48,
 		},
 		[1732] = {
 			nodeName = LMining("Tin Vein"),
@@ -6546,7 +10574,6 @@ local miningNodesByZone = {
 			oreName = LMining("Tin Ore"),
 			oreItemID = 2771,
 			minLevel = 65,
-			numNodes = 57,
 		},
 		[1733] = {
 			nodeName = LMining("Silver Vein"),
@@ -6554,7 +10581,6 @@ local miningNodesByZone = {
 			oreName = LMining("Silver Ore"),
 			oreItemID = 2775,
 			minLevel = 75,
-			numNodes = 7,
 		},
 		[1735] = {
 			nodeName = LMining("Iron Deposit"),
@@ -6562,7 +10588,6 @@ local miningNodesByZone = {
 			oreName = LMining("Iron Ore"),
 			oreItemID = 2772,
 			minLevel = 125,
-			numNodes = 14,
 		},
 		[2040] = {
 			nodeName = LMining("Mithril Deposit"),
@@ -6570,7 +10595,6 @@ local miningNodesByZone = {
 			oreName = LMining("Mithril Ore"),
 			oreItemID = 3858,
 			minLevel = 175,
-			numNodes = 15,
 		},
 	},
 	-- Stranglethorn Vale
@@ -6581,7 +10605,6 @@ local miningNodesByZone = {
 			oreName = LMining("Tin Ore"),
 			oreItemID = 2771,
 			minLevel = 65,
-			numNodes = 15,
 		},
 		[1733] = {
 			nodeName = LMining("Silver Vein"),
@@ -6589,7 +10612,6 @@ local miningNodesByZone = {
 			oreName = LMining("Silver Ore"),
 			oreItemID = 2775,
 			minLevel = 75,
-			numNodes = 5,
 		},
 		[1735] = {
 			nodeName = LMining("Iron Deposit"),
@@ -6597,7 +10619,6 @@ local miningNodesByZone = {
 			oreName = LMining("Iron Ore"),
 			oreItemID = 2772,
 			minLevel = 125,
-			numNodes = 97,
 		},
 		[1734] = {
 			nodeName = LMining("Gold Vein"),
@@ -6605,7 +10626,6 @@ local miningNodesByZone = {
 			oreName = LMining("Gold Ore"),
 			oreItemID = 2776,
 			minLevel = 155,
-			numNodes = 3,
 		},
 		[2040] = {
 			nodeName = LMining("Mithril Deposit"),
@@ -6613,7 +10633,6 @@ local miningNodesByZone = {
 			oreName = LMining("Mithril Ore"),
 			oreItemID = 3858,
 			minLevel = 175,
-			numNodes = 48,
 		},
 		[2047] = {
 			nodeName = LMining("Truesilver Deposit"),
@@ -6621,7 +10640,6 @@ local miningNodesByZone = {
 			oreName = LMining("Truesilver Ore"),
 			oreItemID = 7911,
 			minLevel = 230,
-			numNodes = 2,
 		},
 	},
 	-- Swamp of Sorrows
@@ -6632,7 +10650,6 @@ local miningNodesByZone = {
 			oreName = LMining("Iron Ore"),
 			oreItemID = 2772,
 			minLevel = 125,
-			numNodes = 32,
 		},
 		[1734] = {
 			nodeName = LMining("Gold Vein"),
@@ -6640,7 +10657,6 @@ local miningNodesByZone = {
 			oreName = LMining("Gold Ore"),
 			oreItemID = 2776,
 			minLevel = 155,
-			numNodes = 1,
 		},
 		[2040] = {
 			nodeName = LMining("Mithril Deposit"),
@@ -6648,7 +10664,6 @@ local miningNodesByZone = {
 			oreName = LMining("Mithril Ore"),
 			oreItemID = 3858,
 			minLevel = 175,
-			numNodes = 14,
 		},
 	},
 	-- Tanaris
@@ -6659,7 +10674,6 @@ local miningNodesByZone = {
 			oreName = LMining("Iron Ore"),
 			oreItemID = 2772,
 			minLevel = 125,
-			numNodes = 32,
 		},
 		[1734] = {
 			nodeName = LMining("Gold Vein"),
@@ -6667,7 +10681,6 @@ local miningNodesByZone = {
 			oreName = LMining("Gold Ore"),
 			oreItemID = 2776,
 			minLevel = 155,
-			numNodes = 2,
 		},
 		[2040] = {
 			nodeName = LMining("Mithril Deposit"),
@@ -6675,7 +10688,6 @@ local miningNodesByZone = {
 			oreName = LMining("Mithril Ore"),
 			oreItemID = 3858,
 			minLevel = 175,
-			numNodes = 73,
 		},
 		[2047] = {
 			nodeName = LMining("Truesilver Deposit"),
@@ -6683,7 +10695,6 @@ local miningNodesByZone = {
 			oreName = LMining("Truesilver Ore"),
 			oreItemID = 7911,
 			minLevel = 230,
-			numNodes = 5,
 		},
 		[324] = {
 			nodeName = LMining("Small Thorium Vein"),
@@ -6691,7 +10702,6 @@ local miningNodesByZone = {
 			oreName = LMining("Thorium Ore"),
 			oreItemID = 10620,
 			minLevel = 245,
-			numNodes = 14,
 		},
 	},
 	-- The Barrens
@@ -6702,7 +10712,6 @@ local miningNodesByZone = {
 			oreName = LMining("Copper Ore"),
 			oreItemID = 2770,
 			minLevel = 1,
-			numNodes = 209,
 		},
 		[1732] = {
 			nodeName = LMining("Tin Vein"),
@@ -6710,7 +10719,6 @@ local miningNodesByZone = {
 			oreName = LMining("Tin Ore"),
 			oreItemID = 2771,
 			minLevel = 65,
-			numNodes = 124,
 		},
 		[1733] = {
 			nodeName = LMining("Silver Vein"),
@@ -6718,7 +10726,6 @@ local miningNodesByZone = {
 			oreName = LMining("Silver Ore"),
 			oreItemID = 2775,
 			minLevel = 75,
-			numNodes = 24,
 		},
 	},
 	-- The Hinterlands
@@ -6729,7 +10736,6 @@ local miningNodesByZone = {
 			oreName = LMining("Iron Ore"),
 			oreItemID = 2772,
 			minLevel = 125,
-			numNodes = 12,
 		},
 		[1734] = {
 			nodeName = LMining("Gold Vein"),
@@ -6737,7 +10743,6 @@ local miningNodesByZone = {
 			oreName = LMining("Gold Ore"),
 			oreItemID = 2776,
 			minLevel = 155,
-			numNodes = 2,
 		},
 		[2040] = {
 			nodeName = LMining("Mithril Deposit"),
@@ -6745,7 +10750,6 @@ local miningNodesByZone = {
 			oreName = LMining("Mithril Ore"),
 			oreItemID = 3858,
 			minLevel = 175,
-			numNodes = 85,
 		},
 		[2047] = {
 			nodeName = LMining("Truesilver Deposit"),
@@ -6753,7 +10757,6 @@ local miningNodesByZone = {
 			oreName = LMining("Truesilver Ore"),
 			oreItemID = 7911,
 			minLevel = 230,
-			numNodes = 11,
 		},
 		[324] = {
 			nodeName = LMining("Small Thorium Vein"),
@@ -6761,7 +10764,6 @@ local miningNodesByZone = {
 			oreName = LMining("Thorium Ore"),
 			oreItemID = 10620,
 			minLevel = 245,
-			numNodes = 10,
 		},
 	},
 	-- Thousand Needles
@@ -6772,7 +10774,6 @@ local miningNodesByZone = {
 			oreName = LMining("Copper Ore"),
 			oreItemID = 2770,
 			minLevel = 1,
-			numNodes = 40,
 		},
 		[1732] = {
 			nodeName = LMining("Tin Vein"),
@@ -6780,7 +10781,6 @@ local miningNodesByZone = {
 			oreName = LMining("Tin Ore"),
 			oreItemID = 2771,
 			minLevel = 65,
-			numNodes = 68,
 		},
 		[1733] = {
 			nodeName = LMining("Silver Vein"),
@@ -6788,7 +10788,6 @@ local miningNodesByZone = {
 			oreName = LMining("Silver Ore"),
 			oreItemID = 2775,
 			minLevel = 75,
-			numNodes = 7,
 		},
 		[73940] = {
 			nodeName = LMining("Ooze Covered Silver Vein"),
@@ -6796,7 +10795,6 @@ local miningNodesByZone = {
 			oreName = LMining("Silver Ore"),
 			oreItemID = 2775,
 			minLevel = 75,
-			numNodes = 4,
 		},
 		[1735] = {
 			nodeName = LMining("Iron Deposit"),
@@ -6804,7 +10802,6 @@ local miningNodesByZone = {
 			oreName = LMining("Iron Ore"),
 			oreItemID = 2772,
 			minLevel = 125,
-			numNodes = 102,
 		},
 		[1734] = {
 			nodeName = LMining("Gold Vein"),
@@ -6812,7 +10809,6 @@ local miningNodesByZone = {
 			oreName = LMining("Gold Ore"),
 			oreItemID = 2776,
 			minLevel = 155,
-			numNodes = 1,
 		},
 		[73941] = {
 			nodeName = LMining("Ooze Covered Gold Vein"),
@@ -6820,7 +10816,6 @@ local miningNodesByZone = {
 			oreName = LMining("Gold Ore"),
 			oreItemID = 2776,
 			minLevel = 155,
-			numNodes = 4,
 		},
 		[2040] = {
 			nodeName = LMining("Mithril Deposit"),
@@ -6828,7 +10823,6 @@ local miningNodesByZone = {
 			oreName = LMining("Mithril Ore"),
 			oreItemID = 3858,
 			minLevel = 175,
-			numNodes = 5,
 		},
 		[123310] = {
 			nodeName = LMining("Ooze Covered Mithril Deposit"),
@@ -6836,7 +10830,6 @@ local miningNodesByZone = {
 			oreName = LMining("Mithril Ore"),
 			oreItemID = 3858,
 			minLevel = 175,
-			numNodes = 8,
 		},
 	},
 	-- Tirisfal Glades
@@ -6847,7 +10840,6 @@ local miningNodesByZone = {
 			oreName = LMining("Copper Ore"),
 			oreItemID = 2770,
 			minLevel = 1,
-			numNodes = 81,
 		},
 	},
 	-- Un'Goro Crater
@@ -6858,7 +10850,6 @@ local miningNodesByZone = {
 			oreName = LMining("Mithril Ore"),
 			oreItemID = 3858,
 			minLevel = 175,
-			numNodes = 20,
 		},
 		[2047] = {
 			nodeName = LMining("Truesilver Deposit"),
@@ -6866,7 +10857,6 @@ local miningNodesByZone = {
 			oreName = LMining("Truesilver Ore"),
 			oreItemID = 7911,
 			minLevel = 230,
-			numNodes = 2,
 		},
 		[324] = {
 			nodeName = LMining("Small Thorium Vein"),
@@ -6874,7 +10864,6 @@ local miningNodesByZone = {
 			oreName = LMining("Thorium Ore"),
 			oreItemID = 10620,
 			minLevel = 245,
-			numNodes = 50,
 		},
 		[123848] = {
 			nodeName = LMining("Ooze Covered Thorium Vein"),
@@ -6882,7 +10871,6 @@ local miningNodesByZone = {
 			oreName = LMining("Thorium Ore"),
 			oreItemID = 10620,
 			minLevel = 245,
-			numNodes = 13,
 		},
 		[175404] = {
 			nodeName = LMining("Rich Thorium Vein"),
@@ -6890,7 +10878,6 @@ local miningNodesByZone = {
 			oreName = LMining("Thorium Ore"),
 			oreItemID = 10620,
 			minLevel = 275,
-			numNodes = 20,
 		},
 	},
 	-- Western Plaguelands
@@ -6901,7 +10888,6 @@ local miningNodesByZone = {
 			oreName = LMining("Mithril Ore"),
 			oreItemID = 3858,
 			minLevel = 175,
-			numNodes = 32,
 		},
 		[2047] = {
 			nodeName = LMining("Truesilver Deposit"),
@@ -6909,7 +10895,6 @@ local miningNodesByZone = {
 			oreName = LMining("Truesilver Ore"),
 			oreItemID = 7911,
 			minLevel = 230,
-			numNodes = 1,
 		},
 		[324] = {
 			nodeName = LMining("Small Thorium Vein"),
@@ -6917,7 +10902,6 @@ local miningNodesByZone = {
 			oreName = LMining("Thorium Ore"),
 			oreItemID = 10620,
 			minLevel = 245,
-			numNodes = 26,
 		},
 		[175404] = {
 			nodeName = LMining("Rich Thorium Vein"),
@@ -6925,7 +10909,6 @@ local miningNodesByZone = {
 			oreName = LMining("Thorium Ore"),
 			oreItemID = 10620,
 			minLevel = 275,
-			numNodes = 11,
 		},
 	},
 	-- Westfall
@@ -6936,7 +10919,6 @@ local miningNodesByZone = {
 			oreName = LMining("Copper Ore"),
 			oreItemID = 2770,
 			minLevel = 1,
-			numNodes = 94,
 		},
 		[1732] = {
 			nodeName = LMining("Tin Vein"),
@@ -6944,7 +10926,6 @@ local miningNodesByZone = {
 			oreName = LMining("Tin Ore"),
 			oreItemID = 2771,
 			minLevel = 65,
-			numNodes = 37,
 		},
 		[1733] = {
 			nodeName = LMining("Silver Vein"),
@@ -6952,7 +10933,6 @@ local miningNodesByZone = {
 			oreName = LMining("Silver Ore"),
 			oreItemID = 2775,
 			minLevel = 75,
-			numNodes = 1,
 		},
 	},
 	-- Wetlands
@@ -6963,7 +10943,6 @@ local miningNodesByZone = {
 			oreName = LMining("Copper Ore"),
 			oreItemID = 2770,
 			minLevel = 1,
-			numNodes = 28,
 		},
 		[1732] = {
 			nodeName = LMining("Tin Vein"),
@@ -6971,7 +10950,6 @@ local miningNodesByZone = {
 			oreName = LMining("Tin Ore"),
 			oreItemID = 2771,
 			minLevel = 65,
-			numNodes = 53,
 		},
 		[1733] = {
 			nodeName = LMining("Silver Vein"),
@@ -6979,7 +10957,6 @@ local miningNodesByZone = {
 			oreName = LMining("Silver Ore"),
 			oreItemID = 2775,
 			minLevel = 75,
-			numNodes = 7,
 		},
 		[1735] = {
 			nodeName = LMining("Iron Deposit"),
@@ -6987,7 +10964,6 @@ local miningNodesByZone = {
 			oreName = LMining("Iron Ore"),
 			oreItemID = 2772,
 			minLevel = 125,
-			numNodes = 14,
 		},
 	},
 	-- Winterspring
@@ -6998,7 +10974,6 @@ local miningNodesByZone = {
 			oreName = LMining("Gold Ore"),
 			oreItemID = 2776,
 			minLevel = 155,
-			numNodes = 1,
 		},
 		[2040] = {
 			nodeName = LMining("Mithril Deposit"),
@@ -7006,7 +10981,6 @@ local miningNodesByZone = {
 			oreName = LMining("Mithril Ore"),
 			oreItemID = 3858,
 			minLevel = 175,
-			numNodes = 25,
 		},
 		[2047] = {
 			nodeName = LMining("Truesilver Deposit"),
@@ -7014,7 +10988,6 @@ local miningNodesByZone = {
 			oreName = LMining("Truesilver Ore"),
 			oreItemID = 7911,
 			minLevel = 230,
-			numNodes = 1,
 		},
 		[324] = {
 			nodeName = LMining("Small Thorium Vein"),
@@ -7022,7 +10995,6 @@ local miningNodesByZone = {
 			oreName = LMining("Thorium Ore"),
 			oreItemID = 10620,
 			minLevel = 245,
-			numNodes = 40,
 		},
 		[175404] = {
 			nodeName = LMining("Rich Thorium Vein"),
@@ -7030,10 +11002,626 @@ local miningNodesByZone = {
 			oreName = LMining("Thorium Ore"),
 			oreItemID = 10620,
 			minLevel = 275,
-			numNodes = 62,
+		},
+	},
+	-- TBC Zones
+	-- Azuremyst Isle
+	[1943] = {
+		[1731] = {
+			nodeName = LMining("Copper Vein"),
+			nodeObjectID = 1731,
+			oreName = LMining("Copper Ore"),
+			oreItemID = 2770,
+			minLevel = 1,
+		},
+	},	
+	-- Blade's Edge Mountains
+	[1949] = {
+		[181555] = {
+			nodeName = LMining("Fel Iron Deposit"),
+			nodeObjectID = 181555,
+			oreName = LMining("Fel Iron Ore"),
+			oreItemID = 23424,
+			minLevel = 300,
+		},
+		[181556] = {
+			nodeName = LMining("Adamantite Deposit"),
+			nodeObjectID = 181556,
+			oreName = LMining("Adamantite Ore"),
+			oreItemID = 23425,
+			minLevel = 325,
+		},
+		[181569] = {
+			nodeName = LMining("Rich Adamantite Deposit"),
+			nodeObjectID = 181569,
+			oreName = LMining("Adamantite Ore"),
+			oreItemID = 23425,
+			minLevel = 350,
+		},
+		[181557] = {
+			nodeName = LMining("Khorium Vein"),
+			nodeObjectID = 181557,
+			oreName = LMining("Khorium Ore"),
+			oreItemID = 23426,
+			minLevel = 375,
+		},
+	},
+	-- Bloodmyst Isle
+	[1950] = {
+		[1731] = {
+			nodeName = LMining("Copper Vein"),
+			nodeObjectID = 1731,
+			oreName = LMining("Copper Ore"),
+			oreItemID = 2770,
+			minLevel = 1,
+		},
+		[1732] = {
+			nodeName = LMining("Tin Vein"),
+			nodeObjectID = 1732,
+			oreName = LMining("Tin Ore"),
+			oreItemID = 2771,
+			minLevel = 65,
+		},
+		[1733] = {
+			nodeName = LMining("Silver Vein"),
+			nodeObjectID = 1733,
+			oreName = LMining("Silver Ore"),
+			oreItemID = 2775,
+			minLevel = 75,
+		},
+	},
+	-- Eversong Woods
+	[1941] = {
+		[1731] = {
+			nodeName = LMining("Copper Vein"),
+			nodeObjectID = 1731,
+			oreName = LMining("Copper Ore"),
+			oreItemID = 2770,
+			minLevel = 1,
+		},
+	},
+	-- Ghostlands
+	[1942] = {
+		[1731] = {
+			nodeName = LMining("Copper Vein"),
+			nodeObjectID = 1731,
+			oreName = LMining("Copper Ore"),
+			oreItemID = 2770,
+			minLevel = 1,
+		},
+		[1732] = {
+			nodeName = LMining("Tin Vein"),
+			nodeObjectID = 1732,
+			oreName = LMining("Tin Ore"),
+			oreItemID = 2771,
+			minLevel = 65,
+		},
+		[1733] = {
+			nodeName = LMining("Silver Vein"),
+			nodeObjectID = 1733,
+			oreName = LMining("Silver Ore"),
+			oreItemID = 2775,
+			minLevel = 75,
+		},
+	},	
+	-- Hellfire Peninsula
+	[1944] = {
+		[181555] = {
+			nodeName = LMining("Fel Iron Deposit"),
+			nodeObjectID = 181555,
+			oreName = LMining("Fel Iron Ore"),
+			oreItemID = 23424,
+			minLevel = 300,
+		},
+	},
+	-- Nagrand
+	[1951] = {
+		[181555] = {
+			nodeName = LMining("Fel Iron Deposit"),
+			nodeObjectID = 181555,
+			oreName = LMining("Fel Iron Ore"),
+			oreItemID = 23424,
+			minLevel = 300,
+		},
+		[181556] = {
+			nodeName = LMining("Adamantite Deposit"),
+			nodeObjectID = 181556,
+			oreName = LMining("Adamantite Ore"),
+			oreItemID = 23425,
+			minLevel = 325,
+		},
+		[181569] = {
+			nodeName = LMining("Rich Adamantite Deposit"),
+			nodeObjectID = 181569,
+			oreName = LMining("Adamantite Ore"),
+			oreItemID = 23425,
+			minLevel = 350,
+		},
+		[181557] = {
+			nodeName = LMining("Khorium Vein"),
+			nodeObjectID = 181557,
+			oreName = LMining("Khorium Ore"),
+			oreItemID = 23426,
+			minLevel = 375,
+		},
+	},
+	-- Netherstorm
+	[1953] = {
+		[181555] = {
+			nodeName = LMining("Fel Iron Deposit"),
+			nodeObjectID = 181555,
+			oreName = LMining("Fel Iron Ore"),
+			oreItemID = 23424,
+			minLevel = 300,
+		},
+		[181556] = {
+			nodeName = LMining("Adamantite Deposit"),
+			nodeObjectID = 181556,
+			oreName = LMining("Adamantite Ore"),
+			oreItemID = 23425,
+			minLevel = 325,
+		},
+		[181569] = {
+			nodeName = LMining("Rich Adamantite Deposit"),
+			nodeObjectID = 181569,
+			oreName = LMining("Adamantite Ore"),
+			oreItemID = 23425,
+			minLevel = 350,
+		},
+		[181557] = {
+			nodeName = LMining("Khorium Vein"),
+			nodeObjectID = 181557,
+			oreName = LMining("Khorium Ore"),
+			oreItemID = 23426,
+			minLevel = 375,
+		},
+	},
+	-- Shadowmoon Valley
+	[1948] = {
+		[181555] = {
+			nodeName = LMining("Fel Iron Deposit"),
+			nodeObjectID = 181555,
+			oreName = LMining("Fel Iron Ore"),
+			oreItemID = 23424,
+			minLevel = 300,
+		},
+		[181556] = {
+			nodeName = LMining("Adamantite Deposit"),
+			nodeObjectID = 181556,
+			oreName = LMining("Adamantite Ore"),
+			oreItemID = 23425,
+			minLevel = 325,
+		},
+		[181569] = {
+			nodeName = LMining("Rich Adamantite Deposit"),
+			nodeObjectID = 181569,
+			oreName = LMining("Adamantite Ore"),
+			oreItemID = 23425,
+			minLevel = 350,
+		},
+		[181557] = {
+			nodeName = LMining("Khorium Vein"),
+			nodeObjectID = 181557,
+			oreName = LMining("Khorium Ore"),
+			oreItemID = 23426,
+			minLevel = 375,
+		},
+	},
+	-- Terokkar Forest
+	[1952] = {
+		[181555] = {
+			nodeName = LMining("Fel Iron Deposit"),
+			nodeObjectID = 181555,
+			oreName = LMining("Fel Iron Ore"),
+			oreItemID = 23424,
+			minLevel = 300,
+		},
+		[181556] = {
+			nodeName = LMining("Adamantite Deposit"),
+			nodeObjectID = 181556,
+			oreName = LMining("Adamantite Ore"),
+			oreItemID = 23425,
+			minLevel = 325,
+		},
+		[181569] = {
+			nodeName = LMining("Rich Adamantite Deposit"),
+			nodeObjectID = 181569,
+			oreName = LMining("Adamantite Ore"),
+			oreItemID = 23425,
+			minLevel = 350,
+		},
+		[181557] = {
+			nodeName = LMining("Khorium Vein"),
+			nodeObjectID = 181557,
+			oreName = LMining("Khorium Ore"),
+			oreItemID = 23426,
+			minLevel = 375,
+		},
+	},
+	-- Zangarmarsh
+	[1946] = {
+		[181555] = {
+			nodeName = LMining("Fel Iron Deposit"),
+			nodeObjectID = 181555,
+			oreName = LMining("Fel Iron Ore"),
+			oreItemID = 23424,
+			minLevel = 300,
+		},
+		[181556] = {
+			nodeName = LMining("Adamantite Deposit"),
+			nodeObjectID = 181556,
+			oreName = LMining("Adamantite Ore"),
+			oreItemID = 23425,
+			minLevel = 325,
+		},
+		[181569] = {
+			nodeName = LMining("Rich Adamantite Deposit"),
+			nodeObjectID = 181569,
+			oreName = LMining("Adamantite Ore"),
+			oreItemID = 23425,
+			minLevel = 350,
+		},
+	},
+	-- WotLK zones
+	-- Borean Tundra
+	[114] = {
+		[189981] = {
+			nodeName = LMining("Rich Saronite Deposit"),
+			nodeObjectID = 189981,
+			oreName = LMining("Saronite Ore"),
+			oreItemID = 36912,
+			minLevel = 425,
+		},
+		[189980] = {
+			nodeName = LMining("Saronite Deposit"),
+			nodeObjectID = 189980,
+			oreName = LMining("Saronite Ore"),
+			oreItemID = 36912,
+			minLevel = 400,
+		},
+		[191133] = {
+			nodeName = LMining("Titanium Vein"),
+			nodeObjectID = 191133,
+			oreName = LMining("Titanium Ore"),
+			oreItemID = 36910,
+			minLevel = 450,
+		},
+		[189979] = {
+			nodeName = LMining("Rich Cobalt Deposit"),
+			nodeObjectID = 189979,
+			oreName = LMining("Cobalt Ore"),
+			oreItemID = 36909,
+			minLevel = 375,
+		},
+		[189978] = {
+			nodeName = LMining("Cobalt Deposit"),
+			nodeObjectID = 189978,
+			oreName = LMining("Cobalt Ore"),
+			oreItemID = 36909,
+			minLevel = 350,
+		},
+	},
+	-- Crystalsong Forest
+	[127] = {
+		[189981] = {
+			nodeName = LMining("Rich Saronite Deposit"),
+			nodeObjectID = 189981,
+			oreName = LMining("Saronite Ore"),
+			oreItemID = 36912,
+			minLevel = 425,
+		},
+		[189980] = {
+			nodeName = LMining("Saronite Deposit"),
+			nodeObjectID = 189980,
+			oreName = LMining("Saronite Ore"),
+			oreItemID = 36912,
+			minLevel = 400,
+		},
+		[191133] = {
+			nodeName = LMining("Titanium Vein"),
+			nodeObjectID = 191133,
+			oreName = LMining("Titanium Ore"),
+			oreItemID = 36910,
+			minLevel = 450,
+		},
+		[189979] = {
+			nodeName = LMining("Rich Cobalt Deposit"),
+			nodeObjectID = 189979,
+			oreName = LMining("Cobalt Ore"),
+			oreItemID = 36909,
+			minLevel = 375,
+		},
+		[189978] = {
+			nodeName = LMining("Cobalt Deposit"),
+			nodeObjectID = 189978,
+			oreName = LMining("Cobalt Ore"),
+			oreItemID = 36909,
+			minLevel = 350,
+		},
+	},
+	-- Dalaran
+	[125] = {
+		[189980] = {
+			nodeName = LMining("Saronite Deposit"),
+			nodeObjectID = 189980,
+			oreName = LMining("Saronite Ore"),
+			oreItemID = 36912,
+			minLevel = 400,
+		},
+	},
+	-- Dragonblight
+	[115] = {
+		[189981] = {
+			nodeName = LMining("Rich Saronite Deposit"),
+			nodeObjectID = 189981,
+			oreName = LMining("Saronite Ore"),
+			oreItemID = 36912,
+			minLevel = 425,
+		},
+		[189980] = {
+			nodeName = LMining("Saronite Deposit"),
+			nodeObjectID = 189980,
+			oreName = LMining("Saronite Ore"),
+			oreItemID = 36912,
+			minLevel = 400,
+		},
+		[191133] = {
+			nodeName = LMining("Titanium Vein"),
+			nodeObjectID = 191133,
+			oreName = LMining("Titanium Ore"),
+			oreItemID = 36910,
+			minLevel = 450,
+		},
+		[189979] = {
+			nodeName = LMining("Rich Cobalt Deposit"),
+			nodeObjectID = 189979,
+			oreName = LMining("Cobalt Ore"),
+			oreItemID = 36909,
+			minLevel = 375,
+		},
+		[189978] = {
+			nodeName = LMining("Cobalt Deposit"),
+			nodeObjectID = 189978,
+			oreName = LMining("Cobalt Ore"),
+			oreItemID = 36909,
+			minLevel = 350,
+		},
+	},
+	-- Grizzly Hills
+	[116] = {
+		[189980] = {
+			nodeName = LMining("Saronite Deposit"),
+			nodeObjectID = 189980,
+			oreName = LMining("Saronite Ore"),
+			oreItemID = 36912,
+			minLevel = 400,
+		},
+		[189979] = {
+			nodeName = LMining("Rich Cobalt Deposit"),
+			nodeObjectID = 189979,
+			oreName = LMining("Cobalt Ore"),
+			oreItemID = 36909,
+			minLevel = 375,
+		},
+		[189978] = {
+			nodeName = LMining("Cobalt Deposit"),
+			nodeObjectID = 189978,
+			oreName = LMining("Cobalt Ore"),
+			oreItemID = 36909,
+			minLevel = 350,
+		},
+	},
+	-- Halls of Stone
+	[140] = {
+		[189980] = {
+			nodeName = LMining("Saronite Deposit"),
+			nodeObjectID = 189980,
+			oreName = LMining("Saronite Ore"),
+			oreItemID = 36912,
+			minLevel = 400,
+		},
+	},
+	-- Howling Fjord
+	[117] = {
+		[189979] = {
+			nodeName = LMining("Rich Cobalt Deposit"),
+			nodeObjectID = 189979,
+			oreName = LMining("Cobalt Ore"),
+			oreItemID = 36909,
+			minLevel = 375,
+		},
+		[189978] = {
+			nodeName = LMining("Cobalt Deposit"),
+			nodeObjectID = 189978,
+			oreName = LMining("Cobalt Ore"),
+			oreItemID = 36909,
+			minLevel = 350,
+		},
+	},
+	-- Icecrown
+	[118] = {
+		[189981] = {
+			nodeName = LMining("Rich Saronite Deposit"),
+			nodeObjectID = 189981,
+			oreName = LMining("Saronite Ore"),
+			oreItemID = 36912,
+			minLevel = 425,
+		},
+		[189980] = {
+			nodeName = LMining("Saronite Deposit"),
+			nodeObjectID = 189980,
+			oreName = LMining("Saronite Ore"),
+			oreItemID = 36912,
+			minLevel = 400,
+		},
+		[191133] = {
+			nodeName = LMining("Titanium Vein"),
+			nodeObjectID = 191133,
+			oreName = LMining("Titanium Ore"),
+			oreItemID = 36910,
+			minLevel = 450,
+		},
+	},
+	-- Sholazar Basin
+	[119] = {
+		[189981] = {
+			nodeName = LMining("Rich Saronite Deposit"),
+			nodeObjectID = 189981,
+			oreName = LMining("Saronite Ore"),
+			oreItemID = 36912,
+			minLevel = 425,
+		},
+		[189980] = {
+			nodeName = LMining("Saronite Deposit"),
+			nodeObjectID = 189980,
+			oreName = LMining("Saronite Ore"),
+			oreItemID = 36912,
+			minLevel = 400,
+		},
+		[191133] = {
+			nodeName = LMining("Titanium Vein"),
+			nodeObjectID = 191133,
+			oreName = LMining("Titanium Ore"),
+			oreItemID = 36910,
+			minLevel = 450,
+		},
+		[189979] = {
+			nodeName = LMining("Rich Cobalt Deposit"),
+			nodeObjectID = 189979,
+			oreName = LMining("Cobalt Ore"),
+			oreItemID = 36909,
+			minLevel = 375,
+		},
+		[189978] = {
+			nodeName = LMining("Cobalt Deposit"),
+			nodeObjectID = 189978,
+			oreName = LMining("Cobalt Ore"),
+			oreItemID = 36909,
+			minLevel = 350,
+		},
+	},
+	-- The Storm Peaks
+	[120] = {
+		[189981] = {
+			nodeName = LMining("Rich Saronite Deposit"),
+			nodeObjectID = 189981,
+			oreName = LMining("Saronite Ore"),
+			oreItemID = 36912,
+			minLevel = 425,
+		},
+		[189980] = {
+			nodeName = LMining("Saronite Deposit"),
+			nodeObjectID = 189980,
+			oreName = LMining("Saronite Ore"),
+			oreItemID = 36912,
+			minLevel = 400,
+		},
+		[191133] = {
+			nodeName = LMining("Titanium Vein"),
+			nodeObjectID = 191133,
+			oreName = LMining("Titanium Ore"),
+			oreItemID = 36910,
+			minLevel = 450,
+		},
+		[189979] = {
+			nodeName = LMining("Rich Cobalt Deposit"),
+			nodeObjectID = 189979,
+			oreName = LMining("Cobalt Ore"),
+			oreItemID = 36909,
+			minLevel = 375,
+		},
+		[189978] = {
+			nodeName = LMining("Cobalt Deposit"),
+			nodeObjectID = 189978,
+			oreName = LMining("Cobalt Ore"),
+			oreItemID = 36909,
+			minLevel = 350,
+		},
+	},
+	-- Ulduar
+	[147] = {
+		[195036] = {
+			nodeName = LMining("Pure Saronite Deposit"),
+			nodeObjectID = 195036,
+			oreName = LMining("Saronite Ore"),
+			oreItemID = 36912,
+			minLevel = 450,
+		},
+	},
+	-- Utgarde Keep
+	[133] = {
+		[189978] = {
+			nodeName = LMining("Cobalt Deposit"),
+			nodeObjectID = 189978,
+			oreName = LMining("Cobalt Ore"),
+			oreItemID = 36909,
+			minLevel = 350,
+		},
+	},
+	-- Wintergrasp
+	[123] = {
+		[189981] = {
+			nodeName = LMining("Rich Saronite Deposit"),
+			nodeObjectID = 189981,
+			oreName = LMining("Saronite Ore"),
+			oreItemID = 36912,
+			minLevel = 425,
+		},
+		[189980] = {
+			nodeName = LMining("Saronite Deposit"),
+			nodeObjectID = 189980,
+			oreName = LMining("Saronite Ore"),
+			oreItemID = 36912,
+			minLevel = 400,
+		},
+		[191133] = {
+			nodeName = LMining("Titanium Vein"),
+			nodeObjectID = 191133,
+			oreName = LMining("Titanium Ore"),
+			oreItemID = 36910,
+			minLevel = 450,
+		},
+	},
+	-- Zul'Drak
+	[121] = {
+		[189981] = {
+			nodeName = LMining("Rich Saronite Deposit"),
+			nodeObjectID = 189981,
+			oreName = LMining("Saronite Ore"),
+			oreItemID = 36912,
+			minLevel = 425,
+		},
+		[189980] = {
+			nodeName = LMining("Saronite Deposit"),
+			nodeObjectID = 189980,
+			oreName = LMining("Saronite Ore"),
+			oreItemID = 36912,
+			minLevel = 400,
+		},
+		[191133] = {
+			nodeName = LMining("Titanium Vein"),
+			nodeObjectID = 191133,
+			oreName = LMining("Titanium Ore"),
+			oreItemID = 36910,
+			minLevel = 450,
+		},
+		[189979] = {
+			nodeName = LMining("Rich Cobalt Deposit"),
+			nodeObjectID = 189979,
+			oreName = LMining("Cobalt Ore"),
+			oreItemID = 36909,
+			minLevel = 375,
+		},
+		[189978] = {
+			nodeName = LMining("Cobalt Deposit"),
+			nodeObjectID = 189978,
+			oreName = LMining("Cobalt Ore"),
+			oreItemID = 36909,
+			minLevel = 350,
 		},
 	},
 }
+
 
 --------------------------------------------------------------------------------------------------------
 --                                          MINING FUNCTIONS                                          --
@@ -7045,7 +11633,7 @@ local miningNodesByZone = {
 --  - oreName
 --  - oreItemID
 --  - minLevel
---  - zones; table: k = mapID, v = number of nodes in the zone 
+--  - zones; table: k = mapID 
 function Tourist:GetMiningNode(nodeObjectID)
 	-- Some mining nodes have different IDs, i.e. because they drop different secondary items.
 	-- LibTourist only uses the most common nodeType; use the mapping table to find it
@@ -7074,7 +11662,7 @@ end
 --  - oreName
 --  - oreItemID
 --  - minLevel
---  - zones; table: k = mapID, v = number of nodes in the zone 
+--  - zones; table: k = mapID
 function Tourist:IterateMiningNodes()
 	for k in pairs(t) do
 		t[k] = nil
@@ -7093,7 +11681,6 @@ end
 --  - oreName
 --  - oreItemID
 --  - minLevel
---  - numNodes
 function Tourist:IterateMiningNodesByZone(mapID)
 	local zoneMiningNodes = miningNodesByZone[mapID]
 	if type(zoneMiningNodes) == "table" then
@@ -7285,3 +11872,4 @@ end
 end
 
 return Tourist
+

@@ -1,0 +1,12 @@
+tag df5a6b885bef8a39951a8130f441d0ac8a60b0d6 WoW-1.14.3-release1
+Author:	Odica Jaedenar <odica.jaedenar@gmail.com>
+Date:	Sun Aug 21 22:00:03 2022 +0200
+
+Tagged as WoW-1.14.3-release1
+
+commit 6c561ec6ef960544e31b98e18e5b0fb0562e805b
+Author: Odica Jaedenar <odica.jaedenar@gmail.com>
+Date:   Sun Aug 21 21:59:22 2022 +0200
+
+    Updated version in TOC to 11403
+

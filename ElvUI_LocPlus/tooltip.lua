@@ -2,11 +2,15 @@ local E, L, V, P, G = unpack(ElvUI);
 local LP = E:GetModule('LocationPlus')
 local T
 
-if E.Retail then T = LibStub('LibTourist-3.0')
-	--elseif
-		--E.Wrath then T = LibStub('LibTouristClassic-1.0-wrath')
+if E.Retail then
+	T = LibStub('LibTourist-3.0')
+	print("RETAIL")
 	elseif
-	E.Wrath or E.Classic then T = LibStub('LibTouristClassic-1.0')
+		E.Wrath then T = LibStub('LibTouristClassic-1.0')
+			print("Wrath")
+	elseif
+		E.Classic then T = LibStub('LibTouristClassicEra')
+			print("Classic")
 end
 
 local format, tonumber, pairs, tinsert = string.format, tonumber, pairs, table.insert
@@ -288,36 +292,21 @@ function LP:GetStatus(color)
 end
 
 -- Get Fishing Level
-function LP:GetFishingLvl(minFish, ontt)
+function LP:GetFishingLvl(ontt)
+	if E.Retail then return end
+
 	local mapID = C_Map_GetBestMapForUnit("player")
 	local zoneText = T:GetMapNameByIDAlt(mapID) or UNKNOWN;
-	local uniqueZone = T:GetUniqueZoneNameForLookup(zoneText, continentID)
-	local minFish = T:GetFishingLevel(uniqueZone)
-	local _, _, _, fishing = GetProfessions()
-	local r, g, b = 1, 0, 0
-	local r1, g1, b1 = 1, 0, 0
-	local dfish
-	
+	local minFish, maxFish = T:GetFishingLevel(zoneText)
+
 	if minFish then
-		if fishing ~= nil then
-			local _, _, rank = GetProfessionInfo(fishing)
-			if minFish < rank then
-				r, g, b = 0, 1, 0
-				r1, g1, b1 = 0, 1, 0
-			elseif minFish == rank then
-				r, g, b = 1, 1, 0
-				r1, g1, b1 = 1, 1, 0
-			end
-		end
-		
-		dfish = format("|cff%02x%02x%02x%d|r", r*255, g*255, b*255, minFish)
 		if ontt then
-			return dfish
+			return minFish, maxFish
 		else
 			if E.db.locplus.showicon then
-				return format(" (%s) ", dfish)..FISH_ICON
+				return format(" (%s-%s) ", minFish, maxFish)..FISH_ICON
 			else
-				return format(" (%s) ", dfish)
+				return format(" (%s-%s) ", minFish, maxFish)
 			end
 		end
 	else
@@ -412,6 +401,14 @@ function LP:UpdateTooltip()
 		end
 	end
 
+	-- Fishing
+	if not E.Retail then
+		if E.db.locplus.fish then
+			local minFish, maxFish = LP:GetFishingLvl(true)
+			GameTooltip:AddDoubleLine(PROFESSIONS_FISHING.." : ", format("%s-%s", minFish, maxFish), 1, 1, 1)
+		end
+	end
+
 	-- Battle Pet Levels
 	if E.Retail then
 		if E.db.locplus.petlevel then
@@ -496,6 +493,39 @@ function LP:UpdateTooltip()
 						GameTooltip:AddDoubleLine(format("%s %s :", icon, name), (format("%s |cFF6b8df4+ %s|r / %s", rank, rankModifier, maxRank)), 1, 1, 1, selectioncolor)				
 					else
 						GameTooltip:AddDoubleLine(format("%s %s :", icon, name), (format("%s / %s", rank, maxRank)), 1, 1, 1, selectioncolor)
+					end
+				end
+			end
+		end
+	end
+
+	if E.Wrath or E.Classic then
+		if E.db.locplus.prof then
+			GameTooltip:AddLine(" ")
+			GameTooltip:AddLine(TRADE_SKILLS.." :", selectioncolor)
+
+			local SecondarySkill = SECONDARY_SKILLS:gsub(":", '')
+			local hasSecondary = false
+			for skillIndex = 1, GetNumSkillLines() do
+				local skillName, isHeader, _, skillRank, _, skillModifier, skillMaxRank, isAbandonable = GetSkillLineInfo(skillIndex)
+		
+				if hasSecondary and isHeader then
+					hasSecondary = false
+				end
+		
+				if (skillName and isAbandonable) or hasSecondary then
+					if skillName and (skillRank < skillMaxRank or (not E.db.locplus.profcap)) then
+						if (skillModifier and skillModifier > 0) then
+							GameTooltip:AddDoubleLine(format("%s :", skillName), (format("%s |cFF6b8df4+ %s|r / %s", skillRank, skillModifier, skillMaxRank)), 1, 1, 1, selectioncolor)				
+						else
+							GameTooltip:AddDoubleLine(format("%s :", skillName), (format("%s / %s", skillRank, skillMaxRank)), 1, 1, 1, selectioncolor)
+						end
+					end
+				end
+
+				if isHeader then
+					if skillName == SecondarySkill then
+						hasSecondary = true
 					end
 				end
 			end

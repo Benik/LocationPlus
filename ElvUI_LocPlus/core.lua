@@ -386,6 +386,11 @@ function LP:UpdateLocation()
 		if displaypet ~= "" then
 			displayLine = displayLine..displaypet
 		end
+	elseif E.db.locplus.displayOther == 'PFISH' and not E.Retail then
+		local displayfish = LP:GetFishingLvl(false) or ""
+		if displayfish ~= "" then
+			displayLine = displayLine..displayfish
+		end
 	else
 		displayLine = displayLine
 	end
