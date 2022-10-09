@@ -3,14 +3,11 @@ local LP = E:GetModule('LocationPlus')
 local T
 
 if E.Retail then
-	T = LibStub('LibTourist-3.0')
-	print("RETAIL")
-	elseif
-		E.Wrath then T = LibStub('LibTouristClassic-1.0')
-			print("Wrath")
-	elseif
-		E.Classic then T = LibStub('LibTouristClassicEra')
-			print("Classic")
+		T = LibStub('LibTourist-3.0')
+	elseif E.Wrath then
+		T = LibStub('LibTouristClassic-1.0')
+	elseif E.Classic then 
+		T = LibStub('LibTouristClassicEra')
 end
 
 local format, tonumber, pairs, tinsert = string.format, tonumber, pairs, table.insert
@@ -405,7 +402,9 @@ function LP:UpdateTooltip()
 	if not E.Retail then
 		if E.db.locplus.fish then
 			local minFish, maxFish = LP:GetFishingLvl(true)
-			GameTooltip:AddDoubleLine(PROFESSIONS_FISHING.." : ", format("%s-%s", minFish, maxFish), 1, 1, 1)
+			if minFish and maxFish then
+				GameTooltip:AddDoubleLine(PROFESSIONS_FISHING.." : ", format("%s-%s", minFish, maxFish), 1, 1, 1)
+			end
 		end
 	end
 
