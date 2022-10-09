@@ -1,3 +1,6 @@
+[b]2.68[/b] (Oct 9, 2022)
+*Prevent a tooltip error when there's no fishing level in the area
+
 [b]2.67[/b] (Oct 5, 2022)
 *Removed BCC toc and fixed tukui addon id
 
