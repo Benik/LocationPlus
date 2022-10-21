@@ -1,14 +1,7 @@
 local E, L, V, P, G = unpack(ElvUI);
 local LP = E:GetModule('LocationPlus')
-local T
 
-if E.Retail then
-		T = LibStub('LibTourist-3.0')
-	elseif E.Wrath then
-		T = LibStub('LibTouristClassic-1.0')
-	elseif E.Classic then 
-		T = LibStub('LibTouristClassicEra')
-end
+local Tourist = E.Retail and LibStub('LibTourist-3.0') or E.Wrath and LibStub('LibTouristClassic-1.0') or E.Classic and LibStub('LibTouristClassicEra')
 
 local format, tonumber, pairs, tinsert = string.format, tonumber, pairs, table.insert
 
@@ -137,8 +130,8 @@ local function GetDungeonCoords(zone)
 	local z, x, y = "", 0, 0;
 	local dcoords
 	
-	if T:IsInstance(zone) then
-		z, x, y = T:GetEntrancePortalLocation(zone);
+	if Tourist:IsInstance(zone) then
+		z, x, y = Tourist:GetEntrancePortalLocation(zone);
 	end
 	
 	if z == nil then
@@ -161,14 +154,14 @@ end
 	isPvP = nil;
 	isRaid = nil;
 
-	if(not E.Classic and T:IsArena(zone) or T:IsBattleground(zone)) then
+	if(not E.Classic and Tourist:IsArena(zone) or Tourist:IsBattleground(zone)) then
 		if E.db.locplus.tthidepvp then
 			return;
 		end
 		isPvP = true;
 	end
 
-	if(not isPvP and T:GetInstanceGroupSize(zone) >= 10) then
+	if(not isPvP and Tourist:GetInstanceGroupSize(zone) >= 10) then
 		if E.db.locplus.tthideraid then
 			return
 		end
@@ -180,9 +173,9 @@ end
 
 -- Recommended zones
 local function GetRecomZones(zone)
-	local low, high = T:GetLevel(zone)
-	local r, g, b = T:GetLevelColor(zone)
-	local zContinent = T:GetContinent(zone)
+	local low, high = Tourist:GetLevel(zone)
+	local r, g, b = Tourist:GetLevelColor(zone)
+	local zContinent = Tourist:GetContinent(zone)
 
 	if PvPorRaidFilter(zone) == nil then return end
 
@@ -195,10 +188,10 @@ end
 
 -- Dungeons in the zone
 local function GetZoneDungeons(dungeon)
-	local low, high = T:GetLevel(dungeon)
-	local r, g, b = T:GetLevelColor(dungeon)
-	local groupSize = T:GetInstanceGroupSize(dungeon)
-	local altGroupSize = T:GetInstanceAltGroupSize(dungeon)
+	local low, high = Tourist:GetLevel(dungeon)
+	local r, g, b = Tourist:GetLevelColor(dungeon)
+	local groupSize = Tourist:GetInstanceGroupSize(dungeon)
+	local altGroupSize = Tourist:GetInstanceAltGroupSize(dungeon)
 	local groupSizeStyle = (groupSize > 0 and format("|cFFFFFF00|r (%d", groupSize) or "")
 	local altGroupSizeStyle = (altGroupSize > 0 and format("|cFFFFFF00|r/%d", altGroupSize) or "")
 	local name = dungeon
@@ -216,9 +209,9 @@ end
 
 -- Recommended Dungeons
 local function GetRecomDungeons(dungeon)
-	local low, high = T:GetLevel(dungeon);	
-	local r, g, b = T:GetLevelColor(dungeon);
-	local instZone = T:GetInstanceZone(dungeon);
+	local low, high = Tourist:GetLevel(dungeon);	
+	local r, g, b = Tourist:GetLevelColor(dungeon);
+	local instZone = Tourist:GetInstanceZone(dungeon);
 	local name = dungeon
 
 	if PvPorRaidFilter(dungeon) == nil then return end
@@ -293,8 +286,8 @@ function LP:GetFishingLvl(ontt)
 	if E.Retail then return end
 
 	local mapID = C_Map_GetBestMapForUnit("player")
-	local zoneText = T:GetMapNameByIDAlt(mapID) or UNKNOWN;
-	local minFish, maxFish = T:GetFishingLevel(zoneText)
+	local zoneText = Tourist:GetMapNameByIDAlt(mapID) or UNKNOWN;
+	local minFish, maxFish = Tourist:GetFishingLevel(zoneText)
 
 	if minFish then
 		if ontt then
@@ -314,11 +307,11 @@ end
 -- Zone level range
 function LP:GetLevelRange(zoneText, ontt)
 	local mapID = C_Map_GetBestMapForUnit("player")
-	local zoneText = T:GetMapNameByIDAlt(mapID) or UNKNOWN;	
-	local low, high = T:GetLevel(zoneText)
+	local zoneText = Tourist:GetMapNameByIDAlt(mapID) or UNKNOWN;	
+	local low, high = Tourist:GetLevel(zoneText)
 	local dlevel
 	if low > 0 and high > 0 then
-		local r, g, b = T:GetLevelColor(zoneText)
+		local r, g, b = Tourist:GetLevelColor(zoneText)
 		if low ~= high then
 			dlevel = format("|cff%02x%02x%02x%d-%d|r", r*255, g*255, b*255, low, high) or ""
 		else
@@ -344,9 +337,9 @@ function LP:GetBattlePetLvl(zoneText, ontt)
 	if not E.Retail then return end
 
 	local mapID = C_Map_GetBestMapForUnit("player")
-	local zoneText = T:GetMapNameByIDAlt(mapID) or UNKNOWN;
-	local uniqueZone = T:GetUniqueZoneNameForLookup(zoneText, continentID)
-	local low,high = T:GetBattlePetLevel(uniqueZone)
+	local zoneText = Tourist:GetMapNameByIDAlt(mapID) or UNKNOWN;
+	local uniqueZone = Tourist:GetUniqueZoneNameForLookup(zoneText, continentID)
+	local low,high = Tourist:GetBattlePetLevel(uniqueZone)
 	local plevel
 	if low ~= nil or high ~= nil then
 		if low ~= high then
@@ -371,7 +364,7 @@ end
 
 function LP:UpdateTooltip()
 	local mapID = C_Map_GetBestMapForUnit("player")
-	local zoneText = T:GetMapNameByIDAlt(mapID) or UNKNOWN;
+	local zoneText = Tourist:GetMapNameByIDAlt(mapID) or UNKNOWN;
 	local curPos = (zoneText.." ") or "";
 
 	GameTooltip:ClearLines()
@@ -380,7 +373,7 @@ function LP:UpdateTooltip()
 	GameTooltip:AddDoubleLine(L["Zone : "], zoneText, 1, 1, 1, selectioncolor)
 
 	-- Continent
-	GameTooltip:AddDoubleLine(CONTINENT.." : ", T:GetContinent(zoneText), 1, 1, 1, selectioncolor)
+	GameTooltip:AddDoubleLine(CONTINENT.." : ", Tourist:GetContinent(zoneText), 1, 1, 1, selectioncolor)
 
 	-- Home
 	GameTooltip:AddDoubleLine(HOME.." :", GetBindLocation(), 1, 1, 1, 0.41, 0.8, 0.94)
@@ -423,28 +416,28 @@ function LP:UpdateTooltip()
 		GameTooltip:AddLine(" ")
 		GameTooltip:AddLine(L["Recommended Zones :"], selectioncolor)
 	
-		for zone in T:IterateRecommendedZones() do
+		for zone in Tourist:IterateRecommendedZones() do
 			GetRecomZones(zone);
 		end		
 	end
 
 	-- Instances in the zone
-	if E.db.locplus.ttinst and T:DoesZoneHaveInstances(zoneText) then 
+	if E.db.locplus.ttinst and Tourist:DoesZoneHaveInstances(zoneText) then 
 		GameTooltip:AddLine(" ")
 		GameTooltip:AddLine(curPos..DUNGEONS.." :", selectioncolor)
 			
-		for dungeon in T:IterateZoneInstances(zoneText) do
+		for dungeon in Tourist:IterateZoneInstances(zoneText) do
 			GetZoneDungeons(dungeon);
 		end	
 	end
 
 	-- Recommended Instances
 	local level = UnitLevel('player')
-	if E.db.locplus.ttrecinst and T:HasRecommendedInstances() and level >= 15 then
+	if E.db.locplus.ttrecinst and Tourist:HasRecommendedInstances() and level >= 15 then
 		GameTooltip:AddLine(" ")
 		GameTooltip:AddLine(L["Recommended Dungeons :"], selectioncolor)
 			
-		for dungeon in T:IterateRecommendedInstances() do
+		for dungeon in Tourist:IterateRecommendedInstances() do
 			GetRecomDungeons(dungeon);
 		end
 	end
