@@ -1,3 +1,9 @@
+[b]2.70[/b] (Nov 4, 2022)
+*Updated for WoW patch 10.00
+
+[b]2.69[/b] (Oct 26, 2022)
+*Updated for WoW patch 10.00
+
 [b]2.68[/b] (Oct 9, 2022)
 *Prevent a tooltip error when there's no fishing level in the area
 

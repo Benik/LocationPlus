@@ -1,6 +1,6 @@
 ﻿## Interface: 30400
 ## Author: Benik
-## Version: 2.68
+## Version: 2.70
 ## Title: |cff1784d1ElvUI|r Location Plus |cfd9b9b9bWrath|r
 ## Notes: a plugin for ElvUI 12+, that adds location, coords, 2 Datatexts and a tooltip full of info.
 ## RequiredDeps: ElvUI
