@@ -1,14 +1,14 @@
-tag 58d3fcfdb5803ac5cbb9cfb319f786c88376348f WoW-3.4.0-release1
+tag 1a0f72154d8f01c15b2ea7f10d6fa072583d6606 WoW-3.4.0-release2
 Author:	Odica Jaedenar <odica.jaedenar@gmail.com>
-Date:	Mon Sep 5 19:28:27 2022 +0200
+Date:	Wed Oct 26 22:01:47 2022 +0200
 
-Tagged as WoW-3.4.0-release1
+Tagged as WoW-3.4.0-release2
 
-commit d688e641c24784dcee82aa1f76746632d0157d08
+commit 126fd27e5fb79f55f6e60397aa2503b4275d2ef2
 Author: Odica Jaedenar <odica.jaedenar@gmail.com>
-Date:   Mon Sep 5 19:27:13 2022 +0200
+Date:   Wed Oct 26 21:57:00 2022 +0200
 
-    - added translations for WotLK herbs, mining nodes and ores
-    - added translations for all herbs, mining nodes and ores for esMX, itIT and ptBR
-    - added translations for 'Coldarra'
+    - moved the Darkshore boat from Wetlands to Stormwind City
+    - fixed a lua error when using an unsupported game language
+    - corrected revision number
 
