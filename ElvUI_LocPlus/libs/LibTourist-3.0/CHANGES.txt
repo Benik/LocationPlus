@@ -1,14 +1,8 @@
 ------------------------------------------------------------------------
-r274 | Odica_Jaedenar | 2022-08-21 19:47:35 +0000 (Sun, 21 Aug 2022) | 1 line
+r278 | Odica_Jaedenar | 2022-11-13 12:33:43 +0000 (Sun, 13 Nov 2022) | 1 line
 Changed paths:
    M /trunk/LibTourist-3.0.lua
 
-Oribos is now a sanctuary
-------------------------------------------------------------------------
-r273 | Odica_Jaedenar | 2022-08-21 19:38:24 +0000 (Sun, 21 Aug 2022) | 1 line
-Changed paths:
-   M /trunk/LibTourist-3.0.toc
-
-Updated version in TOC to 90207
+Added 'Oribos exotic portals': from Oribos to Mechagon Island, Gorgrond and Karazhan (one way).
 ------------------------------------------------------------------------
 
