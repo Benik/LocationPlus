@@ -1,6 +1,6 @@
 --[[
 Name: LibTouristClassic-1.0
-Revision: $Rev: 251 $
+Revision: $Rev: 252 $
 Author(s): Odica, Mishikal1; based on LibTourist-3.0
 Documentation: https://www.wowace.com/projects/libtourist-1-0/pages/api-reference
 Git: https://repos.wowace.com/wow/libtourist-classic libtourist-classic
@@ -9,7 +9,7 @@ License: MIT
 ]]
 
 local MAJOR_VERSION = "LibTouristClassic-1.0"
-local MINOR_VERSION = 90000 + tonumber(("$Revision: 248 $"):match("(%d+)"))
+local MINOR_VERSION = 90000 + tonumber(("$Revision: 252 $"):match("(%d+)"))
 
 if not LibStub then error(MAJOR_VERSION .. " requires LibStub") end
 local C_Map = C_Map
@@ -909,7 +909,11 @@ local function CreateLocalizedZoneNameLookups()
 	end
 
 	-- Load from zoneTranslation
-	for key, localizedZoneName in pairs(zoneTranslation[GAME_LOCALE]) do
+	local translations = zoneTranslation[GAME_LOCALE]
+	if not translations then
+		translations = zoneTranslation["enUS"]
+	end
+	for key, localizedZoneName in pairs(translations) do
 		local englishName = zoneTranslation["enUS"][key]
 		if not BZ[englishName] then
 			BZ[englishName] = localizedZoneName
@@ -2425,8 +2429,8 @@ do
 	transports["WETLANDS_DUSTWALLOW_BOAT"] = string.format(X_Y_BOAT, BZ["Wetlands"], BZ["Dustwallow Marsh"])
 	transports["DUSTWALLOW_WETLANDS_BOAT"] = string.format(X_Y_BOAT, BZ["Dustwallow Marsh"], BZ["Wetlands"])
 	
-	transports["WETLANDS_DARKSHORE_BOAT"] = string.format(X_Y_BOAT, BZ["Wetlands"], BZ["Darkshore"])
-	transports["DARKSHORE_WETLANDS_BOAT"] = string.format(X_Y_BOAT, BZ["Darkshore"], BZ["Wetlands"])
+	transports["STORMWIND_DARKSHORE_BOAT"] = string.format(X_Y_BOAT, BZ["Stormwind City"], BZ["Darkshore"])
+	transports["DARKSHORE_STORMWIND_BOAT"] = string.format(X_Y_BOAT, BZ["Darkshore"], BZ["Stormwind City"])
 	
 	-- TBC
 	transports["DARKSHORE_TELDRASSIL_BOAT"] = string.format(X_Y_BOAT, BZ["Darkshore"], BZ["Teldrassil"])
@@ -2636,7 +2640,7 @@ do
 	
 	
 
-	zones[transports["WETLANDS_DARKSHORE_BOAT"]] = {
+	zones[transports["STORMWIND_DARKSHORE_BOAT"]] = {
 		paths = {
 			[BZ["Darkshore"]] = true,
 		},
@@ -2644,9 +2648,9 @@ do
 		type = "Transport",
 	}
 
-	zones[transports["DARKSHORE_WETLANDS_BOAT"]] = {
+	zones[transports["DARKSHORE_STORMWIND_BOAT"]] = {
 		paths = {
-			[BZ["Wetlands"]] = true,
+			[BZ["Stormwind City"]] = true,
 		},
 		faction = "Alliance",
 		type = "Transport",
@@ -3050,6 +3054,7 @@ do
 			[BZ["Elwynn Forest"]] = true,
 			[transports["STORMWIND_SHATTRATH_PORTAL"]] = true,
 			[transports["STORMWIND_BOREANTUNDRA_BOAT"]] = true,
+			[transports["STORMWIND_DARKSHORE_BOAT"]] = true,
 		},
 		flightnodes = {
 			[2] = true,      -- Stormwind, Elwynn (A)
@@ -3283,7 +3288,6 @@ do
 		paths = {
 			[BZ["Arathi Highlands"]] = true,
 			[transports["WETLANDS_DUSTWALLOW_BOAT"]] = true,
-			[transports["WETLANDS_DARKSHORE_BOAT"]] = true,
 			[transports["WETLANDS_HOWLINGFJORD_BOAT"]] = true,
 			[BZ["Loch Modan"]] = true,
 		},
@@ -3626,7 +3630,7 @@ do
 		continent = Kalimdor,
 		paths = {
 			[BZ["Ashenvale"]] = true,
-			[transports["DARKSHORE_WETLANDS_BOAT"]] = true,
+			[transports["DARKSHORE_STORMWIND_BOAT"]] = true,
 			[transports["DARKSHORE_TELDRASSIL_BOAT"]] = true,
 			[transports["DARKSHORE_AZUREMYST_BOAT"]] = true,
 		},
