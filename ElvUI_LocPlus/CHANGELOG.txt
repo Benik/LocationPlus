@@ -1,3 +1,7 @@
+[b]2.72[/b] (Nov 15, 2022)
+*toc update for patch v10.02
+*LibTourist update for DF
+
 [b]2.71[/b] (Nov 12, 2022)
 *Fix for ElvUI 13.01
 
