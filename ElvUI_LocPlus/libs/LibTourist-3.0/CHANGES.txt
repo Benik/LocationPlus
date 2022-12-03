@@ -1,8 +1,8 @@
 ------------------------------------------------------------------------
-r278 | Odica_Jaedenar | 2022-11-13 12:33:43 +0000 (Sun, 13 Nov 2022) | 1 line
+r282 | Odica_Jaedenar | 2022-11-18 20:38:21 +0000 (Fri, 18 Nov 2022) | 1 line
 Changed paths:
    M /trunk/LibTourist-3.0.lua
 
-Added 'Oribos exotic portals': from Oribos to Mechagon Island, Gorgrond and Karazhan (one way).
+Fixed a lua error related to localization
 ------------------------------------------------------------------------
 
