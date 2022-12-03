@@ -1,6 +1,6 @@
 --[[
 Name: LibTourist-3.0
-Revision: $Rev: 278 $
+Revision: $Rev: 282 $
 Author(s): Odica (owner), originally created by ckknight and Arrowmaster
 Documentation: https://www.wowace.com/projects/libtourist-3-0/pages/api-reference
 SVN: svn://svn.wowace.com/wow/libtourist-3-0/mainline/trunk
@@ -9,7 +9,7 @@ License: MIT
 ]]
 
 local MAJOR_VERSION = "LibTourist-3.0"
-local MINOR_VERSION = 90000 + tonumber(("$Revision: 278 $"):match("(%d+)"))
+local MINOR_VERSION = 90000 + tonumber(("$Revision: 282 $"):match("(%d+)"))
 
 if not LibStub then error(MAJOR_VERSION .. " requires LibStub") end
 local C_Map = C_Map
@@ -1824,8 +1824,8 @@ local MapIdLookupTable = {
 	[2063] = "Dragon Isles",
 	[2066] = "Catalyst Wards",
 	[2070] = "Tirisfal Glades",
-	[2071] = "Hall of the Keepers",
-	[2072] = "The Vault of Tyr",
+	[2071] = "Uldaman: Legacy of Tyr",
+	[2072] = "Uldaman: Legacy of Tyr",
 	[2073] = "The Azure Vault",   -- "ArcaneNaxus_A"  yes, with typo
 	[2074] = "The Azure Vault",   -- "ArcaneNexus_B"
 	[2075] = "The Azure Vault",   -- "ArcaneNexus_C"
@@ -1833,8 +1833,8 @@ local MapIdLookupTable = {
 	[2077] = "The Azure Vault",   -- "ArcaneNexus_E"
 	[2080] = "Neltharus",          -- "Neltharus_A"
 	[2081] = "Neltharus",          -- "Neltharus_B"
-	[2082] = "Halls of Infusion",  -- "HallsOfInfusion_A"
-	[2083] = "Halls of Infusion",  -- "HallsOfInfusion_B"
+	[2082] = "Halls Of Infusion",  -- "HallsOfInfusion_A"
+	[2083] = "Halls Of Infusion",  -- "HallsOfInfusion_B"
 	[2085] = "Primalist Tomorrow",
 	[2088] = "Pandaren Revolution",
 	[2089] = "The Black Empire",
@@ -1874,6 +1874,7 @@ local MapIdLookupTable = {
 	[2132] = "The Azure Span",
 	[2134] = "Valdrakken",
 	[2135] = "Valdrakken",	
+	[2149] = "Ohn'ahran Plains",
 }
 
 
@@ -2207,8 +2208,8 @@ local mapInfoLocalizedNameErrata = {
 		["ArcaneNexus_E"] = "The Azure Vault",
 		["Neltharus_A"] = "Neltharus",
 		["Neltharus_B"] = "Neltharus",
-		["HallsOfInfusion_A"] = "Halls of Infusion",
-		["HallsOfInfusion_B"] = "Halls of Infusion",
+		["HallsOfInfusion_A"] = "Halls Of Infusion",
+		["HallsOfInfusion_B"] = "Halls Of Infusion",
 		["PrimalistRaid_A"] = "Vault of the Incarnates",
 		["PrimalistRaid_B"] = "Vault of the Incarnates",
 		["PrimalistRaid_C"] = "Vault of the Incarnates",
@@ -2570,7 +2571,11 @@ local function CreateLocalizedZoneNameLookups()
 
 	-- Load from zoneTranslation
 	local GAME_LOCALE = GetLocale()
-	for key, localizedZoneName in pairs(zoneTranslation[GAME_LOCALE]) do
+	local translations = zoneTranslation[GAME_LOCALE]
+	if not translations then
+		translations = zoneTranslation["enUS"]
+	end	
+	for key, localizedZoneName in pairs(translations) do
 		local englishName = zoneTranslation["enUS"][key]
 		if not BZ[englishName] then
 			BZ[englishName] = localizedZoneName
@@ -6934,9 +6939,13 @@ do
 		ct_low = 15,
 		continent = Eastern_Kingdoms,
 		expansion = Classic,
-		instances = BZ["Uldaman"],
+		instances = {
+			[BZ["Uldaman"]] = true,
+			[BZ["Uldaman: Legacy of Tyr"]] = true,
+		},
 		paths = {
 			[BZ["Uldaman"]] = true,
+			[BZ["Uldaman: Legacy of Tyr"]] = true,
 			[BZ["Searing Gorge"]] = true,
 			[BZ["Loch Modan"]] = true,
 		},
@@ -10234,14 +10243,14 @@ do
 		high = 70,
 		instances = {
 			[BZ["Algeth'ar Academy"]] = true,
-			[BZ["Halls of Infusion"]] = true,
+			[BZ["Halls Of Infusion"]] = true,
 			[BZ["Vault of the Incarnates"]] = true,
 		},
 		paths = {
 			[BZ["Valdrakken"]] = true,
 			[BZ["The Azure Span"]] = true,
 			[BZ["Algeth'ar Academy"]] = true,
-			[BZ["Halls of Infusion"]] = true,
+			[BZ["Halls Of Infusion"]] = true,
 			[BZ["Vault of the Incarnates"]] = true,
 		},
 		flightnodes = {
@@ -11826,7 +11835,7 @@ do
 		entrancePortal = { BZ["The Waking Shores"], 60.00, 75.77 },
 	}
 
-	-- ? whole zone?
+	-- whole Ohn'ahran Plains zone?
 	zones[BZ["The Nokhud Offensive"]] = {
 		low = 60,
 		high = 70,
@@ -11836,6 +11845,13 @@ do
 		groupSize = 5,
 		type = "Instance",
 		entrancePortal = { BZ["Ohn'ahran Plains"], 62.01, 42.44 },
+		flightnodes = {
+			[2847] = true,   -- Maruukai, The Nokhud Offensive (Neutral)
+			[2848] = true,   -- The Nokhud Approach, The Nokhud Offensive (Neutral)
+			[2849] = true,   -- The Battle of Spears, The Nokhud Offensive (Neutral)
+			[2850] = true,   -- Teerakai, The Nokhud Offensive (Neutral)
+			[2851] = true,   -- Ohn'iri Springs, The Nokhud Offensive (Neutral)
+		},
 	}
 	
 	-- 13954
@@ -11875,7 +11891,7 @@ do
 	}
 	
 	-- 14082
-	zones[BZ["Halls of Infusion"]] = {
+	zones[BZ["Halls Of Infusion"]] = {
 		low = 69,
 		high = 70,
 		continent = Dragon_Isles,
@@ -11886,8 +11902,20 @@ do
 		entrancePortal = { BZ["Thaldraszus"], 59.24, 60.64 },
 	}	
 	
-	
-	
+	-- 13968
+	zones[BZ["Uldaman: Legacy of Tyr"]] = {
+		low = 70,
+		high = 70,
+		continent = Eastern_Kingdoms,
+		expansion = DragonFlight,
+		paths = BZ["Badlands"],
+		groupSize = 5,
+		type = "Instance",
+		entrancePortal = { BZ["Badlands"], 42.4, 18.6 }, 
+	}	
+
+
+
 
 	-- ==================RAIDS=====================
 	
