@@ -94,25 +94,33 @@ local currency = {
 	--1803,	-- Echoes of Ny'alotha
 
 	-- Shadowlands
-	1751,	-- Freed Soul
-	1754,	-- Argent Commendation
-	1767,   -- Stygia
-	1810,	-- Willing Soul
-	1813,	-- Reservoir Anima
-	1816,   -- Sinstone Fragments
-	1820,	-- Infused Ruby
-	1822,	-- Renown
-	1828, 	-- Soul Ash
-	1906,	-- Sould Cinders
-	1885,   -- Grateful Offering
-	1792,	-- Honor
-	1602,	-- New Conquest Points
+--	1751,	-- Freed Soul
+--	1754,	-- Argent Commendation
+--	1767,   -- Stygia
+--	1810,	-- Willing Soul
+--	1813,	-- Reservoir Anima
+--	1816,   -- Sinstone Fragments
+--	1820,	-- Infused Ruby
+--	1822,	-- Renown
+--	1828, 	-- Soul Ash
+--	1906,	-- Sould Cinders
+--	1885,   -- Grateful Offering
+--	1792,	-- Honor
+--	1602,	-- New Conquest Points
+--	1191,	-- Valor
+--	1977,	-- Stygian Ember
+--	1904,	-- Tower Knowledge
+--	1931,	-- Cataloged Research
+--	1979,	-- Cyphers of the First Ones
+--	2009,	-- Cosmic Flux
+
+	-- Dragonflight
 	1191,	-- Valor
-	1977,	-- Stygian Ember
-	1904,	-- Tower Knowledge
-	1931,	-- Cataloged Research
-	1979,	-- Cyphers of the First Ones
-	2009,	-- Cosmic Flux
+	1602,	-- New Conquest Points
+	1792,	-- Honor
+	2123,	-- Bloody Tokens
+	2003,	-- Dragon Isles Supplies
+	2118,	-- Elemental Overflow
 }
 
 --[[if E.myfaction == 'Alliance' then
