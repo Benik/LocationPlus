@@ -26,13 +26,6 @@ local LEVEL_ICON = "|TInterface\\AddOns\\ElvUI_LocPlus\\media\\levelup.tga:14:14
 --------------------
 -- Currency Table --
 --------------------
--- Add below the currency id you wish to track. 
--- Find the currency ids: http://www.wowhead.com/currencies .
--- Click on the wanted currency and in the address you will see the id.
--- e.g. for Bloody Coin, you will see http://www.wowhead.com/currency=789 . 789 is the id.
--- So, on this case, add 789, (don't forget the comma).
--- If there are 0 earned points, the currency will be filtered out.
-
 local currency = {
 	--395,	-- Justice Points
 	--396,	-- Valor Points
