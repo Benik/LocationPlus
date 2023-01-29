@@ -1,3 +1,8 @@
+[b]2.74[/b] (Jan 29, 2023)
+*LibTourist update
+*Added Storm Sigil currency
+*toc updates
+
 [b]2.73[/b] (Dec 3, 2022)
 *DF Tokens update. Credit: BuG
 *LibTourist update for DF
