@@ -114,6 +114,7 @@ local currency = {
 	2123,	-- Bloody Tokens
 	2003,	-- Dragon Isles Supplies
 	2118,	-- Elemental Overflow
+	2122,	-- Storm Sigil
 }
 
 --[[if E.myfaction == 'Alliance' then
