@@ -490,7 +490,6 @@ local function CreateDatatextPanels()
 	left_dtp:SetParent(LocationPlusPanel)
 
 	DT:RegisterPanel(LocPlusLeftDT, 1, 'ANCHOR_BOTTOM', 0, -4)
-	DT:UpdatePanelInfo('LocPlusLeftDT')
 
 	-- Right coords Datatext panel
 	local right_dtp = CreateFrame('Frame', 'LocPlusRightDT', E.UIParent, 'BackdropTemplate')
@@ -500,7 +499,6 @@ local function CreateDatatextPanels()
 	right_dtp:SetParent(LocationPlusPanel)
 
 	DT:RegisterPanel(LocPlusRightDT, 1, 'ANCHOR_BOTTOM', 0, -4)
-	DT:UpdatePanelInfo('LocPlusRightDT')
 end
 
 -- Update changes
@@ -536,17 +534,22 @@ function LP:AddOptions()
 end
 
 local function InjectDatatextOptions()
-	E.Options.args.datatexts.args.panels.args.LocPlusLeftDT.name = L['LocationPlus Left Panel']
-	E.Options.args.datatexts.args.panels.args.LocPlusLeftDT.order = 1101
+	local options = E.Options.args.datatexts.args.panels.args
 
-	E.Options.args.datatexts.args.panels.args.LocPlusRightDT.name = L['LocationPlus Right Panel']
-	E.Options.args.datatexts.args.panels.args.LocPlusRightDT.order = 1102
+	options.LocPlusLeftDT.name = L['LocationPlus Left Panel']
+	options.LocPlusLeftDT.order = 1101
+
+	options.LocPlusRightDT.name = L['LocationPlus Right Panel']
+	options.LocPlusRightDT.order = 1102
 end
 
 function LP:PLAYER_ENTERING_WORLD(...)
 	self:ChangeFont()
 	self:UpdateCoords()
 	self:HideCoords()
+end
+
+function LP:LoadDataTexts(...)
 	DT:UpdatePanelInfo('LocPlusRightDT')
 	DT:UpdatePanelInfo('LocPlusLeftDT')
 end
@@ -555,14 +558,15 @@ function LP:Initialize()
 	CreateLocationPanel()
 	CreateDatatextPanels()
 	CreateCoordPanels()
-	self:Update()
-	self:TimerUpdate()
-	self:ToggleBlizZoneText()
-	self:ScheduleRepeatingTimer('UpdateLocation', 0.5)
-	self:RegisterEvent('PLAYER_ENTERING_WORLD')
+	LP:Update()
+	LP:TimerUpdate()
+	LP:ToggleBlizZoneText()
+	LP:ScheduleRepeatingTimer('UpdateLocation', 0.5)
+	LP:RegisterEvent('PLAYER_ENTERING_WORLD')
 	hooksecurefunc(DT, 'UpdatePanelInfo', LP.Update)
 	hooksecurefunc(DT, 'UpdatePanelAttributes', LP.Update)
 	hooksecurefunc(DT, 'UpdatePanelAttributes', LP.ChangeFont)
+	hooksecurefunc(DT, 'LoadDataTexts', LP.LoadDataTexts)
 
 	EP:RegisterPlugin(addon, LP.AddOptions)
 	tinsert(LP.Config, InjectDatatextOptions)
