@@ -534,11 +534,13 @@ function LP:AddOptions()
 end
 
 local function InjectDatatextOptions()
-	E.Options.args.datatexts.args.panels.args.LocPlusLeftDT.name = L['LocationPlus Left Panel']
-	E.Options.args.datatexts.args.panels.args.LocPlusLeftDT.order = 1101
+	local options = E.Options.args.datatexts.args.panels.args
 
-	E.Options.args.datatexts.args.panels.args.LocPlusRightDT.name = L['LocationPlus Right Panel']
-	E.Options.args.datatexts.args.panels.args.LocPlusRightDT.order = 1102
+	options.LocPlusLeftDT.name = L['LocationPlus Left Panel']
+	options.LocPlusLeftDT.order = 1101
+
+	options.LocPlusRightDT.name = L['LocationPlus Right Panel']
+	options.LocPlusRightDT.order = 1102
 end
 
 function LP:PLAYER_ENTERING_WORLD(...)
@@ -556,11 +558,11 @@ function LP:Initialize()
 	CreateLocationPanel()
 	CreateDatatextPanels()
 	CreateCoordPanels()
-	self:Update()
-	self:TimerUpdate()
-	self:ToggleBlizZoneText()
-	self:ScheduleRepeatingTimer('UpdateLocation', 0.5)
-	self:RegisterEvent('PLAYER_ENTERING_WORLD')
+	LP:Update()
+	LP:TimerUpdate()
+	LP:ToggleBlizZoneText()
+	LP:ScheduleRepeatingTimer('UpdateLocation', 0.5)
+	LP:RegisterEvent('PLAYER_ENTERING_WORLD')
 	hooksecurefunc(DT, 'UpdatePanelInfo', LP.Update)
 	hooksecurefunc(DT, 'UpdatePanelAttributes', LP.Update)
 	hooksecurefunc(DT, 'UpdatePanelAttributes', LP.ChangeFont)
