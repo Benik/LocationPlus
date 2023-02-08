@@ -490,7 +490,6 @@ local function CreateDatatextPanels()
 	left_dtp:SetParent(LocationPlusPanel)
 
 	DT:RegisterPanel(LocPlusLeftDT, 1, 'ANCHOR_BOTTOM', 0, -4)
-	DT:UpdatePanelInfo('LocPlusLeftDT')
 
 	-- Right coords Datatext panel
 	local right_dtp = CreateFrame('Frame', 'LocPlusRightDT', E.UIParent, 'BackdropTemplate')
@@ -500,7 +499,6 @@ local function CreateDatatextPanels()
 	right_dtp:SetParent(LocationPlusPanel)
 
 	DT:RegisterPanel(LocPlusRightDT, 1, 'ANCHOR_BOTTOM', 0, -4)
-	DT:UpdatePanelInfo('LocPlusRightDT')
 end
 
 -- Update changes
@@ -547,8 +545,6 @@ function LP:PLAYER_ENTERING_WORLD(...)
 	self:ChangeFont()
 	self:UpdateCoords()
 	self:HideCoords()
-	DT:UpdatePanelInfo('LocPlusRightDT')
-	DT:UpdatePanelInfo('LocPlusLeftDT')
 end
 
 function LP:Initialize()
