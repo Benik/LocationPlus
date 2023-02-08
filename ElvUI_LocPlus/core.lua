@@ -547,6 +547,11 @@ function LP:PLAYER_ENTERING_WORLD(...)
 	self:HideCoords()
 end
 
+function LP:LoadDataTexts(...)
+	DT:UpdatePanelInfo('LocPlusRightDT')
+	DT:UpdatePanelInfo('LocPlusLeftDT')
+end
+
 function LP:Initialize()
 	CreateLocationPanel()
 	CreateDatatextPanels()
@@ -559,6 +564,7 @@ function LP:Initialize()
 	hooksecurefunc(DT, 'UpdatePanelInfo', LP.Update)
 	hooksecurefunc(DT, 'UpdatePanelAttributes', LP.Update)
 	hooksecurefunc(DT, 'UpdatePanelAttributes', LP.ChangeFont)
+	hooksecurefunc(DT, 'LoadDataTexts', LP.LoadDataTexts)
 
 	EP:RegisterPlugin(addon, LP.AddOptions)
 	tinsert(LP.Config, InjectDatatextOptions)
