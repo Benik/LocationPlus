@@ -93,6 +93,8 @@ end
 
 -- clicking the location panel
 local function LocPanel_OnClick(self, btn)
+	if InCombatLockdown() then return end
+
 	local zoneText = GetRealZoneText() or UNKNOWN;
 	if btn == "LeftButton" then
 		if IsShiftKeyDown() then
@@ -119,9 +121,7 @@ local function LocPanel_OnClick(self, btn)
 		end
 	end
 	if btn == "RightButton" then
-		if not InCombatLockdown() then
-			E:ToggleOptions(); LibStub("AceConfigDialog-3.0-ElvUI"):SelectGroup("ElvUI", "locplus")
-		end
+		E:ToggleOptions(); LibStub("AceConfigDialog-3.0-ElvUI"):SelectGroup("ElvUI", "locplus")
 	end
 end
 
