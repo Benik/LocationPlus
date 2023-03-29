@@ -119,7 +119,9 @@ local function LocPanel_OnClick(self, btn)
 		end
 	end
 	if btn == "RightButton" then
-		E:ToggleOptions(); LibStub("AceConfigDialog-3.0-ElvUI"):SelectGroup("ElvUI", "locplus")
+		if not InCombatLockdown() then
+			E:ToggleOptions(); LibStub("AceConfigDialog-3.0-ElvUI"):SelectGroup("ElvUI", "locplus")
+		end
 	end
 end
 
