@@ -301,7 +301,7 @@ local function Options()
 								name = L["Zone Dungeons"],
 								desc = L["Enable/Disable dungeons in the zone, on Tooltip."],
 								type = 'toggle',
-								disabled = function() return not E.db.locplus.tt end,		
+								disabled = function() return not E.db.locplus.tt or E.Classic end,		
 							},
 							ttrecinst = {
 								order = 8,
