@@ -93,6 +93,8 @@ end
 
 -- clicking the location panel
 local function LocPanel_OnClick(self, btn)
+	if InCombatLockdown() then return end
+
 	local zoneText = GetRealZoneText() or UNKNOWN;
 	if btn == "LeftButton" then
 		if IsShiftKeyDown() then

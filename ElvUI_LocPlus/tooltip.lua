@@ -424,7 +424,7 @@ function LP:UpdateTooltip()
 	end
 
 	-- Instances in the zone
-	if E.db.locplus.ttinst and Tourist:DoesZoneHaveInstances(zoneText) then 
+	if E.db.locplus.ttinst and Tourist:DoesZoneHaveInstances(zoneText) and not E.Classic then 
 		GameTooltip:AddLine(" ")
 		GameTooltip:AddLine(curPos..DUNGEONS.." :", selectioncolor)
 			
