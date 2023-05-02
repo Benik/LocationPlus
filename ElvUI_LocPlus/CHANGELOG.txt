@@ -1,3 +1,7 @@
+v2.78 (May 2, 2023)
+toc update for patch 10.1
+Added Icon Texture
+
 v2.77 (Apr 5, 2023)
 Prevent a tooltip error on Classic era
 Prevent Clicking on the Location Panel while in combat

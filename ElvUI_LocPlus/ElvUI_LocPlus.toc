@@ -1,6 +1,6 @@
-﻿## Interface: 100007
+﻿## Interface: 100100
 ## Author: Benik
-## Version: 2.77
+## Version: 2.78
 ## Title: |cff1784d1ElvUI|r Location Plus
 ## Notes: a plugin for ElvUI 13+, that adds location, coords, 2 Datatexts and a tooltip full of info.
 ## RequiredDeps: ElvUI
@@ -12,6 +12,7 @@
 ## X-Curse-Project-Name: ElvUI Location Plus
 ## X-Curse-Project-ID: elvui-location-plus
 ## X-Curse-Repository-ID: wow/elvui-location-plus/mainline
+## IconTexture: Interface\ICONS\INV_Misc_Map02
 
 libs\load_libs.xml
 locales\load_locales.xml
