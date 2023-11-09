@@ -117,6 +117,8 @@ local currency = {
 	2122,	-- Storm Sigil
 	2245,	-- Flightstones
 	2594,	-- Paracasual Flakes
+	2650,	-- Emerald Dewdrop
+	2707,	-- Drake's Dreaming Crest
 }
 
 --[[if E.myfaction == 'Alliance' then
