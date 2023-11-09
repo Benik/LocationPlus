@@ -1,18 +1,10 @@
 ------------------------------------------------------------------------
-r289 | Odica_Jaedenar | 2023-01-26 22:24:56 +0000 (Thu, 26 Jan 2023) | 2 lines
-Changed paths:
-   M /trunk/LibTourist-3.0.lua
-
-- Added 1 MapID
-- Added 2 Flight Nodes
-------------------------------------------------------------------------
-r288 | Odica_Jaedenar | 2023-01-26 22:14:39 +0000 (Thu, 26 Jan 2023) | 3 lines
+r299 | Odica_Jaedenar | 2023-09-13 20:56:57 +0000 (Wed, 13 Sep 2023) | 2 lines
 Changed paths:
    M /trunk/LibTourist-3.0.lua
    M /trunk/LibTourist-3.0.toc
 
-- Updated version in TOC to 100005
-- Made several improvements to the initialize profession skill mechanism
-
+Added 1 MapID
+Updated version number in TOC to 100107
 ------------------------------------------------------------------------
 
