@@ -1,3 +1,8 @@
+v2.81 (Nov 9, 2023)
+toc update
+LibTourist update
+Added new Currencies on tooltip
+
 v2.80 (Sep 28, 2023)
 toc updates
 
