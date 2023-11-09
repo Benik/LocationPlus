@@ -1,6 +1,6 @@
 --[[
 Name: LibTourist-3.0
-Revision: $Rev: 289 $
+Revision: $Rev: 299 $
 Author(s): Odica (owner), originally created by ckknight and Arrowmaster
 Documentation: https://www.wowace.com/projects/libtourist-3-0/pages/api-reference
 SVN: svn://svn.wowace.com/wow/libtourist-3-0/mainline/trunk
@@ -9,7 +9,7 @@ License: MIT
 ]]
 
 local MAJOR_VERSION = "LibTourist-3.0"
-local MINOR_VERSION = 90000 + tonumber(("$Revision: 289 $"):match("(%d+)"))
+local MINOR_VERSION = 90000 + tonumber(("$Revision: 299 $"):match("(%d+)"))
 
 if not LibStub then error(MAJOR_VERSION .. " requires LibStub") end
 local C_Map = C_Map
@@ -1873,9 +1873,48 @@ local MapIdLookupTable = {
 	[2130] = "Thaldraszus",
 	[2131] = "The Forbidden Reach",
 	[2132] = "The Azure Span",
+    [2133] = "Zaralek Cavern",
 	[2134] = "Valdrakken",
 	[2135] = "Valdrakken",	
+    [2146] = "The Eastern Glades",
+    [2147] = "Azeroth",
 	[2149] = "Ohn'ahran Plains",
+	[2150] = "Dragonskull Island",
+	[2151] = "The Forbidden Reach",
+	[2154] = "Froststone Vault",
+	[2162] = "Alterac Valley",
+	[2165] = "The Throughway",
+	[2166] = "Aberrus, the Shadowed Crucible",
+	[2167] = "Aberrus, the Shadowed Crucible",
+	[2168] = "Aberrus, the Shadowed Crucible",
+	[2169] = "Aberrus, the Shadowed Crucible",
+	[2170] = "Aberrus, the Shadowed Crucible",
+	[2171] = "Aberrus, the Shadowed Crucible",
+	[2172] = "Aberrus, the Shadowed Crucible",
+	[2173] = "Aberrus, the Shadowed Crucible",
+	[2174] = "Aberrus, the Shadowed Crucible",
+	[2175] = "Zaralek Cavern",
+	[2176] = "The Maelstrom",
+	[2183] = "The Azure Vault",
+	[2184] = "Zaralek Cavern",
+    [2190] = "Sanctum of Chronology",
+    [2191] = "Millennia's Threshold",
+    [2192] = "Locus of Eternity",
+    [2193] = "Spoke of Endless Winter",
+    [2194] = "Crossroads of Fate",
+    [2195] = "Infinite Conflux",
+    [2196] = "Twisting Approach",
+    [2197] = "Immemorial Battlefield",
+    [2198] = "Dawn of the Infinite",
+    [2199] = "Tyrhold Reservoir",
+    [2201] = "Azq'roth",
+    [2202] = "Azewrath",
+    [2203] = "Azmourne",
+    [2204] = "Azmerloth",
+    [2205] = "Ulderoth",
+    [2206] = "A.Z.E.R.O.T.H.",
+    [2207] = "The Warlands",
+	[2228] = "The Black Empire",
 }
 
 
@@ -2699,30 +2738,41 @@ local function CreateLocalizedZoneNameLookups()
 		localizedErrata = mapInfoLocalizedNameErrata["enUS"]
 	end
 
+	local skip = {
+		[2026] = true, -- The Forbidden Reach Deprecated
+	}
+
 	-- 8.0: Use the C_Map API
 	-- Note: the loop below is not very sexy but makes sure missing entries in MapIdLookupTable are reported.
 	-- It is executed only once, upon initialization.
 	for uiMapID = 1, 10000, 1 do
-		mapInfo = C_Map.GetMapInfo(uiMapID)	
-		if mapInfo then
-			localizedZoneName = mapInfo.name
-			if localizedErrata[localizedZoneName] then
-				localizedZoneName = localizedErrata[localizedZoneName]
-			end
-
-			englishZoneName = MapIdLookupTable[uiMapID]
-			if englishZoneName then 		
-				-- Add combination of English and localized name to lookup tables
-				if not BZ[englishZoneName] then
-					BZ[englishZoneName] = localizedZoneName
+		if not skip[uiMapID] then
+			mapInfo = C_Map.GetMapInfo(uiMapID)	
+			if mapInfo then
+				localizedZoneName = mapInfo.name
+				if uiMapID == 2026 or uiMapID == 2107 or uiMapID == 2118 or uiMapID == 2131 or uiMapID == 2151 then
+					trace(tostring(uiMapID).." = '"..tostring(localizedZoneName).."'")
 				end
-				if not BZR[localizedZoneName] then
-					BZR[localizedZoneName] = englishZoneName
-				end	
-			else
-				-- Not in lookup
-				trace("|r|cffff4422! -- Tourist:|r English name not found in lookup for uiMapID "..tostring(uiMapID).." ("..tostring(localizedZoneName)..")" )				
+				if localizedErrata[localizedZoneName] then
+					localizedZoneName = localizedErrata[localizedZoneName]
+				end
+
+				englishZoneName = MapIdLookupTable[uiMapID]
+				if englishZoneName then 		
+					-- Add combination of English and localized name to lookup tables
+					if not BZ[englishZoneName] then
+						BZ[englishZoneName] = localizedZoneName
+					end
+					if not BZR[localizedZoneName] then
+						BZR[localizedZoneName] = englishZoneName
+					end	
+				else
+					-- Not in lookup
+					trace("|r|cffff4422! -- Tourist:|r English name not found in lookup for uiMapID "..tostring(uiMapID).." ("..tostring(localizedZoneName)..")" )				
+				end
 			end
+		else
+			trace("CreateLocalizedZoneNameLookups skipped uiMapID "..tostring(uiMapID))
 		end
 	end
 
@@ -2806,6 +2856,7 @@ local flightNodeIgnoreList = {
 	[2731] = "Domination's Grasp",
 	[2715] = "Ephemeral Plains Alpha",
 	[2716] = "Ephemeral Plains Omega",
+	[2860] = "Aberrus Upper Platform"  -- 10.1 UG - Campaign - Ch6 - Aberrus Upper Platform (SMART) (Neutral)
 }
 
 local function GatherFlightnodeData()
@@ -10427,6 +10478,7 @@ do
 			[BZ["The Waking Shores"]] = true,
 			[BZ["The Azure Span"]] = true,
 			[BZ["The Nokhud Offensive"]] = true,
+			[BZ["Zaralek Cavern"]] = true,
 		},
 		flightnodes = {
 			[2790] = true,   -- Timberstep Outpost, Ohn'ahran Plains (N)
@@ -10439,6 +10491,7 @@ do
 			[2798] = true,   -- Pinewood Post, Ohn'ahran Plains (N)
 			[2799] = true,   -- Rusza'thar Reach, Ohn'ahran Plains (N)
 			[2825] = true,   -- Ohn'iri Springs, Ohn'ahran Plains (N)
+			[2839] = true,   -- Rusza'thar Reach, Ohn'ahran Plains (N)
 		},
 		continent = Dragon_Isles,
 		expansion = DragonFlight,
@@ -10458,6 +10511,7 @@ do
 			[BZ["Thaldraszus"]] = true,
 			[BZ["The Azure Vault"]] = true,
 			[BZ["Brackenhide Hollow"]] = true,
+			[BZ["Zaralek Cavern"]] = true,
 		},
 		flightnodes = {
 			[2773] = true,   -- Azure Archives, Azure Span (N)
@@ -10482,6 +10536,7 @@ do
 			[BZ["Algeth'ar Academy"]] = true,
 			[BZ["Halls Of Infusion"]] = true,
 			[BZ["Vault of the Incarnates"]] = true,
+			[BZ["Dawn of the Infinite"]] = true,
 		},
 		paths = {
 			[BZ["Valdrakken"]] = true,
@@ -10489,6 +10544,7 @@ do
 			[BZ["Algeth'ar Academy"]] = true,
 			[BZ["Halls Of Infusion"]] = true,
 			[BZ["Vault of the Incarnates"]] = true,
+			[BZ["Dawn of the Infinite"]] = true,
 		},
 		flightnodes = {
 			[2810] = true,   -- Valdrakken, Thaldraszus (N)
@@ -10499,21 +10555,46 @@ do
 			[2815] = true,   -- Garden Shrine, Thaldraszus (N)
 			[2816] = true,   -- Shifting Sands, Thaldraszus (N)
 			[2818] = true,   -- Vault of the Incarnates, Thaldraszus (N)
+			[2836] = true,   -- Algeth'era, Thaldraszus (Neutral)
 		},
 		continent = Dragon_Isles,
 		expansion = DragonFlight,
 	}
 
-
-	-- Dracthyr Evokers starting zone
+	-- 10.0.7
+	-- Previously: Dracthyr Evokers starting zone (UIMapID 2026)
 	zones[BZ["The Forbidden Reach"]] = {
-		low = 58,
-		high = 59,
+		low = 70,
+		high = 70,
+		flightnodes = {
+			[2855] = true,   -- Morqut Village, The Forbidden Reach (N)
+			[2862] = true,   -- Morqut Islet, Forbidden Reach (Neutral)
+		},
 		continent = Dragon_Isles,
 		expansion = DragonFlight,
 	}
 
-
+	-- 10.1.0
+	-- 14022
+	zones[BZ["Zaralek Cavern"]] = {
+		low = 70,
+		high = 70,
+		instances = {
+			[BZ["Aberrus, the Shadowed Crucible"]] = true,
+		},
+		paths = {
+			[BZ["Ohn'ahran Plains"]] = true,
+			[BZ["The Azure Span"]] = true,
+			[BZ["Aberrus, the Shadowed Crucible"]] = true,
+		},
+		flightnodes = {
+			[2864] = true,   -- Obsidian Rest, Zaralek Cavern (Neutral)
+			[2865] = true,   -- Dragonscale Camp, Zaralek Cavern (Neutral)
+			[2863] = true,   -- Loamm, Zaralek Cavern (Neutral)
+		},
+		continent = Dragon_Isles,
+		expansion = DragonFlight,
+	}
 
 
 
@@ -12151,7 +12232,16 @@ do
 		entrancePortal = { BZ["Badlands"], 42.4, 18.6 }, 
 	}	
 
-
+	zones[BZ["Dawn of the Infinite"]] = {
+		low = 70,
+		high = 70,
+		continent = Dragon_Isles,
+		expansion = DragonFlight,
+		paths = BZ["Thaldraszus"],
+		groupSize = 5,
+		type = "Instance",
+		entrancePortal = { BZ["Thaldraszus"], 59.24, 60.64 },
+	}	
 
 
 	-- ==================RAIDS=====================
@@ -12679,7 +12769,20 @@ do
 		entrancePortal = { BZ["Thaldraszus"], 73.14, 55.60 },
 	}	
 	
-	
+	-- 14663
+	zones[BZ["Aberrus, the Shadowed Crucible"]] = {
+		low = 70,
+		high = 70,
+		continent = Dragon_Isles,
+		expansion = DragonFlight,
+		paths = BZ["Zaralek Cavern"],
+		groupMinSize = 10,
+		groupMaxSize = 30,
+		type = "Instance",
+		--entrancePortal = { BZ["Zaralek Cavern"], 73.14, 55.60 }, -- todo
+	}	
+
+
 	
 	-- ==============BATTLEGROUNDS================
 
@@ -13202,7 +13305,7 @@ do
 						zones[uniqueZoneName].yards = zWidth
 					end
 				else
-					trace("|r|cffff4422! -- Tourist:|r TODO: Add zone "..tostring(zoneName).." (to "..tostring(continentName)..")" )			
+					trace("|r|cffff4422! -- Tourist:|r TODO: Add zone "..tostring(zoneName).." (to "..tostring(continentName)..")" )
 				end
 				
 				doneZones[continentName.."."..zoneName] = true
