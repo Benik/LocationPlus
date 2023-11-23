@@ -118,7 +118,10 @@ local currency = {
 	2245,	-- Flightstones
 	2594,	-- Paracasual Flakes
 	2650,	-- Emerald Dewdrop
+	2706,	-- Whelping's Dreaming Crest
 	2707,	-- Drake's Dreaming Crest
+	2708,	-- Wyrm's Dreaming Crest
+	2709,	-- Aspect's Dreaming Crest
 }
 
 --[[if E.myfaction == 'Alliance' then
