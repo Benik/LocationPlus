@@ -489,6 +489,8 @@ local function Options()
 									[2] = CLASS_COLORS,
 									[3] = CUSTOM,
 								},
+								get = function(info) return E.db.locplus[ info[#info] ] end,
+								set = function(info, value) E.db.locplus[ info[#info] ] = value; LP:UpdateTextColor() end,
 							},
 							userColor = {
 								order = 10,
@@ -502,7 +504,7 @@ local function Options()
 								set = function(info, r, g, b)
 									local t = E.db.locplus[ info[#info] ]
 									t.r, t.g, t.b = r, g, b
-									LP:CoordsColor()
+									LP:UpdateTextColor()
 								end,
 							},
 						},

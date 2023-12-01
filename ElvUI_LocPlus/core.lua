@@ -399,19 +399,6 @@ function LP:UpdateLocation()
 
 	LocationPlusPanel.Text:SetText(displayLine)
 
-	-- Coloring
-	local r, g, b
-	if displayLine ~= "" then
-		if db.customColor == 1 then
-			r, g, b = LP:GetStatus(true)
-		elseif db.customColor == 2 then
-			r, g, b = classColor.r, classColor.g, classColor.b
-		else
-			r, g, b = unpackColor(db.userColor)
-		end
-		LocationPlusPanel.Text:SetTextColor(r, g, b)
-	end
-
 	-- Sizing
 	local fixedwidth = (db.lpwidth + 18)
 	local autowidth = (LocationPlusPanel.Text:GetStringWidth() + 18)
@@ -428,6 +415,22 @@ function LP:UpdateLocation()
 			LocationPlusPanel:Width(autowidth)
 			LocationPlusPanel.Text:Width(autowidth)
 		end
+	end
+end
+
+function LP:UpdateTextColor()
+	-- Coloring
+	local db = E.db.locplus
+	local r, g, b
+	if LocationPlusPanel.Text ~= "" then
+		if db.customColor == 1 then
+			r, g, b = LP:GetStatus(true)
+		elseif db.customColor == 2 then
+			r, g, b = classColor.r, classColor.g, classColor.b
+		else
+			r, g, b = unpackColor(db.userColor)
+		end
+		LocationPlusPanel.Text:SetTextColor(r, g, b)
 	end
 end
 
@@ -513,6 +516,7 @@ function LP:Update()
 	LP:CoordsDigit()
 	LP:MouseOver()
 	LP:HideCoords()
+	LP:UpdateTextColor()
 end
 
 function LP:ToggleBlizZoneText()
@@ -546,9 +550,10 @@ local function InjectDatatextOptions()
 end
 
 function LP:PLAYER_ENTERING_WORLD(...)
-	self:ChangeFont()
-	self:UpdateCoords()
-	self:HideCoords()
+	LP:ChangeFont()
+	LP:UpdateCoords()
+	LP:HideCoords()
+	LP:UpdateTextColor()
 end
 
 function LP:LoadDataTexts(...)
@@ -565,6 +570,9 @@ function LP:Initialize()
 	LP:ToggleBlizZoneText()
 	LP:ScheduleRepeatingTimer('UpdateLocation', 0.5)
 	LP:RegisterEvent('PLAYER_ENTERING_WORLD')
+	LP:RegisterEvent("ZONE_CHANGED_NEW_AREA", LP.UpdateTextColor)
+	LP:RegisterEvent("ZONE_CHANGED_INDOORS", LP.UpdateTextColor)
+	LP:RegisterEvent("ZONE_CHANGED", LP.UpdateTextColor)
 	hooksecurefunc(DT, 'UpdatePanelInfo', LP.Update)
 	hooksecurefunc(DT, 'UpdatePanelAttributes', LP.Update)
 	hooksecurefunc(DT, 'UpdatePanelAttributes', LP.ChangeFont)
