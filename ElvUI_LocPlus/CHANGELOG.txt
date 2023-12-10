@@ -1,3 +1,9 @@
+v2.82 (Dec 10, 2023)
+LibTourist update for all game versions
+toc updates
+The Location Text Auto Colorize option will now change when Zone changes
+Added all the dreaming crests of 10.2 - Credit: BuG
+
 v2.81 (Nov 9, 2023)
 toc update
 LibTourist update
