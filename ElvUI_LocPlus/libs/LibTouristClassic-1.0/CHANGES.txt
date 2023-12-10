@@ -1,14 +1,12 @@
-tag 1a0f72154d8f01c15b2ea7f10d6fa072583d6606 WoW-3.4.0-release2
+tag a21c979e735dea3a03ee4e22682275f98fad9e7a WoW-3.4.3-release1
 Author:	Odica Jaedenar <odica.jaedenar@gmail.com>
-Date:	Wed Oct 26 22:01:47 2022 +0200
+Date:	Sat Dec 2 13:55:10 2023 +0100
 
-Tagged as WoW-3.4.0-release2
+Tagged as WoW-3.4.3-release1
 
-commit 126fd27e5fb79f55f6e60397aa2503b4275d2ef2
+commit d2466189d6e525903766fcbe835f6575a6ee9ccd
 Author: Odica Jaedenar <odica.jaedenar@gmail.com>
-Date:   Wed Oct 26 21:57:00 2022 +0200
+Date:   Sat Dec 2 13:54:01 2023 +0100
 
-    - moved the Darkshore boat from Wetlands to Stormwind City
-    - fixed a lua error when using an unsupported game language
-    - corrected revision number
+    Updated version in TOC to 30403
 

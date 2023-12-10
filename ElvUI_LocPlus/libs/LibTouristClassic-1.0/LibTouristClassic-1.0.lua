@@ -1,6 +1,6 @@
 --[[
 Name: LibTouristClassic-1.0
-Revision: $Rev: 252 $
+Revision: $Rev: 253 $
 Author(s): Odica, Mishikal1; based on LibTourist-3.0
 Documentation: https://www.wowace.com/projects/libtourist-1-0/pages/api-reference
 Git: https://repos.wowace.com/wow/libtourist-classic libtourist-classic
@@ -5275,8 +5275,8 @@ do
 	}
 
 	zones[BZ["Onyxia's Lair"]] = {
-		low = 60,
-		high = 60,
+		low = 80,
+		high = 80,
 		continent = Kalimdor,
 		paths = BZ["Dustwallow Marsh"],
 		groupSize = 40,

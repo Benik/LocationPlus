@@ -1,6 +1,6 @@
 --[[
 Name: LibTourist-3.0
-Revision: $Rev: 299 $
+Revision: $Rev: 301 $
 Author(s): Odica (owner), originally created by ckknight and Arrowmaster
 Documentation: https://www.wowace.com/projects/libtourist-3-0/pages/api-reference
 SVN: svn://svn.wowace.com/wow/libtourist-3-0/mainline/trunk
@@ -9,7 +9,7 @@ License: MIT
 ]]
 
 local MAJOR_VERSION = "LibTourist-3.0"
-local MINOR_VERSION = 90000 + tonumber(("$Revision: 299 $"):match("(%d+)"))
+local MINOR_VERSION = 90000 + tonumber(("$Revision: 301 $"):match("(%d+)"))
 
 if not LibStub then error(MAJOR_VERSION .. " requires LibStub") end
 local C_Map = C_Map
@@ -1907,6 +1907,7 @@ local MapIdLookupTable = {
     [2197] = "Immemorial Battlefield",
     [2198] = "Dawn of the Infinite",
     [2199] = "Tyrhold Reservoir",
+	[2200] = "Emerald Dream",
     [2201] = "Azq'roth",
     [2202] = "Azewrath",
     [2203] = "Azmourne",
@@ -1914,7 +1915,24 @@ local MapIdLookupTable = {
     [2205] = "Ulderoth",
     [2206] = "A.Z.E.R.O.T.H.",
     [2207] = "The Warlands",
+    [2211] = "Aberrus, the Shadowed Crucible",
+    [2220] = "The Nighthold",
+    [2221] = "The Nighthold",
 	[2228] = "The Black Empire",
+    [2230] = "Halls Of Valor",
+    [2231] = "Halls Of Valor",
+    [2232] = "Amirdrassil",
+    [2233] = "Amirdrassil",
+    [2234] = "Amirdrassil",
+    [2235] = "Amirdrassil",
+    [2236] = "Amirdrassil",
+    [2237] = "Amirdrassil",
+    [2238] = "Amirdrassil",
+    [2240] = "Amirdrassil",
+    [2241] = "Emerald Dream",
+    [2244] = "Amirdrassil",
+    [2253] = "Sor'theril Barrow Den",
+    [2254] = "Barrows of Reverie",
 }
 
 
@@ -4934,7 +4952,8 @@ do
 	transports["VALDRAKKEN_DALARANBROKENISLES_PORTAL"] = string.format(X_Y_PORTAL, BZ["Valdrakken"], BZ["Dalaran"].." ("..BZ["Broken Isles"]..")")
 	transports["VALDRAKKEN_JADEFOREST_PORTAL"] = string.format(X_Y_PORTAL, BZ["Valdrakken"], BZ["The Jade Forest"])
 
-	
+	transports["OHNAHRANPLAINS_EMERALDDREAM_PORTAL"] = string.format(X_Y_PORTAL, BZ["Ohn'ahran Plains"], BZ["Emerald Dream"])
+	transports["EMERALDDREAM_OHNAHRANPLAINS_PORTAL"] = string.format(X_Y_PORTAL, BZ["Emerald Dream"], BZ["Ohn'ahran Plains"])
 	
 	
 	local zones = {}
@@ -6599,7 +6618,21 @@ do
 	
 	
 	
+	zones[transports["OHNAHRANPLAINS_EMERALDDREAM_PORTAL"]] = {
+		paths = {
+			[BZ["Emerald Dream"]] = true,
+		},
+		type = "Portal",
+	}
+
+	zones[transports["EMERALDDREAM_OHNAHRANPLAINS_PORTAL"]] = {
+		paths = {
+			[BZ["Ohn'ahran Plains"]] = true,
+		},
+		type = "Portal",
+	}
 	
+
 	
 	-- ZONES, INSTANCES AND COMPLEXES ---------------------------------------------------------
 
@@ -10479,6 +10512,7 @@ do
 			[BZ["The Azure Span"]] = true,
 			[BZ["The Nokhud Offensive"]] = true,
 			[BZ["Zaralek Cavern"]] = true,
+			[transports["OHNAHRANPLAINS_EMERALDDREAM_PORTAL"]] = true,
 		},
 		flightnodes = {
 			[2790] = true,   -- Timberstep Outpost, Ohn'ahran Plains (N)
@@ -10523,6 +10557,7 @@ do
 			[2788] = true,   -- Theron's Watch, Azure Span (N)
 			[2789] = true,   -- Three-Falls Lookout, Azure Span (N)
 			[2838] = true,	 -- Cobalt Assembly, Azure Span (N)
+			[2837] = true,   -- Vakthros, Azure Span (Neutral)
 		},
 		continent = Dragon_Isles,
 		expansion = DragonFlight,
@@ -10596,7 +10631,28 @@ do
 		expansion = DragonFlight,
 	}
 
-
+	-- 10.2.0
+	-- 14529
+	zones[BZ["Emerald Dream"]] = {
+		low = 70,
+		high = 70,
+		instances = {
+			[BZ["Amirdrassil"]] = true,
+		},
+		paths = {
+			[transports["EMERALDDREAM_OHNAHRANPLAINS_PORTAL"]] = true,
+			[BZ["Amirdrassil"]] = true,
+		},
+		flightnodes = {
+			[2902] = true,   -- Central Encampment, The Emerald Dream (Neutral)
+			[2903] = true,   -- Verdant Landing, The Emerald Dream (Neutral)
+			[2904] = true,   -- Eye of Ysera, The Emerald Dream (Neutral)
+			[2905] = true,   -- Wellspring Overlook, The Emerald Dream (Neutral)
+		},
+		continent = Dragon_Isles,
+		expansion = DragonFlight,
+	}	
+	
 
 
 	-- ============= DUNGEONS ===============
@@ -12782,7 +12838,18 @@ do
 		--entrancePortal = { BZ["Zaralek Cavern"], 73.14, 55.60 }, -- todo
 	}	
 
-
+	-- 14643
+	zones[BZ["Amirdrassil"]] = {
+		low = 70,
+		high = 70,
+		continent = Dragon_Isles,
+		expansion = DragonFlight,
+		paths = BZ["Emerald Dream"],
+		groupMinSize = 10,
+		groupMaxSize = 30,
+		type = "Instance",
+		--entrancePortal = { BZ["Emerald Dream"], 73.14, 55.60 }, -- todo
+	}	
 	
 	-- ==============BATTLEGROUNDS================
 
