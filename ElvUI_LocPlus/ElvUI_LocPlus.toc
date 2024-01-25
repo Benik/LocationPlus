@@ -1,4 +1,4 @@
-﻿## Interface: 100200
+﻿## Interface: 100205
 ## Author: Benik
 ## Version: 2.82
 ## Title: |cff1784d1ElvUI|r Location Plus
