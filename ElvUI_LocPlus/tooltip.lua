@@ -122,6 +122,7 @@ local currency = {
 	2707,	-- Drake's Dreaming Crest
 	2708,	-- Wyrm's Dreaming Crest
 	2709,	-- Aspect's Dreaming Crest
+	2657,	-- Mysterious Fragment
 }
 
 --[[if E.myfaction == 'Alliance' then

@@ -1,3 +1,7 @@
+v2.83 (Jan 26, 2024)
+toc bump
+Update tooltip.lua for 10.2.5 Archivist currency. Credit: BuG
+
 v2.82 (Dec 10, 2023)
 LibTourist update for all game versions
 toc updates

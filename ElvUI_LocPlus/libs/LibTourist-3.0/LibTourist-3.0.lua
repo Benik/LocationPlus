@@ -1,6 +1,6 @@
 --[[
 Name: LibTourist-3.0
-Revision: $Rev: 301 $
+Revision: $Rev: 305 $
 Author(s): Odica (owner), originally created by ckknight and Arrowmaster
 Documentation: https://www.wowace.com/projects/libtourist-3-0/pages/api-reference
 SVN: svn://svn.wowace.com/wow/libtourist-3-0/mainline/trunk
@@ -9,7 +9,7 @@ License: MIT
 ]]
 
 local MAJOR_VERSION = "LibTourist-3.0"
-local MINOR_VERSION = 90000 + tonumber(("$Revision: 301 $"):match("(%d+)"))
+local MINOR_VERSION = 90000 + tonumber(("$Revision: 305 $"):match("(%d+)"))
 
 if not LibStub then error(MAJOR_VERSION .. " requires LibStub") end
 local C_Map = C_Map
@@ -1928,11 +1928,16 @@ local MapIdLookupTable = {
     [2236] = "Amirdrassil",
     [2237] = "Amirdrassil",
     [2238] = "Amirdrassil",
+    [2239] = "Amirdrassil",
     [2240] = "Amirdrassil",
     [2241] = "Emerald Dream",
     [2244] = "Amirdrassil",
+    [2252] = "Dragon Isles",
     [2253] = "Sor'theril Barrow Den",
     [2254] = "Barrows of Reverie",
+    [2262] = "Traitor's Rest",
+    [2266] = "Millenia's Threshold",
+    [2268] = "Amirdrassil",
 }
 
 
@@ -1958,6 +1963,9 @@ local zoneTranslation = {
 		[5915] = "Dire Maul - West",
 		[8443] = "Return to Karazhan",
 		[12837] = "Spires of Ascension",
+		
+		-- Raids
+		[14643] = "Amirdrassil, the Dream's Hope",
 
 		-- Arenas
 		[3698] = "Nagrand Arena",   -- was 559
@@ -1990,6 +1998,9 @@ local zoneTranslation = {
 		[8443] = "Rückkehr nach Karazhan",
 		[12837] = "Spitzen des Aufstiegs",
 
+		-- Raids
+		[14643] = "Amirdrassil, Hoffnung des Traums",
+
 		-- Arenas
 		[3698] = "Arena von Nagrand",
 		[3702] = "Arena des Schergrats",
@@ -2020,6 +2031,9 @@ local zoneTranslation = {
 		[5915] = "La Masacre: Oeste",
 		[8443] = "Regreso a Karazhan",
 		[12837] = "Agujas de Ascensión",
+
+		-- Raids
+		[14643] = "Amirdrassil, la Esperanza del Sueño",
 
 		-- Arenas
 		[3698] = "Arena de Nagrand",
@@ -2052,6 +2066,9 @@ local zoneTranslation = {
 		[8443] = "Regreso a Karazhan",
 		[12837] = "Torres de Ascensión",
 
+		-- Raids
+		[14643] = "Amirdrassil, la Esperanza del Sueño",
+
 		-- Arenas
 		[3698] = "Arena de Nagrand",
 		[3702] = "Arena Filospada",
@@ -2082,6 +2099,9 @@ local zoneTranslation = {
 		[5915] = "Haches-Tripes - Ouest",
 		[8443] = "Retour à Karazhan",
 		[12837] = "Flèches de l’Ascension",
+
+		-- Raids
+		[14643] = "Amirdrassil, l’Espoir du Rêve",
 
 		-- Arenas
 		[3698] = "Arène de Nagrand",
@@ -2114,6 +2134,9 @@ local zoneTranslation = {
 		[8443] = "Ritorno a Karazhan",
 		[12837] = "Guglie dell'Ascensione",
 
+		-- Raids
+		[14643] = "Amirdrassil, Speranza del Sogno",
+
 		-- Arenas
 		[3698] = "Arena di Nagrand",
 		[3702] = "Arena di Spinaguzza",
@@ -2144,6 +2167,9 @@ local zoneTranslation = {
 		[5915] = "혈투의 전장 - 서쪽",
 		[8443] = "다시 찾은 카라잔",
 		[12837] = "승천의 첨탑",
+
+		-- Raids
+		[14643] = "꿈의 희망 아미드랏실",
 
 		-- Arenas
 		[3698] = "나그란드 투기장",
@@ -2176,6 +2202,9 @@ local zoneTranslation = {
 		[8443] = "Retorno a Karazhan",
 		[12837] = "Torres da Ascensão",
 
+		-- Raids
+		[14643] = "Amirdrassil, a Esperança Onírica", -- TODO: Translate
+
 		-- Arenas
 		[3698] = "Arena de Nagrand",
 		[3702] = "Arena da Lâmina Afiada",
@@ -2206,6 +2235,9 @@ local zoneTranslation = {
 		[5915] = "厄运之槌 - 西",
 		[8443] = "重返卡拉赞",
 		[12837] = "晋升高塔",
+
+		-- Raids
+		[14643] = "阿梅达希尔，梦境之愿",
 
 		-- Arenas
 		[3698] = "纳格兰竞技场",
@@ -2238,6 +2270,9 @@ local zoneTranslation = {
 		[8443] = "重返卡拉贊",
 		[12837] = "晉升之巔",
 
+		-- Raids
+		[14643] = "『夢境希望』埃達希爾",
+
 		-- Arenas
 		[3698] = "納葛蘭競技場",
 		[3702] = "劍刃競技場",
@@ -2255,7 +2290,7 @@ local zoneTranslation = {
 }
 
 -- WoW 10.0.0:
--- For some instance maps, C_Map.GetMapInfo does not return a localized name but some kind of tag which is the
+-- For some instance maps, C_Map.GetMapInfo does not return a localized name but some kind of tag which is the same
 -- for all languages. So, we need to supply our own localizations, taken from the 'AreaTable' table.
 local mapInfoLocalizedNameErrata = {
 	enUS = {		
@@ -4955,6 +4990,25 @@ do
 	transports["OHNAHRANPLAINS_EMERALDDREAM_PORTAL"] = string.format(X_Y_PORTAL, BZ["Ohn'ahran Plains"], BZ["Emerald Dream"])
 	transports["EMERALDDREAM_OHNAHRANPLAINS_PORTAL"] = string.format(X_Y_PORTAL, BZ["Emerald Dream"], BZ["Ohn'ahran Plains"])
 	
+	-- Amirdrassil (10.2.5)
+	transports["STORMWIND_AMIRDRASSIL_PORTAL"] = string.format(X_Y_PORTAL, BZ["Stormwind City"], BZ["Amirdrassil"])
+	transports["AMIRDRASSIL_STORMWIND_PORTAL"] = string.format(X_Y_PORTAL, BZ["Amirdrassil"], BZ["Stormwind City"])
+	
+	transports["DARKSHORE_AMIRDRASSIL_PORTAL"] = string.format(X_Y_PORTAL, BZ["Darkshore"], BZ["Amirdrassil"])
+	transports["AMIRDRASSIL_DARKSHORE_PORTAL"] = string.format(X_Y_PORTAL, BZ["Amirdrassil"], BZ["Darkshore"])
+	
+	transports["MOUNTHYJAL_AMIRDRASSIL_PORTAL"] = string.format(X_Y_PORTAL, BZ["Mount Hyjal"], BZ["Amirdrassil"])
+	transports["AMIRDRASSIL_MOUNTHYJAL_PORTAL"] = string.format(X_Y_PORTAL, BZ["Amirdrassil"], BZ["Mount Hyjal"])
+	
+	transports["VALSHARAH_AMIRDRASSIL_PORTAL"] = string.format(X_Y_PORTAL, BZ["Val'sharah"], BZ["Amirdrassil"])
+	transports["AMIRDRASSIL_VALSHARAH_PORTAL"] = string.format(X_Y_PORTAL, BZ["Amirdrassil"], BZ["Val'sharah"])
+	
+	transports["FERALAS_AMIRDRASSIL_PORTAL"] = string.format(X_Y_PORTAL, BZ["Feralas"], BZ["Amirdrassil"])
+	transports["AMIRDRASSIL_FERALAS_PORTAL"] = string.format(X_Y_PORTAL, BZ["Amirdrassil"], BZ["Feralas"])
+	
+	
+	
+	
 	
 	local zones = {}
 
@@ -6633,6 +6687,89 @@ do
 	}
 	
 
+
+	zones[transports["STORMWIND_AMIRDRASSIL_PORTAL"]] = {
+		paths = {
+			[BZ["Amirdrassil"]] = true,
+		},
+		faction = "Alliance",
+		type = "Portal",
+	}
+
+	zones[transports["AMIRDRASSIL_STORMWIND_PORTAL"]] = {
+		paths = {
+			[BZ["Stormwind City"]] = true,
+		},
+		faction = "Alliance",
+		type = "Portal",
+	}
+	
+	zones[transports["DARKSHORE_AMIRDRASSIL_PORTAL"]] = {
+		paths = {
+			[BZ["Amirdrassil"]] = true,
+		},
+		faction = "Alliance",
+		type = "Portal",
+	}
+
+	zones[transports["AMIRDRASSIL_DARKSHORE_PORTAL"]] = {
+		paths = {
+			[BZ["Darkshore"]] = true,
+		},
+		faction = "Alliance",
+		type = "Portal",
+	}	
+	
+	
+	zones[transports["MOUNTHYJAL_AMIRDRASSIL_PORTAL"]] = {
+		paths = {
+			[BZ["Amirdrassil"]] = true,
+		},
+		faction = "Alliance",
+		type = "Portal",
+	}
+
+	zones[transports["AMIRDRASSIL_MOUNTHYJAL_PORTAL"]] = {
+		paths = {
+			[BZ["Mount Hyjal"]] = true,
+		},
+		faction = "Alliance",
+		type = "Portal",
+	}		
+	
+	zones[transports["VALSHARAH_AMIRDRASSIL_PORTAL"]] = {
+		paths = {
+			[BZ["Amirdrassil"]] = true,
+		},
+		faction = "Alliance",
+		type = "Portal",
+	}
+
+	zones[transports["AMIRDRASSIL_VALSHARAH_PORTAL"]] = {
+		paths = {
+			[BZ["Val'sharah"]] = true,
+		},
+		faction = "Alliance",
+		type = "Portal",
+	}	
+	
+	
+	zones[transports["FERALAS_AMIRDRASSIL_PORTAL"]] = {
+		paths = {
+			[BZ["Amirdrassil"]] = true,
+		},
+		faction = "Alliance",
+		type = "Portal",
+	}
+
+	zones[transports["AMIRDRASSIL_FERALAS_PORTAL"]] = {
+		paths = {
+			[BZ["Feralas"]] = true,
+		},
+		faction = "Alliance",
+		type = "Portal",
+	}		
+	
 	
 	-- ZONES, INSTANCES AND COMPLEXES ---------------------------------------------------------
 
@@ -6670,7 +6807,8 @@ do
 			[transports["STORMWIND_AZSUNA_PORTAL"]] = true,
 			[transports["STORMWIND_ORIBOS_PORTAL"]] = true,
 			[transports["STORMWIND_VALDRAKKEN_PORTAL"]] = true,
-			[transports["STORMWIND_WAKINGSHORES_BOAT"]] = true,
+			[transports["STORMWIND_WAKINGSHORES_BOAT"]] = true,			
+			[transports["STORMWIND_AMIRDRASSIL_PORTAL"]] = true,
 		},
 		flightnodes = {
 			[2] = true,      -- Stormwind, Elwynn (A)
@@ -7844,6 +7982,7 @@ do
 		expansion = Classic,
 		paths = {
 			[BZ["Ashenvale"]] = true,
+			[transports["DARKSHORE_AMIRDRASSIL_PORTAL"]] = true,
 		},
 		flightnodes = {
 			[339] = true,    -- Grove of the Ancients, Darkshore (A)
@@ -8022,6 +8161,7 @@ do
 			[BZ["Thousand Needles"]] = true,
 			[BZ["Desolace"]] = true,
 			[BZ["Dire Maul"]] = true,
+			[transports["FERALAS_AMIRDRASSIL_PORTAL"]] = true,
 		},
 		flightnodes = {
 			[565] = true,    -- Dreamer's Rest, Feralas (A)
@@ -8204,6 +8344,7 @@ do
 			[transports["MOUNTHYJAL_ORGRIMMAR_PORTAL"]] = true,
 			[transports["MOUNTHYJAL_STORMWIND_PORTAL"]] = true,
 			[transports["MOUNTHYJAL_MOLTENFRONT_PORTAL"]] = true,
+			[transports["MOUNTHYJAL_AMIRDRASSIL_PORTAL"]] = true,
 			[BZ["Firelands"]] = true,
 		},
 		flightnodes = {
@@ -9590,6 +9731,7 @@ do
 			[BZ["Black Rook Hold"]] = true,
 			[BZ["Darkheart Thicket"]] = true,
 			[BZ["The Emerald Nightmare"]] = true,
+			[transports["VALSHARAH_AMIRDRASSIL_PORTAL"]] = true,
 		},
 		flightnodes = {
 			[1713] = true,    -- Bradensbrook, Val'sharah (N)
@@ -10512,6 +10654,7 @@ do
 			[BZ["The Azure Span"]] = true,
 			[BZ["The Nokhud Offensive"]] = true,
 			[BZ["Zaralek Cavern"]] = true,
+			[BZ["Amirdrassil"]] = true,
 			[transports["OHNAHRANPLAINS_EMERALDDREAM_PORTAL"]] = true,
 		},
 		flightnodes = {
@@ -10637,11 +10780,11 @@ do
 		low = 70,
 		high = 70,
 		instances = {
-			[BZ["Amirdrassil"]] = true,
+			[BZ["Amirdrassil, the Dream's Hope"]] = true,
 		},
 		paths = {
 			[transports["EMERALDDREAM_OHNAHRANPLAINS_PORTAL"]] = true,
-			[BZ["Amirdrassil"]] = true,
+			[BZ["Amirdrassil, the Dream's Hope"]] = true,
 		},
 		flightnodes = {
 			[2902] = true,   -- Central Encampment, The Emerald Dream (Neutral)
@@ -10653,7 +10796,28 @@ do
 		expansion = DragonFlight,
 	}	
 	
-
+	-- 10.2.5
+	-- 14969
+	zones[BZ["Amirdrassil"]] = {
+		low = 70,
+		high = 70,
+--		instances = {
+--			[BZ["Aberrus, the Shadowed Crucible"]] = true,
+--		},
+		paths = {
+			[transports["AMIRDRASSIL_STORMWIND_PORTAL"]] = true,
+			[transports["AMIRDRASSIL_DARKSHORE_PORTAL"]] = true,
+			[transports["AMIRDRASSIL_MOUNTHYJAL_PORTAL"]] = true,
+			[transports["AMIRDRASSIL_VALSHARAH_PORTAL"]] = true,
+			[transports["AMIRDRASSIL_FERALAS_PORTAL"]] = true,
+			[BZ["Ohn'ahran Plains"]] = true,
+		},
+		flightnodes = {
+			[2915] = true,   -- Bel'ameth, Amirdrassil (Neutral)
+		},
+		continent = Dragon_Isles,
+		expansion = DragonFlight,
+	}
 
 	-- ============= DUNGEONS ===============
 	
@@ -12839,7 +13003,7 @@ do
 	}	
 
 	-- 14643
-	zones[BZ["Amirdrassil"]] = {
+	zones[BZ["Amirdrassil, the Dream's Hope"]] = {
 		low = 70,
 		high = 70,
 		continent = Dragon_Isles,
