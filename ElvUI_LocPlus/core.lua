@@ -15,7 +15,7 @@ local GetMinimapZoneText = GetMinimapZoneText
 local GetRealZoneText, GetSubZoneText = GetRealZoneText, GetSubZoneText
 local GetZonePVPInfo = GetZonePVPInfo
 local IsInInstance, InCombatLockdown = IsInInstance, InCombatLockdown
-local UIFrameFadeIn, UIFrameFadeOut, ToggleFrame = UIFrameFadeIn, UIFrameFadeOut, ToggleFrame
+local UIFrameFadeIn, UIFrameFadeOut, ToggleFrame, RegisterStateDriver = UIFrameFadeIn, UIFrameFadeOut, ToggleFrame, RegisterStateDriver
 local IsControlKeyDown, IsShiftKeyDown = IsControlKeyDown, IsShiftKeyDown
 local GameTooltip, WorldMapFrame = _G['GameTooltip'], _G['WorldMapFrame']
 
@@ -459,6 +459,17 @@ function LP:UpdateCoords()
 	end
 end
 
+function LP:UpdateVisibility()
+	local db = E.db.locplus
+
+	local visibility = db.visibility
+	if visibility and visibility:match('[\n\r]') then
+		visibility = visibility:gsub('[\n\r]','')
+	end
+
+	RegisterStateDriver(_G.LocationPlusPanel, "visibility", visibility)
+end
+
 -- Coord panels width
 function LP:CoordsDigit()
 	if E.db.locplus.dig then
@@ -568,6 +579,7 @@ function LP:Initialize()
 	LP:Update()
 	LP:TimerUpdate()
 	LP:ToggleBlizZoneText()
+	LP:UpdateVisibility()
 	LP:ScheduleRepeatingTimer('UpdateLocation', 0.5)
 	LP:RegisterEvent('PLAYER_ENTERING_WORLD')
 	LP:RegisterEvent("ZONE_CHANGED_NEW_AREA", LP.UpdateTextColor)
