@@ -1,3 +1,7 @@
+v2.84 (Feb 15, 2024)
+Added Visibility State options
+LibTourist update
+
 v2.83 (Jan 26, 2024)
 toc bump
 Update tooltip.lua for 10.2.5 Archivist currency. Credit: BuG
