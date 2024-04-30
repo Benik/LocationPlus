@@ -3248,26 +3248,26 @@ do
 		fishing_high = 150,
 	}
 
-	zones[BZ["Alterac Mountains"]] = {
-		low = 30,
-		high = 40,
-		continent = Eastern_Kingdoms,
-		instances = BZ["Alterac Valley"],
-		paths = {
-            [BZ["Western Plaguelands"]] = true,
-			[BZ["Alterac Valley"]] = true,
-			[BZ["Hillsbrad Foothills"]] = true,
-		},
-		fishing_low = 130,
-		fishing_high = 225,
-	}
+	-- zones[BZ["Alterac Mountains"]] = {
+	-- 	low = 30,
+	-- 	high = 40,
+	-- 	continent = Eastern_Kingdoms,
+	-- 	instances = BZ["Alterac Valley"],
+	-- 	paths = {
+    --         [BZ["Western Plaguelands"]] = true,
+	-- 		[BZ["Alterac Valley"]] = true,
+	-- 		[BZ["Hillsbrad Foothills"]] = true,
+	-- 	},
+	-- 	fishing_low = 130,
+	-- 	fishing_high = 225,
+	-- }
 
 	zones[BZ["Hillsbrad Foothills"]] = {
 		low = 20,
 		high = 30,
 		continent = Eastern_Kingdoms,
 		paths = {
-            [BZ["Alterac Mountains"]] = true,
+            -- [BZ["Alterac Mountains"]] = true,
 			[BZ["Alterac Valley"]] = true,
 			[BZ["The Hinterlands"]] = true,
 			[BZ["Arathi Highlands"]] = true,
@@ -3364,7 +3364,7 @@ do
 			[BZ["Eastern Plaguelands"]] = true,
 			[BZ["Tirisfal Glades"]] = true,
 			[BZ["Scholomance"]] = true,
-			[BZ["Alterac Mountains"]] = true,
+			-- [BZ["Alterac Mountains"]] = true,
 		},
 		flightnodes = {
 			[66] = true,     -- Chillwind Camp, Western Plaguelands (A)
@@ -11876,4 +11876,3 @@ end
 end
 
 return Tourist
-

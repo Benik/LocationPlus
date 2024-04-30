@@ -1,7 +1,7 @@
 local E, L, V, P, G = unpack(ElvUI);
 local LP = E:GetModule('LocationPlus')
 
-local Tourist = E.Retail and LibStub('LibTourist-3.0') or E.Wrath and LibStub('LibTouristClassic-1.0') or E.Classic and LibStub('LibTouristClassicEra')
+local Tourist = E.Retail and LibStub('LibTourist-3.0') or E.Cata and LibStub('LibTouristClassic-1.0') or E.Classic and LibStub('LibTouristClassicEra')
 
 local format, tonumber, pairs, tinsert = string.format, tonumber, pairs, table.insert
 

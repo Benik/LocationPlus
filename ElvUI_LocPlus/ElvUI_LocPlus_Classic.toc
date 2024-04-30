@@ -1,4 +1,4 @@
-﻿## Interface: 11501
+﻿## Interface: 11502
 ## Author: Benik
 ## Version: 2.84
 ## Title: |cff1784d1ElvUI|r Location Plus |cfd9b9b9bClassic|r
