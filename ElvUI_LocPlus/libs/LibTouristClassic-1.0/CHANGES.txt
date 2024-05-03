@@ -1,12 +1,22 @@
-tag a21c979e735dea3a03ee4e22682275f98fad9e7a WoW-3.4.3-release1
+tag 0c8712c5f63d6189d60230568debe668aa14990d WoW-4.4.0-alpha1
 Author:	Odica Jaedenar <odica.jaedenar@gmail.com>
-Date:	Sat Dec 2 13:55:10 2023 +0100
+Date:	Fri May 3 00:31:18 2024 +0200
 
-Tagged as WoW-3.4.3-release1
+Tagged as WoW-4.4.0-alpha1
 
-commit d2466189d6e525903766fcbe835f6575a6ee9ccd
+commit b38fe49460017f3bca03ae4e5a4c11bdf3c23e9d
 Author: Odica Jaedenar <odica.jaedenar@gmail.com>
-Date:   Sat Dec 2 13:54:01 2023 +0100
+Date:   Fri May 3 00:30:30 2024 +0200
 
-    Updated version in TOC to 30403
+    First round of changes for Cataclysm - ALPHA
+    
+    - FIX: Removed Alterac Mountains which caused an error during load
+    
+    - added 76 Map IDs
+    - added 71 Instance IDs
+    - added 88 Flight Nodes (still 39 todo)
+    
+    TODO: All other Cataclysm data (zones, transports, gathering nodes etc)
+    
+    - updated version in TOC to 40400
 
