@@ -1,9 +1,11 @@
 ------------------------------------------------------------------------
-r305 | Odica_Jaedenar | 2024-01-24 20:04:17 +0000 (Wed, 24 Jan 2024) | 2 lines
+r309 | Odica_Jaedenar | 2024-07-10 21:00:29 +0000 (Wed, 10 Jul 2024) | 3 lines
 Changed paths:
    M /trunk/LibTourist-3.0.lua
+   M /trunk/LibTourist-3.0.toc
 
-- added translations for Amirdrassil, the Dream's Hope (raid)
-- added portals between Amirdrassil and Stormwind City, Darkshore, Mount Hyjal, Val'Sharah and Feralas.
+- corrected some names in the MapID lookup table
+- added Baradin Hold (raid)
+- updated version in TOC to 100207
 ------------------------------------------------------------------------
 

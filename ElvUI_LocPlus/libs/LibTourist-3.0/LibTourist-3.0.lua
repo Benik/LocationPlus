@@ -1,6 +1,6 @@
 --[[
 Name: LibTourist-3.0
-Revision: $Rev: 305 $
+Revision: $Rev: 309 $
 Author(s): Odica (owner), originally created by ckknight and Arrowmaster
 Documentation: https://www.wowace.com/projects/libtourist-3-0/pages/api-reference
 SVN: svn://svn.wowace.com/wow/libtourist-3-0/mainline/trunk
@@ -9,7 +9,8 @@ License: MIT
 ]]
 
 local MAJOR_VERSION = "LibTourist-3.0"
-local MINOR_VERSION = 90000 + tonumber(("$Revision: 305 $"):match("(%d+)"))
+local MINOR_VERSION = 90000 + tonumber(("$Revision: 309 $"):match("(%d+)"))
+local MAX_PLAYER_LEVEL = GetMaxLevelForPlayerExpansion()
 
 if not LibStub then error(MAJOR_VERSION .. " requires LibStub") end
 local C_Map = C_Map
@@ -528,10 +529,10 @@ local MapIdLookupTable = {
 	[303] = "Scarlet Monastery",
 	[304] = "Scarlet Monastery",
 	[305] = "Scarlet Monastery",
-	[306] = "ScholomanceOLD",
-	[307] = "ScholomanceOLD",
-	[308] = "ScholomanceOLD",
-	[309] = "ScholomanceOLD",
+	[306] = "Legacy of Scholomance",
+	[307] = "Legacy of Scholomance",
+	[308] = "Legacy of Scholomance",
+	[309] = "Legacy of Scholomance",
 	[310] = "Shadowfang Keep",
 	[311] = "Shadowfang Keep",
 	[312] = "Shadowfang Keep",
@@ -1836,7 +1837,7 @@ local MapIdLookupTable = {
 	[2082] = "Halls Of Infusion",  -- "HallsOfInfusion_A"
 	[2083] = "Halls Of Infusion",  -- "HallsOfInfusion_B"
 	[2084] = "The Emerald Dreamway",
-	[2085] = "Primalist Tomorrow",
+	[2085] = "The Primalist Future",
 	[2088] = "Pandaren Revolution",
 	[2089] = "The Black Empire",
 	[2090] = "The Gnoll War",
@@ -1935,6 +1936,7 @@ local MapIdLookupTable = {
     [2252] = "Dragon Isles",
     [2253] = "Sor'theril Barrow Den",
     [2254] = "Barrows of Reverie",
+	[2257] = "Arathi Highlands",
     [2262] = "Traitor's Rest",
     [2266] = "Millenia's Threshold",
     [2268] = "Amirdrassil",
@@ -7690,8 +7692,12 @@ do
 		high = 35,
 		continent = Eastern_Kingdoms,
 		expansion = Cataclysm,
+		instances = {
+			[BZ["Baradin Hold"]] = true,
+		},
 		paths = {
 			[BZ["Tol Barad Peninsula"]] = true,
+			[BZ["Baradin Hold"]] = true,
 		},
 		type = "PvP Zone",
 	}
@@ -12792,6 +12798,19 @@ do
 		type = "Instance",
 		complex = BZ["Caverns of Time"],
 		entrancePortal = { BZ["Caverns of Time"], 60.0, 21.1 },
+	}	
+
+	-- Opens when your faction controls Tol Barad
+	zones[BZ["Baradin Hold"]] = {
+		low = 35,
+		high = 35,
+		continent = Eastern_Kingdoms,
+		expansion = Cataclysm,
+		paths = BZ["Tol Barad"],
+		groupSize = 10,
+		altGroupSize = 25,
+		type = "Instance",
+		-- entrancePortal = { BZ["Tol Barad"], 33.8, 78.2 }, n/a
 	}	
 
 
