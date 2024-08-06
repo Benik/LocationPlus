@@ -1,22 +1,14 @@
-tag 0c8712c5f63d6189d60230568debe668aa14990d WoW-4.4.0-alpha1
+tag a6a67d9bde7b58f147ce6e82379b748e2a4a7ff2 WoW-4.4.0-release4
 Author:	Odica Jaedenar <odica.jaedenar@gmail.com>
-Date:	Fri May 3 00:31:18 2024 +0200
+Date:	Sat Aug 3 22:14:07 2024 +0200
 
-Tagged as WoW-4.4.0-alpha1
+Tagged as WoW-4.4.0-release4
 
-commit b38fe49460017f3bca03ae4e5a4c11bdf3c23e9d
+commit 79bbafca061b967ce02ef605c0685ce8b45d800c
 Author: Odica Jaedenar <odica.jaedenar@gmail.com>
-Date:   Fri May 3 00:30:30 2024 +0200
+Date:   Sat Aug 3 22:12:31 2024 +0200
 
-    First round of changes for Cataclysm - ALPHA
-    
-    - FIX: Removed Alterac Mountains which caused an error during load
-    
-    - added 76 Map IDs
-    - added 71 Instance IDs
-    - added 88 Flight Nodes (still 39 todo)
-    
-    TODO: All other Cataclysm data (zones, transports, gathering nodes etc)
-    
-    - updated version in TOC to 40400
+    - all herb and mining data has been reinventorized (source: wowhead) and regenerated, resulting in a LOT of corrections
+    - added missing translations
+    - fixed incorrect herb item IDs
 

@@ -1,6 +1,6 @@
 --[[
 Name: LibTouristClassicEra
-Revision: $Rev: 242 $
+Revision: $Rev: 243 $
 Author(s): Odica; based on LibTourist-3.0 and LibTouristClassic-1.0
 Documentation: https://www.wowace.com/projects/libtourist-classic-era/pages/api-reference
 Git: https://repos.wowace.com/wow/libtourist-classic-era libtourist-classic-era
@@ -230,6 +230,7 @@ local MapIdLookupTable = {
     [1461] = "Arathi Basin",
     [1463] = "Eastern Kingdoms",
     [1464] = "Kalimdor",
+	[2720] = "The Searing Basin",
 -- NOTE: The following are InstanceIDs, as Instances do not have a uiMapID in Classic
     [30] = "Alteric Valley",
     [33] = "Shadowfang Keep",

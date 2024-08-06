@@ -1,12 +1,12 @@
-tag f065d724cfef5c55b7830a3e7e9341b46157e911 WoW-1.15.0-release1
+tag 56ff41d93a434bbe4fcaada8b1617587c5700f72 WoW-1.15.3-release1a
 Author:	Odica Jaedenar <odica.jaedenar@gmail.com>
-Date:	Sat Dec 2 14:09:40 2023 +0100
+Date:	Wed Jul 24 22:07:36 2024 +0200
 
-Tagged as WoW-1.15.0-release1
+Tagged as WoW-1.15.3-release1a
 
-commit b60297ba1ff26cd9f3886204df790d85012a842d
+commit c8d022f470823e027f55ba09dc5095dd15db7a7a
 Author: Odica Jaedenar <odica.jaedenar@gmail.com>
-Date:   Sat Dec 2 14:08:50 2023 +0100
+Date:   Wed Jul 24 22:06:39 2024 +0200
 
-    Updated version in TOC to 11500
+    Rebuild to include a fixed HBD library
 
