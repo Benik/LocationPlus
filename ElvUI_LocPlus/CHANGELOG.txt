@@ -1,5 +1,5 @@
 v2.86 (Aug 8, 2024)
-LbTourist update for TWW and Cata
+LbTourist update for TWW, Cata and Classic
 
 v2.85 (May 3, 2024)
 LibTourist Official fix (Alpha version)
