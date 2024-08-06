@@ -1,4 +1,4 @@
-## Interface: 100207
+## Interface: 110000
 ## LoadOnDemand: 1
 ## Title: Lib: Tourist-3.0
 ## Notes: A library to provide information about zones and instances.

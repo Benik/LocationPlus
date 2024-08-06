@@ -1,6 +1,6 @@
 --[[
 Name: LibTourist-3.0
-Revision: $Rev: 309 $
+Revision: $Rev: 317 $
 Author(s): Odica (owner), originally created by ckknight and Arrowmaster
 Documentation: https://www.wowace.com/projects/libtourist-3-0/pages/api-reference
 SVN: svn://svn.wowace.com/wow/libtourist-3-0/mainline/trunk
@@ -9,8 +9,7 @@ License: MIT
 ]]
 
 local MAJOR_VERSION = "LibTourist-3.0"
-local MINOR_VERSION = 90000 + tonumber(("$Revision: 309 $"):match("(%d+)"))
-local MAX_PLAYER_LEVEL = GetMaxLevelForPlayerExpansion()
+local MINOR_VERSION = 90000 + tonumber(("$Revision: 317 $"):match("(%d+)"))
 
 if not LibStub then error(MAJOR_VERSION .. " requires LibStub") end
 local C_Map = C_Map
@@ -26,6 +25,7 @@ if oldLib then
 	end
 end
 
+local MAX_LEVEL = GetMaxLevelForLatestExpansion()
 
 local HBD = LibStub("HereBeDragons-2.0")
 function Tourist:GetHBD() return HBD end
@@ -69,6 +69,7 @@ local Zandalar = "Zandalar"
 local Kul_Tiras = "Kul Tiras"
 local The_Shadowlands = "The Shadowlands"
 local Dragon_Isles = "Dragon Isles"
+local Khaz_Algar = "Khaz Algar"
 
 
 
@@ -83,6 +84,7 @@ local Legion = EXPANSION_NAME6
 local Battle_for_Azeroth = EXPANSION_NAME7
 local Shadowlands = EXPANSION_NAME8
 local DragonFlight = EXPANSION_NAME9
+local TheWarWithin = EXPANSION_NAME10
 
 local expansionToIndex = {
 	[Classic] = 1,
@@ -95,6 +97,7 @@ local expansionToIndex = {
 	[Battle_for_Azeroth] = 8,
 	[Shadowlands] = 9,
 	[DragonFlight] = 10,
+	[TheWarWithin] = 11,
 }
 
 local chromieTimeToExpansion = {
@@ -211,7 +214,6 @@ local entrancePortals_x = {}
 local entrancePortals_y = {}
 
 local zoneMapIDtoContinentMapID = {}
---local zoneMapIDtoExpansionIndex = {}
 local zoneMapIDs = {}
 local mapZonesByContinentID = {}
 
@@ -1917,6 +1919,10 @@ local MapIdLookupTable = {
     [2206] = "A.Z.E.R.O.T.H.",
     [2207] = "The Warlands",
     [2211] = "Aberrus, the Shadowed Crucible",
+    [2213] = "City of Threads",
+    [2214] = "The Ringing Deeps",
+    [2215] = "Hallowfall",
+    [2216] = "City of Threads - Lower",
     [2220] = "The Nighthold",
     [2221] = "The Nighthold",
 	[2228] = "The Black Empire",
@@ -1933,15 +1939,75 @@ local MapIdLookupTable = {
     [2240] = "Amirdrassil",
     [2241] = "Emerald Dream",
     [2244] = "Amirdrassil",
+    [2248] = "Isle of Dorn",
+    [2249] = "Fungal Folly",
+    [2250] = "Kriegval's Rest",
+    [2251] = "The Waterworks",
     [2252] = "Dragon Isles",
     [2253] = "Sor'theril Barrow Den",
     [2254] = "Barrows of Reverie",
+    [2255] = "Azj-Kahet",
+    [2256] = "Azj-Kahet - Lower",
 	[2257] = "Arathi Highlands",
+    [2259] = "Tak-Rethan Abyss",
     [2262] = "Traitor's Rest",
     [2266] = "Millenia's Threshold",
     [2268] = "Amirdrassil",
+    [2269] = "Earthcrawl Mines",
+    [2270] = "Nerub'ar Taxi",
+    [2271] = "Khaz Algar",
+    [2272] = "Earthen Works Taxi",
+    [2273] = "Hallowfall Taxi",
+    [2274] = "Khaz Algar",
+    [2275] = "11.0 - Underground [Deprecated]",
+    [2276] = "Khaz Algar",
+    [2277] = "Nightfall Sanctum",
+    [2291] = "Nerub-ar Palace",
+    [2292] = "Nerub-ar Palace",
+    [2293] = "Nerub-ar Palace",
+    [2294] = "Nerub-ar Palace",
+    [2295] = "Nerub-ar Palace",
+    [2296] = "Nerub-ar Palace",
+    [2298] = "Nerub-ar Palace",
+    [2299] = "The Underkeep",
+    [2300] = "The Sinkhole",
+    [2301] = "The Sinkhole",
+    [2302] = "The Dread Pit",
+    [2303] = "Darkflame Cleft",
+    [2304] = "DarkFlame Cleft",
+    [2305] = "Dalaran",
+    [2306] = "Dalaran",
+    [2307] = "Dalaran",
+    [2308] = "Priori of the Sacred Flame",
+    [2309] = "Priori of the Sacred Flame",
+    [2310] = "Skittering Breach",
+    [2311] = "11.0 -  Hallowfall - [Spreading the Light]- Disabled",
+    [2312] = "Mycomancer Cavern",
+    [2313] = "The Spiral Weave",
+    [2314] = "Tak-Rethan Abyss",
+    [2315] = "The Rookery",
+    [2316] = "The Rookery",
+    [2317] = "The Rookery",
+    [2318] = "The Rookery",
+    [2319] = "The Rookery",
+    [2320] = "The Rookery",
+    [2321] = "Chamber of Heart",
+    [2322] = "Hall of Awakening",
+    [2328] = "Khaz Algar - Proscenium",
+    [2330] = "Priori of the Sacred Flame",
+    [2335] = "Cinderbrew Meadery",
+    [2339] = "Dornogal",
+    [2341] = "The Stonevault",
+    [2343] = "City of Threads",
+    [2344] = "The Transformatory",
+    [2345] = "Deephaul Ravine",
+    [2347] = "The Spiral Weave",
+    [2348] = "Zekvir's Lair",
+    [2357] = "City of Echos",
+    [2358] = "City of Echos",
+    [2359] = "The Dawnbreaker",
+    [2367] = "Vault of Memory",
 }
-
 
 
 
@@ -2205,7 +2271,7 @@ local zoneTranslation = {
 		[12837] = "Torres da Ascensão",
 
 		-- Raids
-		[14643] = "Amirdrassil, a Esperança Onírica", -- TODO: Translate
+		[14643] = "Amirdrassil, a Esperança Onírica",
 
 		-- Arenas
 		[3698] = "Arena de Nagrand",
@@ -2561,6 +2627,12 @@ local expansionSkillLineIDs = {
 			[MINING_SKILL] = 2833,
 			[SKINNING_SKILL] = 2834,
 		},
+	[11] = { -- The War Within (Khaz Algar)
+			[FISHING_SKILL] = 2876,
+			[HERBALISM_SKILL] = 2877,
+			[MINING_SKILL] = 2881,
+			[SKINNING_SKILL] = 2882,
+		},
 }
 
 -- 9.0.1: New function using new expansion lookup
@@ -2805,9 +2877,6 @@ local function CreateLocalizedZoneNameLookups()
 			mapInfo = C_Map.GetMapInfo(uiMapID)	
 			if mapInfo then
 				localizedZoneName = mapInfo.name
-				if uiMapID == 2026 or uiMapID == 2107 or uiMapID == 2118 or uiMapID == 2131 or uiMapID == 2151 then
-					trace(tostring(uiMapID).." = '"..tostring(localizedZoneName).."'")
-				end
 				if localizedErrata[localizedZoneName] then
 					localizedZoneName = localizedErrata[localizedZoneName]
 				end
@@ -2823,7 +2892,7 @@ local function CreateLocalizedZoneNameLookups()
 					end	
 				else
 					-- Not in lookup
-					trace("|r|cffff4422! -- Tourist:|r English name not found in lookup for uiMapID "..tostring(uiMapID).." ("..tostring(localizedZoneName)..")" )				
+					trace("|r|cffff4422! -- Tourist:|r English name not found in MapIdLookupTable for uiMapID "..tostring(uiMapID).." ("..tostring(localizedZoneName)..")" )				
 				end
 			end
 		else
@@ -2911,7 +2980,15 @@ local flightNodeIgnoreList = {
 	[2731] = "Domination's Grasp",
 	[2715] = "Ephemeral Plains Alpha",
 	[2716] = "Ephemeral Plains Omega",
-	[2860] = "Aberrus Upper Platform"  -- 10.1 UG - Campaign - Ch6 - Aberrus Upper Platform (SMART) (Neutral)
+	[2860] = "Aberrus Upper Platform",  -- 10.1 UG - Campaign - Ch6 - Aberrus Upper Platform (SMART) (Neutral)
+	[2933] = "Grand Rampart",
+	[2934] = "The Pulsing Pit",
+	[2935] = "Terrace of Majesty",
+	[2936] = "The Swaying Span (One-way)",
+	[2937] = "The Narthex",
+	[2938] = "The Swaying Span",
+	[2971] = "The Pulsing Pit (One-way)",
+	[2984] = "The Ascending Reach",
 }
 
 local function GatherFlightnodeData()
@@ -3067,7 +3144,7 @@ local function PLAYER_LEVEL_UP(self, level)
 				if low <= playerLevel and playerLevel <= high then
 					recInstances[zone] = true
 				end
-			elseif zoneType == "Instance" and low and high then
+			elseif zoneType == "Instance" or zoneType == "Delve" and low and high then
 				if low <= playerLevel and playerLevel <= high then
 					recInstances[zone] = true
 				end
@@ -3338,7 +3415,7 @@ function Tourist:GetLevel(zone)
 	zone = Tourist:GetMapNameByIDAlt(zone) or zone
 
 	if types[zone] == "Battleground" then
-		-- Note: Not all BG's start at level 5, but all BG's support players up to MAX_PLAYER_LEVEL.
+		-- Note: Not all BG's start at level 5, but all BG's support players up to MAX_LEVEL.
 
 		local playerLvl = playerLevel
 		if playerLvl <= lows[zone] then
@@ -3348,12 +3425,16 @@ function Tourist:GetLevel(zone)
 		end
 
 		-- Find the most suitable bracket. Shadowlands assumption: still 5-level brackets
-		if playerLvl >= MAX_PLAYER_LEVEL then
-			return MAX_PLAYER_LEVEL, MAX_PLAYER_LEVEL, nil
-		elseif playerLvl >= 65 then
+		if playerLvl >= MAX_LEVEL then
+			return MAX_LEVEL, MAX_LEVEL, nil
+		elseif playerLvl >= 75 then
+			return 75, 79, nil
+		elseif playerLvl >= 70 then		
+			return 70, 74, nil
+		elseif playerLvl >= 65 then		
 			return 65, 69, nil
 		elseif playerLvl >= 60 then
-			return 60, 65, nil
+			return 60, 64, nil
 		elseif playerLvl >= 55 then
 			return 55, 59, nil
 		elseif playerLvl >= 50 then
@@ -3855,7 +3936,7 @@ end
 
 local function zoneIter(_, position)
 	local k = next(zonesInstances, position)
-	while k ~= nil and (types[k] == "Instance" or types[k] == "Battleground" or types[k] == "Arena" or types[k] == "Complex") do
+	while k ~= nil and (types[k] == "Instance" or types[k] == "Battleground" or types[k] == "Arena" or types[k] == "Delve" or types[k] == "Complex") do
 		k = next(zonesInstances, k)
 	end
 	return k
@@ -3869,7 +3950,7 @@ end
 
 local function instanceIter(_, position)
 	local k = next(zonesInstances, position)
-	while k ~= nil and (types[k] ~= "Instance" and types[k] ~= "Battleground" and types[k] ~= "Arena") do
+	while k ~= nil and (types[k] ~= "Instance" and types[k] ~= "Battleground" and types[k] ~= "Arena" and types[k] ~= "Delve") do
 		k = next(zonesInstances, k)
 	end
 	return k
@@ -3907,6 +3988,20 @@ function Tourist:IterateArenas()
 		initZonesInstances()
 	end
 	return arIter, nil, nil
+end
+
+local function delveIter(_, position)
+	local k = next(zonesInstances, position)
+	while k ~= nil and types[k] ~= "Delve" do
+		k = next(zonesInstances, k)
+	end
+	return k
+end
+function Tourist:IterateDelves()
+	if initZonesInstances then
+		initZonesInstances()
+	end
+	return delveIter, nil, nil
 end
 
 local function compIter(_, position)
@@ -4186,6 +4281,20 @@ function Tourist:IterateDragonIsles()
 	return dragonIslesIter, nil, nil
 end
 
+local function khazAlgarIter(_, position)
+	local k = next(zonesInstances, position)
+	while k ~= nil and continents[k] ~= Khaz_Algar do
+		k = next(zonesInstances, k)
+	end
+	return k
+end
+function Tourist:IterateKhazAlgar()
+	if initZonesInstances then
+		initZonesInstances()
+	end
+	return khazAlgarIter, nil, nil
+end
+
 
 function Tourist:IterateRecommendedZones()
 	return retNormal, recZones, nil
@@ -4202,13 +4311,13 @@ end
 function Tourist:IsInstance(zone)
 	zone = Tourist:GetMapNameByIDAlt(zone) or zone
 	local t = types[zone]
-	return t == "Instance" or t == "Battleground" or t == "Arena"
+	return t == "Instance" or t == "Battleground" or t == "Arena" or t == "Delve"
 end
 
 function Tourist:IsZone(zone)
 	zone = Tourist:GetMapNameByIDAlt(zone) or zone
 	local t = types[zone]
-	return t and t ~= "Instance" and t ~= "Battleground" and t ~= "Transport" and t ~= "Portal" and t ~= "Flightpath" and t ~= "Arena" and t ~= "Complex"
+	return t and t ~= "Instance" and t ~= "Battleground" and t ~= "Transport" and t ~= "Portal" and t ~= "Flightpath" and t ~= "Arena" and t ~= "Delve" and t ~= "Complex"
 end
 
 function Tourist:IsContinent(zone)
@@ -4260,6 +4369,12 @@ function Tourist:IsArena(zone)
 	zone = Tourist:GetMapNameByIDAlt(zone) or zone
 	local t = types[zone]
 	return t == "Arena"
+end
+
+function Tourist:IsDelve(zone)
+	zone = Tourist:GetMapNameByIDAlt(zone) or zone
+	local t = types[zone]
+	return t == "Delve"
 end
 
 function Tourist:IsPvPZone(zone)
@@ -4371,6 +4486,12 @@ function Tourist:IsInDragonIsles(zone)
 	zone = Tourist:GetMapNameByIDAlt(zone) or zone
 	return continents[zone] == Dragon_Isles
 end
+
+function Tourist:IsInKhazAlgar(zone)
+	zone = Tourist:GetMapNameByIDAlt(zone) or zone
+	return continents[zone] == Khaz_Algar
+end
+
 
 function Tourist:GetInstanceGroupSize(instance)
 	instance = Tourist:GetMapNameByIDAlt(instance) or instance
@@ -5009,6 +5130,13 @@ do
 	transports["AMIRDRASSIL_FERALAS_PORTAL"] = string.format(X_Y_PORTAL, BZ["Amirdrassil"], BZ["Feralas"])
 	
 	
+	-- The War Within portals
+	transports["DORNOGAL_ORGRIMMAR_PORTAL"] = string.format(X_Y_PORTAL, BZ["Dornogal"], BZ["Orgrimmar"])
+	transports["ORGRIMMAR_DORNOGAL_PORTAL"] = string.format(X_Y_PORTAL, BZ["Orgrimmar"], BZ["Dornogal"])
+	transports["DORNOGAL_STORMWIND_PORTAL"] = string.format(X_Y_PORTAL, BZ["Dornogal"], BZ["Stormwind City"])
+	transports["STORMWIND_DORNOGAL_PORTAL"] = string.format(X_Y_PORTAL, BZ["Stormwind City"], BZ["Dornogal"])
+	
+	
 	
 	
 	
@@ -5104,7 +5232,12 @@ do
 		continent = Dragon_Isles,
 		expansion = DragonFlight,
 	}	
-	
+
+	zones[BZ["Khaz Algar"]] = {
+		type = "Continent",
+		continent = Khaz_Algar,
+		expansion = TheWarWithin,
+	}		
 	
 	-- TRANSPORTS ---------------------------------------------------------------
 
@@ -6772,6 +6905,50 @@ do
 		type = "Portal",
 	}		
 	
+	-- The War Within
+	
+		zones[transports["ORGRIMMAR_DORNOGAL_PORTAL"]] = {
+		paths = {
+			[BZ["Dornogal"]] = true,
+		},
+		faction = "Horde",
+		type = "Portal",
+	}
+
+	zones[transports["DORNOGAL_ORGRIMMAR_PORTAL"]] = {
+		paths = {
+			[BZ["Orgrimmar"]] = true,
+		},
+		faction = "Horde",
+		type = "Portal",
+	}
+	
+	zones[transports["STORMWIND_DORNOGAL_PORTAL"]] = {
+		paths = {
+			[BZ["Dornogal"]] = true,
+		},
+		faction = "Alliance",
+		type = "Portal",
+	}
+
+	zones[transports["DORNOGAL_STORMWIND_PORTAL"]] = {
+		paths = {
+			[BZ["Stormwind City"]] = true,
+		},
+		faction = "Alliance",
+		type = "Portal",
+	}
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
 	
 	-- ZONES, INSTANCES AND COMPLEXES ---------------------------------------------------------
 
@@ -6811,6 +6988,7 @@ do
 			[transports["STORMWIND_VALDRAKKEN_PORTAL"]] = true,
 			[transports["STORMWIND_WAKINGSHORES_BOAT"]] = true,			
 			[transports["STORMWIND_AMIRDRASSIL_PORTAL"]] = true,
+			[transports["STORMWIND_DORNOGAL_PORTAL"]] = true,
 		},
 		flightnodes = {
 			[2] = true,      -- Stormwind, Elwynn (A)
@@ -7014,6 +7192,8 @@ do
 	}
 
 	zones[BZ["Ruins of Gilneas"]] = {
+		low = 1,
+		high = 20,
 		continent = Eastern_Kingdoms,
 		expansion = Cataclysm,
 		paths = {
@@ -7756,6 +7936,7 @@ do
 			[transports["ORGRIMMAR_COT_PORTAL"]] = true,
 			[transports["ORGRIMMAR_VALDRAKKEN_PORTAL"]] = true,
 			[transports["ORGRIMMAR_WAKINGSHORES_ZEPPELIN"]] = true,
+			[transports["ORGRIMMAR_DORNOGAL_PORTAL"]] = true,
 		},
 		flightnodes = {
 			[23] = true,     -- Orgrimmar, Durotar (H)
@@ -8508,6 +8689,7 @@ do
 			[141] = true,    -- Spinebreaker Ridge, Hellfire Peninsula (H)
 			[100] = true,    -- Honor Hold, Hellfire Peninsula (A)
 			[102] = true,    -- Falcon Watch, Hellfire Peninsula (H)
+			[149] = true,    -- Shatter Point, Hellfire Peninsula (Alliance)
 			[129] = true,    -- Hellfire Peninsula, The Dark Portal (A)
 			[130] = true,    -- Hellfire Peninsula, The Dark Portal (H)
 		},
@@ -10019,8 +10201,8 @@ do
 	}
 	
 	zones[BZ["Vol'dun"]] = {
-		low = 35,
-		high = 50,
+		low = 30,
+		high = 60,
 		ct_low = 35,
 		instances = {
 			[BZ["Temple of Sethraliss"]] = true,
@@ -10127,8 +10309,8 @@ do
 	}
 	
 	zones[BZ["Stormsong Valley"]] = {
-		low = 35,
-		high = 50,
+		low = 30,
+		high = 60,
 		ct_low = 35,
 		instances = {
 			[BZ["Shrine of the Storm"]] = true,
@@ -10163,8 +10345,8 @@ do
 	}	
 
 	zones[BZ["Drustvar"]] = {
-		low = 25,
-		high = 50,
+		low = 20,
+		high = 60,
 		ct_low = 25,
 		instances = {
 			[BZ["Waycrest Manor"]] = true,
@@ -10443,8 +10625,8 @@ do
 
 	-- 11510
 	zones[BZ["Ardenweald"]] = {
-		low = 55,
-		high = 58,
+		low = 50,
+		high = 60,
 		instances = {
 			[BZ["Mists of Tirna Scithe"]] = true,
 			[BZ["De Other Side"]] = true,
@@ -10800,16 +10982,13 @@ do
 		},
 		continent = Dragon_Isles,
 		expansion = DragonFlight,
-	}	
+	}
 	
 	-- 10.2.5
 	-- 14969
 	zones[BZ["Amirdrassil"]] = {
 		low = 70,
 		high = 70,
---		instances = {
---			[BZ["Aberrus, the Shadowed Crucible"]] = true,
---		},
 		paths = {
 			[transports["AMIRDRASSIL_STORMWIND_PORTAL"]] = true,
 			[transports["AMIRDRASSIL_DARKSHORE_PORTAL"]] = true,
@@ -10824,6 +11003,168 @@ do
 		continent = Dragon_Isles,
 		expansion = DragonFlight,
 	}
+
+
+
+
+	-- The War Within zones
+	
+	-- 14771
+	zones[BZ["Dornogal"]] = {
+		paths = {
+			[BZ["Isle of Dorn"]] = true,
+			[transports["DORNOGAL_ORGRIMMAR_PORTAL"]] = true,
+			[transports["DORNOGAL_STORMWIND_PORTAL"]] = true,
+			[BZ["The Ringing Deeps"]] = true,
+		},
+		flightnodes = {
+			[2928] = true,   -- Dornogal, Isle of Dorn (Neutral)
+		},
+		type = "City",
+		faction = "Sanctuary",
+		continent = Khaz_Algar,
+		expansion = TheWarWithin,
+	}
+	
+	-- 14717
+	zones[BZ["Isle of Dorn"]] = {
+		low = 70,
+		high = 73,
+		instances = {
+			[BZ["The Rookery"]] = true,
+			[BZ["Cinderbrew Meadery"]] = true,
+			[BZ["Earthcrawl Mines"]] = true,
+			[BZ["Fungal Folly"]] = true,
+			[BZ["Kriegval's Rest"]] = true,
+		},
+		paths = {
+			[BZ["Dornogal"]] = true,
+			[BZ["The Rookery"]] = true,
+			[BZ["Cinderbrew Meadery"]] = true,
+			[BZ["Earthcrawl Mines"]] = true,
+			[BZ["Fungal Folly"]] = true,
+			[BZ["Kriegval's Rest"]] = true,
+		},
+		flightnodes = {
+			[2928] = true,   -- Dornogal, Isle of Dorn (Neutral)
+			[2929] = true,   -- Freywold Village, Isle of Dorn (Neutral)
+			[2931] = true,   -- Durgaz Cabin, Isle of Dorn (Neutral)
+			[2932] = true,   -- Rambleshire, Isle of Dorn (Neutral)
+		},
+		continent = Khaz_Algar,
+		expansion = TheWarWithin,
+	}
+	
+	-- 14795
+	zones[BZ["The Ringing Deeps"]] = {
+		low = 73,
+		high = 75,
+		instances = {
+			[BZ["The Stonevault"]] = true,
+			[BZ["Darkflame Cleft"]] = true,
+			[BZ["Deephaul Ravine"]] = true,
+			[BZ["The Dread Pit"]] = true,
+			[BZ["The Waterworks"]] = true,
+		},
+		paths = {
+			[BZ["Dornogal"]] = true,
+			[BZ["Hallowfall"]] = true,
+			[BZ["Azj-Kahet"]] = true,
+			[BZ["The Stonevault"]] = true,
+			[BZ["Darkflame Cleft"]] = true,
+			[BZ["Deephaul Ravine"]] = true,
+			[BZ["The Dread Pit"]] = true,
+			[BZ["The Waterworks"]] = true,
+		},
+		flightnodes = {
+			[2925] = true,   -- Opportunity Point, The Ringing Deeps (Neutral)
+			[2926] = true,   -- Camp Murroch, The Ringing Deeps (Neutral)
+			[2962] = true,   -- Gundargaz, The Ringing Deeps (Neutral)
+			[2963] = true,   -- Shadowvein Point, The Ringing Deeps (Neutral)
+		},
+		continent = Khaz_Algar,
+		expansion = TheWarWithin,
+	}	
+
+	-- 14838
+	zones[BZ["Hallowfall"]] = {
+		low = 75,
+		high = 78,
+		instances = {
+			[BZ["The Dawnbreaker"]] = true,
+			[BZ["Priori of the Sacred Flame"]] = true,
+			[BZ["Mycomancer Cavern"]] = true,
+			[BZ["Nightfall Sanctum"]] = true,
+			[BZ["The Sinkhole"]] = true,
+			[BZ["Skittering Breach"]] = true,
+		},
+		paths = {
+			[BZ["The Ringing Deeps"]] = true,
+			[BZ["Azj-Kahet"]] = true,
+			[BZ["The Dawnbreaker"]] = true,
+			[BZ["Priori of the Sacred Flame"]] = true,
+			[BZ["Mycomancer Cavern"]] = true,
+			[BZ["Nightfall Sanctum"]] = true,
+			[BZ["The Sinkhole"]] = true,
+			[BZ["Skittering Breach"]] = true,
+		},
+		flightnodes = {
+			[2922] = true,   -- Dunelle's Kindness, Hallowfall (Neutral)
+			[2923] = true,   -- Lightspark, Hallowfall (Neutral)
+			[2924] = true,   -- Light's Redoubt, Hallowfall (Neutral)
+			[2941] = true,   -- Mereldar, Hallowfall (Neutral)
+			[2942] = true,   -- Priory of the Sacred Flame, Hallowfall (Neutral)
+			[2943] = true,   -- Lorel's Crossing, Hallowfall (Neutral)
+			[2944] = true,   -- Hillhelm Family Farm, Hallowfall (Neutral)
+			[2950] = true,   -- The Aegis Wall, Hallowfall (Neutral)
+		},
+		continent = Khaz_Algar,
+		expansion = TheWarWithin,
+	}	
+
+
+	-- 14752
+	zones[BZ["Azj-Kahet"]] = {
+		low = 78,
+		high = 80,
+		instances = {
+			[BZ["City of Threads"]] = true,
+			[BZ["City of Echos"]] = true,
+			[BZ["Nerub-ar Palace"]] = true,
+			[BZ["The Spiral Weave"]] = true,
+			[BZ["Tak-Rethan Abyss"]] = true,
+			[BZ["The Underkeep"]] = true,
+			[BZ["The Transformatory"]] = true,
+			[BZ["Zekvir's Lair"]] = true,
+		},
+		paths = {
+			[BZ["The Ringing Deeps"]] = true,
+			[BZ["Hallowfall"]] = true,
+			[BZ["City of Threads"]] = true,
+			[BZ["City of Echos"]] = true,
+			[BZ["Nerub-ar Palace"]] = true,
+			[BZ["The Spiral Weave"]] = true,
+			[BZ["Tak-Rethan Abyss"]] = true,
+			[BZ["The Underkeep"]] = true,
+			[BZ["The Transformatory"]] = true,
+			[BZ["Zekvir's Lair"]] = true,
+		},
+		flightnodes = {
+			[2882] = true,   -- Weaver's Lair, Azj-Kahet (Neutral)
+			[2889] = true,   -- Wildcamp Or'lay, Azj-Kahet (Neutral)
+			[2893] = true,   -- The Burrows, Azj-Kahet (Neutral)
+			[2919] = true,   -- Wildcamp Ul'ar, Azj-Kahet (Neutral)
+			[2920] = true,   -- Faerin's Advance, Azj-Kahet (Neutral)
+			[2921] = true,   -- Mmarl, Azj-Kahet (Neutral)
+		},
+		continent = Khaz_Algar,
+		expansion = TheWarWithin,
+	}
+
+
+
+
+
 
 	-- ============= DUNGEONS ===============
 	
@@ -12458,6 +12799,7 @@ do
 		entrancePortal = { BZ["Badlands"], 42.4, 18.6 }, 
 	}	
 
+	-- 14514
 	zones[BZ["Dawn of the Infinite"]] = {
 		low = 70,
 		high = 70,
@@ -12468,6 +12810,108 @@ do
 		type = "Instance",
 		entrancePortal = { BZ["Thaldraszus"], 59.24, 60.64 },
 	}	
+
+
+
+	-- The War Within dungeons
+
+	-- 14938
+	zones[BZ["The Rookery"]] = {
+		low = 70,
+		high = 73,
+		continent = Khaz_Algar,
+		expansion = TheWarWithin,
+		paths = BZ["Isle of Dorn"],
+		groupSize = 5,
+		type = "Instance",
+		entrancePortal = { BZ["Isle of Dorn"], 43.1, 40.5 },
+	}	
+
+	-- 15103
+	zones[BZ["Cinderbrew Meadery"]] = {
+		low = 80,
+		high = 80,
+		continent = Khaz_Algar,
+		expansion = TheWarWithin,
+		paths = BZ["Isle of Dorn"],
+		groupSize = 5,
+		type = "Instance",
+		entrancePortal = { BZ["Isle of Dorn"], 80.7, 43.7 },
+	}	
+
+	-- 14883
+	zones[BZ["The Stonevault"]] = {
+		low = 80,
+		high = 80,
+		continent = Khaz_Algar,
+		expansion = TheWarWithin,
+		paths = BZ["The Ringing Deeps"],
+		groupSize = 5,
+		type = "Instance",
+		entrancePortal = { BZ["The Ringing Deeps"], 38, 8 },
+	}	
+
+	-- 14882
+	zones[BZ["Darkflame Cleft"]] = {
+		low = 80,
+		high = 80,
+		continent = Khaz_Algar,
+		expansion = TheWarWithin,
+		paths = BZ["The Ringing Deeps"],
+		groupSize = 5,
+		type = "Instance",
+		entrancePortal = { BZ["The Ringing Deeps"], 53, 20 },
+	}
+
+	-- 14954
+	zones[BZ["Priori of the Sacred Flame"]] = {
+		low = 75,
+		high = 78,
+		continent = Khaz_Algar,
+		expansion = TheWarWithin,
+		paths = BZ["Hallowfall"],
+		groupSize = 5,
+		type = "Instance",
+		entrancePortal = { BZ["Hallowfall"], 42, 50 },
+	}
+
+	-- 14971
+	zones[BZ["The Dawnbreaker"]] = {
+		low = 80,
+		high = 80,
+		continent = Khaz_Algar,
+		expansion = TheWarWithin,
+		paths = BZ["Hallowfall"],
+		groupSize = 5,
+		type = "Instance",
+		entrancePortal = { BZ["Hallowfall"], 57, 62 },
+	}
+
+	-- 14979
+	zones[BZ["City of Threads"]] = {
+		low = 75,
+		high = 80,
+		continent = Khaz_Algar,
+		expansion = TheWarWithin,
+		paths = BZ["Azj-Kahet"],
+		groupSize = 5,
+		type = "Instance",
+		entrancePortal = { BZ["Azj-Kahet"], 48.1, 71.3 },
+	}
+
+	-- 15093
+	-- a.k.a. Ara-Kara
+	zones[BZ["City of Echos"]] = {
+		low = 75,
+		high = 80,
+		continent = Khaz_Algar,
+		expansion = TheWarWithin,
+		paths = BZ["Azj-Kahet"],
+		groupSize = 5,
+		type = "Instance",
+		entrancePortal = { BZ["Azj-Kahet"], 50.7, 82.1 },
+	}
+
 
 
 	-- ==================RAIDS=====================
@@ -13018,7 +13462,7 @@ do
 		groupMinSize = 10,
 		groupMaxSize = 30,
 		type = "Instance",
-		--entrancePortal = { BZ["Zaralek Cavern"], 73.14, 55.60 }, -- todo
+		entrancePortal = { BZ["Zaralek Cavern"], 88, 29 },
 	}	
 
 	-- 14643
@@ -13031,14 +13475,33 @@ do
 		groupMinSize = 10,
 		groupMaxSize = 30,
 		type = "Instance",
-		--entrancePortal = { BZ["Emerald Dream"], 73.14, 55.60 }, -- todo
+		entrancePortal = { BZ["Emerald Dream"], 27, 31 },
 	}	
+	
+	
+	-- The War Within raids
+	
+	
+	-- 14980
+	zones[BZ["Nerub-ar Palace"]] = {
+		low = 80,
+		high = 80,
+		continent = Khaz_Algar,
+		expansion = TheWarWithin,
+		paths = BZ["Azj-Kahet"],
+		groupMinSize = 10,
+		groupMaxSize = 30,
+		type = "Instance",
+		entrancePortal = { BZ["Azj-Kahet"], 45.1, 90.7 },
+	}	
+	
+	
 	
 	-- ==============BATTLEGROUNDS================
 
 	zones[BZ["Arathi Basin"]] = {
 		low = 7,
-		high = MAX_PLAYER_LEVEL,
+		high = MAX_LEVEL,
 		continent = Eastern_Kingdoms,
 		expansion = Classic,
 		paths = BZ["Arathi Highlands"],
@@ -13049,7 +13512,7 @@ do
 
 	zones[BZ["Warsong Gulch"]] = {
 		low = 10,
-		high = MAX_PLAYER_LEVEL,
+		high = MAX_LEVEL,
 		continent = Kalimdor,
 		expansion = Classic,
 		paths = isHorde and BZ["Northern Barrens"] or BZ["Ashenvale"],
@@ -13060,7 +13523,7 @@ do
 
 	zones[BZ["Eye of the Storm"]] = {
 		low = 20,
-		high = MAX_PLAYER_LEVEL,
+		high = MAX_LEVEL,
 		continent = Outland,
 		expansion = The_Burning_Crusade,
 		groupSize = 15,
@@ -13070,7 +13533,7 @@ do
 	
 	zones[BZ["Alterac Valley"]] = {
 		low = 10,
-		high = MAX_PLAYER_LEVEL,
+		high = MAX_LEVEL,
 		continent = Eastern_Kingdoms,
 		expansion = Classic,
 		paths = BZ["Hillsbrad Foothills"],
@@ -13081,7 +13544,7 @@ do
 	
 	zones[BZ["Strand of the Ancients"]] = {
 		low = 10,
-		high = MAX_PLAYER_LEVEL,
+		high = MAX_LEVEL,
 		continent = Northrend,
 		expansion = Wrath_of_the_Lich_King,
 		groupSize = 15,
@@ -13091,7 +13554,7 @@ do
 
 	zones[BZ["Isle of Conquest"]] = {
 		low = 20,
-		high = MAX_PLAYER_LEVEL,
+		high = MAX_LEVEL,
 		continent = Northrend,
 		expansion = Wrath_of_the_Lich_King,
 		groupSize = 40,
@@ -13101,7 +13564,7 @@ do
 
 	zones[BZ["The Battle for Gilneas"]] = {
 		low = 20,
-		high = MAX_PLAYER_LEVEL,
+		high = MAX_LEVEL,
 		continent = Eastern_Kingdoms,
 		expansion = Cataclysm,
 		groupSize = 10,
@@ -13111,7 +13574,7 @@ do
 
 	zones[BZ["Twin Peaks"]] = {
 		low = 30,
-		high = MAX_PLAYER_LEVEL,
+		high = MAX_LEVEL,
 		continent = Eastern_Kingdoms,
 		expansion = Cataclysm,
 		paths = BZ["Twilight Highlands"],
@@ -13122,13 +13585,24 @@ do
 	
 	zones[BZ["Deepwind Gorge"]] = {
 		low = 40,
-		high = MAX_PLAYER_LEVEL,
+		high = MAX_LEVEL,
 		continent = Pandaria,
 		expansion = Mists_of_Pandaria,
 		paths = BZ["Valley of the Four Winds"],
 		groupSize = 15,
 		type = "Battleground",
 		texture = "DeepwindGorge",  -- TODO: verify
+	}
+
+	zones[BZ["Deephaul Ravine"]] = {
+		low = 70,
+		high = MAX_LEVEL,
+		continent = Khaz_Algar,
+		expansion = TheWarWithin,
+		paths = BZ["The Ringing Deeps"],
+		groupSize = 8,
+		type = "Battleground",
+		texture = "DeephaulRavine",  -- TODO: verify
 	}
 
 
@@ -13269,6 +13743,182 @@ do
 		paths = BZ["Zereth Mortis"],
 		type = "Arena",
 	}	
+	
+	
+	-- ==============DELVES================
+
+
+	zones[BZ["Earthcrawl Mines"]] = {
+		low = 70,
+		high = 73,
+		continent = Khaz_Algar,
+		expansion = TheWarWithin,
+		paths = BZ["Isle of Dorn"],
+		groupMinSize = 1,
+		groupMaxSize = 5,
+		type = "Delve",
+		entrancePortal = { BZ["EIsle of Dorn"], 35.5, 79.2 },
+	}
+	
+	zones[BZ["Fungal Folly"]] = {
+		low = 70,
+		high = 73,
+		continent = Khaz_Algar,
+		expansion = TheWarWithin,
+		paths = BZ["Isle of Dorn"],
+		groupMinSize = 1,
+		groupMaxSize = 5,
+		type = "Delve",
+		entrancePortal = { BZ["Isle of Dorn"], 51.7, 70.4 },
+	}	
+	
+	zones[BZ["Kriegval's Rest"]] = {
+		low = 70,
+		high = 73,
+		continent = Khaz_Algar,
+		expansion = TheWarWithin,
+		paths = BZ["Isle of Dorn"],
+		groupMinSize = 1,
+		groupMaxSize = 5,
+		type = "Delve",
+		entrancePortal = { BZ["Isle of Dorn"], 63.0, 42.54 },
+	}
+
+	zones[BZ["The Waterworks"]] = {
+		low = 73,
+		high = 75,
+		continent = Khaz_Algar,
+		expansion = TheWarWithin,
+		paths = BZ["The Ringing Deeps"],
+		groupMinSize = 1,
+		groupMaxSize = 5,
+		type = "Delve",
+		entrancePortal = { BZ["The Ringing Deeps"], 37, 50 },
+	}	
+
+	zones[BZ["The Dread Pit"]] = {
+		low = 73,
+		high = 75,
+		continent = Khaz_Algar,
+		expansion = TheWarWithin,
+		paths = BZ["The Ringing Deeps"],
+		groupMinSize = 1,
+		groupMaxSize = 5,
+		type = "Delve",
+		entrancePortal = { BZ["The Ringing Deeps"], 68, 39 },
+	}
+
+	zones[BZ["Mycomancer Cavern"]] = {
+		low = 75,
+		high = 78,
+		continent = Khaz_Algar,
+		expansion = TheWarWithin,
+		paths = BZ["Hallowfall"],
+		groupMinSize = 1,
+		groupMaxSize = 5,
+		type = "Delve",
+		entrancePortal = { BZ["Hallowfall"], 70, 30 },
+	}
+
+	zones[BZ["Nightfall Sanctum"]] = {
+		low = 75,
+		high = 78,
+		continent = Khaz_Algar,
+		expansion = TheWarWithin,
+		paths = BZ["Hallowfall"],
+		groupMinSize = 1,
+		groupMaxSize = 5,
+		type = "Delve",
+		entrancePortal = { BZ["Hallowfall"], 34, 37 },
+	}
+
+	zones[BZ["The Sinkhole"]] = {
+		low = 75,
+		high = 78,
+		continent = Khaz_Algar,
+		expansion = TheWarWithin,
+		paths = BZ["Hallowfall"],
+		groupMinSize = 1,
+		groupMaxSize = 5,
+		type = "Delve",
+		entrancePortal = { BZ["Hallowfall"], 50, 52 },
+	}
+
+	zones[BZ["Skittering Breach"]] = {
+		low = 75,
+		high = 78,
+		continent = Khaz_Algar,
+		expansion = TheWarWithin,
+		paths = BZ["Hallowfall"],
+		groupMinSize = 1,
+		groupMaxSize = 5,
+		type = "Delve",
+		entrancePortal = { BZ["Hallowfall"], 65, 61 },
+	}
+
+	zones[BZ["The Spiral Weave"]] = {
+		low = 78,
+		high = 80,
+		continent = Khaz_Algar,
+		expansion = TheWarWithin,
+		paths = BZ["Azj-Kahet"],
+		groupMinSize = 1,
+		groupMaxSize = 5,
+		type = "Delve",
+		entrancePortal = { BZ["Azj-Kahet"], 46.5, 25.4 },
+	}
+	
+	zones[BZ["Tak-Rethan Abyss"]] = {
+		low = 78,
+		high = 80,
+		continent = Khaz_Algar,
+		expansion = TheWarWithin,
+		paths = BZ["Azj-Kahet"],
+		groupMinSize = 1,
+		groupMaxSize = 5,
+		type = "Delve",
+		entrancePortal = { BZ["Azj-Kahet"], 55.6, 75.7 },
+	}
+	
+	zones[BZ["The Underkeep"]] = {
+		low = 78,
+		high = 80,
+		continent = Khaz_Algar,
+		expansion = TheWarWithin,
+		paths = BZ["Azj-Kahet"],
+		groupMinSize = 1,
+		groupMaxSize = 5,
+		type = "Delve",
+		entrancePortal = { BZ["Azj-Kahet"], 52.6, 88.9 },
+	}
+	
+	zones[BZ["The Transformatory"]] = {
+		low = 78,
+		high = 80,
+		continent = Khaz_Algar,
+		expansion = TheWarWithin,
+		paths = BZ["Azj-Kahet"],
+		groupMinSize = 1,
+		groupMaxSize = 5,
+		type = "Delve",
+		entrancePortal = { BZ["Azj-Kahet"], 58.7, 66.7 },
+	}
+	
+	zones[BZ["Zekvir's Lair"]] = {
+		low = 78,
+		high = 80,
+		continent = Khaz_Algar,
+		expansion = TheWarWithin,
+		paths = BZ["Azj-Kahet"],
+		groupMinSize = 1,
+		groupMaxSize = 5,
+		type = "Delve",
+		entrancePortal = { BZ["Azj-Kahet"], 35.0, 78.2 },
+	}	
+	
+	
+	
+	
 	
 	-- ==============COMPLEXES================
 
