@@ -1,8 +1,8 @@
-## Interface: 30403
+## Interface: 40400
 ## LoadOnDemand: 1
-## Title: LibTourist Classic (WotLK) library
+## Title: LibTourist Classic (Cataclysm) library
 ## Notes: A library to provide information about zones and instances.
-## Author: Odica, contributor: Mishikal1
+## Author: Odica
 ## X-Category: Library
 
 lib.xml

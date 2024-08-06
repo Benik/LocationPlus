@@ -1,12 +1,14 @@
-tag a21c979e735dea3a03ee4e22682275f98fad9e7a WoW-3.4.3-release1
+tag a6a67d9bde7b58f147ce6e82379b748e2a4a7ff2 WoW-4.4.0-release4
 Author:	Odica Jaedenar <odica.jaedenar@gmail.com>
-Date:	Sat Dec 2 13:55:10 2023 +0100
+Date:	Sat Aug 3 22:14:07 2024 +0200
 
-Tagged as WoW-3.4.3-release1
+Tagged as WoW-4.4.0-release4
 
-commit d2466189d6e525903766fcbe835f6575a6ee9ccd
+commit 79bbafca061b967ce02ef605c0685ce8b45d800c
 Author: Odica Jaedenar <odica.jaedenar@gmail.com>
-Date:   Sat Dec 2 13:54:01 2023 +0100
+Date:   Sat Aug 3 22:12:31 2024 +0200
 
-    Updated version in TOC to 30403
+    - all herb and mining data has been reinventorized (source: wowhead) and regenerated, resulting in a LOT of corrections
+    - added missing translations
+    - fixed incorrect herb item IDs
 

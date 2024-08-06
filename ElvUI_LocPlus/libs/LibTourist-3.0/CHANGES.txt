@@ -1,9 +1,47 @@
 ------------------------------------------------------------------------
-r305 | Odica_Jaedenar | 2024-01-24 20:04:17 +0000 (Wed, 24 Jan 2024) | 2 lines
+r317 | Odica_Jaedenar | 2024-08-03 20:49:19 +0000 (Sat, 03 Aug 2024) | 40 lines
 Changed paths:
    M /trunk/LibTourist-3.0.lua
 
-- added translations for Amirdrassil, the Dream's Hope (raid)
-- added portals between Amirdrassil and Stormwind City, Darkshore, Mount Hyjal, Val'Sharah and Feralas.
+Changes since the previous release version:
+
+WoW-11.0.0-alpha1:
+
+Fixed a bug caused by using MAX_PLAYER_LEVEL
+Updated version in TOC to 110000
+
+
+WoW-11.0.0-beta1:
+
+First update for TWW
+
+- added expansion The War Within
+- added continent Khaz Algar
+- added city Dornogal
+- added zones Isle of Dorn, The Ringing Deeps, Hallowfall and Azj-Kahet
+- added 8 dungeons and 1 raid
+- added 23 flight nodes
+- added portals Orgrimmar/Stormwind City - Dornogal v.v.
+- added 65 UIMap IDs
+- added level brackets for battlegrounds
+- API: added function Tourist:IterateKhazAlgar()
+- API: added function Tourist:IsInKhazAlgar(zone)
+
+
+WoW-11.0.0-beta2:
+
+Second update for TWW
+
+- Added TWW profession skills
+- Added battleground: Deephaul Ravine
+- Added new zone type: Delve (instance, 1-5 players, with location)
+- Added 14 Delves
+- Adjusted some API methods to take Delves into account
+- API: added function Tourist:IterateDelves()
+- API: added function Tourist:IsDelve(zone)
+- corrected min/max levels for some zones (Ruins of Gilneas, Vol'dun, Stormsong Valley, Drustvar and Ardenweald)
+
+
+
 ------------------------------------------------------------------------
 
