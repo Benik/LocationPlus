@@ -18,6 +18,8 @@ local IsInInstance, InCombatLockdown = IsInInstance, InCombatLockdown
 local UIFrameFadeIn, UIFrameFadeOut, ToggleFrame, RegisterStateDriver = UIFrameFadeIn, UIFrameFadeOut, ToggleFrame, RegisterStateDriver
 local IsControlKeyDown, IsShiftKeyDown = IsControlKeyDown, IsShiftKeyDown
 local GameTooltip, WorldMapFrame = _G['GameTooltip'], _G['WorldMapFrame']
+local GetAddOnMetadata = (C_AddOns and C_AddOns.GetAddOnMetadata) or GetAddOnMetadata
+
 
 local UNKNOWN = UNKNOWN
 local SANCTUARY_TERRITORY, ARENA, FRIENDLY, HOSTILE, CONTESTED_TERRITORY, COMBAT, AGGRO_WARNING_IN_INSTANCE = SANCTUARY_TERRITORY, ARENA, FRIENDLY, HOSTILE, CONTESTED_TERRITORY, COMBAT, AGGRO_WARNING_IN_INSTANCE
