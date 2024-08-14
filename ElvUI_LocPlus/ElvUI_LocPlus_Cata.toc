@@ -1,6 +1,6 @@
 ## Interface: 40400
 ## Author: Benik
-## Version: 2.86
+## Version: 2.87
 ## Title: |cff1784d1ElvUI|r Location Plus |cfd9b9b9bCataclysm|r
 ## Notes: a plugin for ElvUI 13+, that adds location, coords, 2 Datatexts and a tooltip full of info.
 ## RequiredDeps: ElvUI
