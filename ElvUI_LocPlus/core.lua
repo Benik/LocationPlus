@@ -13,7 +13,6 @@ local C_Map_GetBestMapForUnit = C_Map.GetBestMapForUnit
 local C_Map_GetPlayerMapPosition = C_Map.GetPlayerMapPosition
 local GetMinimapZoneText = GetMinimapZoneText
 local GetRealZoneText, GetSubZoneText = GetRealZoneText, GetSubZoneText
-local GetZonePVPInfo = GetZonePVPInfo
 local IsInInstance, InCombatLockdown = IsInInstance, InCombatLockdown
 local UIFrameFadeIn, UIFrameFadeOut, ToggleFrame, RegisterStateDriver = UIFrameFadeIn, UIFrameFadeOut, ToggleFrame, RegisterStateDriver
 local IsControlKeyDown, IsShiftKeyDown = IsControlKeyDown, IsShiftKeyDown

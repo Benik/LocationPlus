@@ -9,6 +9,7 @@ local GetBindLocation = GetBindLocation
 local C_Map_GetBestMapForUnit = C_Map.GetBestMapForUnit
 local C_CurrencyInfo_GetCurrencyInfo = C_CurrencyInfo.GetCurrencyInfo
 local C_CurrencyInfo_GetCurrencyListSize = C_CurrencyInfo.GetCurrencyListSize
+local GetZonePVPInfo = (C_PvP and C_PvP.GetZonePVPInfo) or GetZonePVPInfo
 local GetProfessionInfo, GetProfessions = GetProfessionInfo, GetProfessions
 local UnitLevel = UnitLevel
 local GameTooltip = _G['GameTooltip']
