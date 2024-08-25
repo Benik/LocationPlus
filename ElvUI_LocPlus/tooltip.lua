@@ -129,8 +129,11 @@ local currency = {
 	3056, 	-- Kej
 	3089,	-- Residual Memories
 	2815,	-- Resonance Crystals
+	3028,	-- Restored Coffer Key
 	3008,	-- Valorstones
 	2914,	-- Weathered Harbinger Crest
+	2915,	-- Carved Harbinger Crest
+	2917,	-- Gilded Harbinger Crest
 }
 
 --[[if E.myfaction == 'Alliance' then
