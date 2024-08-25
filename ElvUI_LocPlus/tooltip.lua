@@ -124,6 +124,12 @@ local currency = {
 	2708,	-- Wyrm's Dreaming Crest
 	2709,	-- Aspect's Dreaming Crest
 	2657,	-- Mysterious Fragment
+	
+	-- The War Within
+	3089,	-- Residual Memories
+	2815,	-- Resonance Crystals
+	3008,	-- Valorstones
+	2914,	-- Weathered Harbinger Crest
 }
 
 --[[if E.myfaction == 'Alliance' then
