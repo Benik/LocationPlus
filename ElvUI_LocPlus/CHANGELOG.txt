@@ -1,3 +1,7 @@
+v2.88 (Aug 27, 2024)
+Fixed the outdated GetZonePVPInfo error
+Tooltip tokens should be fine on TWW. Credit: BuG
+
 v2.87 (Aug 14, 2024)
 Update for 11.0.2 (thurin)
 

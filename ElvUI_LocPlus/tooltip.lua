@@ -9,6 +9,7 @@ local GetBindLocation = GetBindLocation
 local C_Map_GetBestMapForUnit = C_Map.GetBestMapForUnit
 local C_CurrencyInfo_GetCurrencyInfo = C_CurrencyInfo.GetCurrencyInfo
 local C_CurrencyInfo_GetCurrencyListSize = C_CurrencyInfo.GetCurrencyListSize
+local GetZonePVPInfo = (C_PvP and C_PvP.GetZonePVPInfo) or GetZonePVPInfo
 local GetProfessionInfo, GetProfessions = GetProfessionInfo, GetProfessions
 local UnitLevel = UnitLevel
 local GameTooltip = _G['GameTooltip']
@@ -112,17 +113,27 @@ local currency = {
 	1602,	-- New Conquest Points
 	1792,	-- Honor
 	2123,	-- Bloody Tokens
-	2003,	-- Dragon Isles Supplies
-	2118,	-- Elemental Overflow
-	2122,	-- Storm Sigil
-	2245,	-- Flightstones
-	2594,	-- Paracasual Flakes
-	2650,	-- Emerald Dewdrop
-	2706,	-- Whelping's Dreaming Crest
-	2707,	-- Drake's Dreaming Crest
-	2708,	-- Wyrm's Dreaming Crest
-	2709,	-- Aspect's Dreaming Crest
-	2657,	-- Mysterious Fragment
+	--2003,	-- Dragon Isles Supplies
+	--2118,	-- Elemental Overflow
+	--2122,	-- Storm Sigil
+	--2245,	-- Flightstones
+	--2594,	-- Paracasual Flakes
+	--2650,	-- Emerald Dewdrop
+	--2706,	-- Whelping's Dreaming Crest
+	--2707,	-- Drake's Dreaming Crest
+	--2708,	-- Wyrm's Dreaming Crest
+	--2709,	-- Aspect's Dreaming Crest
+	--2657,	-- Mysterious Fragment
+	
+	-- The War Within
+	3056, 	-- Kej
+	3089,	-- Residual Memories
+	2815,	-- Resonance Crystals
+	3028,	-- Restored Coffer Key
+	3008,	-- Valorstones
+	2914,	-- Weathered Harbinger Crest
+	2915,	-- Carved Harbinger Crest
+	2917,	-- Gilded Harbinger Crest
 }
 
 --[[if E.myfaction == 'Alliance' then
