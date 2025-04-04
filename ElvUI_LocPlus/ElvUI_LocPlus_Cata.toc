@@ -6,12 +6,7 @@
 ## RequiredDeps: ElvUI
 ## OptionalDeps: LibTouristClassic-1.0
 ## DefaultState: Enabled
-## X-Tukui-ProjectID: 22
-## X-Tukui-ProjectFolders: ElvUI_LocPlus
-## X-Curse-Packaged-Version: 1.82
-## X-Curse-Project-Name: ElvUI Location Plus
-## X-Curse-Project-ID: elvui-location-plus
-## X-Curse-Repository-ID: wow/elvui-location-plus/mainline
+## X-Wago-ID: ZKbeyR61
 
 libs\load_libs_wrath.xml
 locales\load_locales.xml

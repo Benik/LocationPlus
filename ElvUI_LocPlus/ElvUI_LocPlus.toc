@@ -7,6 +7,7 @@
 ## OptionalDeps: LibTourist-3.0
 ## DefaultState: Enabled
 ## IconTexture: Interface\ICONS\INV_Misc_Map02
+## X-Wago-ID: ZKbeyR61
 
 libs\load_libs.xml
 locales\load_locales.xml
