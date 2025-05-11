@@ -1,4 +1,4 @@
-## Interface: 40400
+## Interface: 40402
 ## LoadOnDemand: 1
 ## Title: LibTourist Classic (Cataclysm) library
 ## Notes: A library to provide information about zones and instances.

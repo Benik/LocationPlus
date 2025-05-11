@@ -1,6 +1,6 @@
 --[[
 Name: LibTouristClassicEra
-Revision: $Rev: 243 $
+Revision: $Rev: 245 $
 Author(s): Odica; based on LibTourist-3.0 and LibTouristClassic-1.0
 Documentation: https://www.wowace.com/projects/libtourist-classic-era/pages/api-reference
 Git: https://repos.wowace.com/wow/libtourist-classic-era libtourist-classic-era
@@ -9,7 +9,7 @@ License: MIT
 ]]
 
 local MAJOR_VERSION = "LibTouristClassicEra"
-local MINOR_VERSION = 90000 + tonumber(("$Revision: 242 $"):match("(%d+)"))
+local MINOR_VERSION = 90000 + tonumber(("$Revision: 245 $"):match("(%d+)"))
 
 if not LibStub then error(MAJOR_VERSION .. " requires LibStub") end
 local C_Map = C_Map
@@ -231,6 +231,21 @@ local MapIdLookupTable = {
     [1463] = "Eastern Kingdoms",
     [1464] = "Kalimdor",
 	[2720] = "The Searing Basin",
+    [2784] = "Demon Fall Canyon",
+    [2789] = "The Tainted Scar",
+    [2791] = "Storm Cliffs",
+    [2804] = "The Crystal Vale",
+    [2806] = "Shadow Hold",
+    [2807] = "Burning of Andorhal",
+    [2817] = "Starfall Barrow Den",
+    [2832] = "Nightmare Grove",
+    [2835] = "Karazhan Crypts",
+	[2853] = "Deadwind Pass",
+    [2856] = "Scarlet Enclave",
+    [2868] = "Eastern Plaguelands (Scarlet Raid Phase)",
+    [2875] = "Karazhan Crypts",
+    [2902] = "The Scarab Dais",
+    [2921] = "Naxxramas",
 -- NOTE: The following are InstanceIDs, as Instances do not have a uiMapID in Classic
     [30] = "Alteric Valley",
     [33] = "Shadowfang Keep",
@@ -357,7 +372,7 @@ local function CreateLocalizedZoneNameLookups()
 
 	-- Note: the loop below is not very sexy but makes sure missing entries in MapIdLookupTable are reported.
 	-- It is executed only once, upon initialization.
-	for uiMapID = 900, 1500, 1 do
+	for uiMapID = 900, 3000, 1 do
 		mapInfo = C_Map.GetMapInfo(uiMapID)
 		if mapInfo then
 			localizedZoneName = mapInfo.name
@@ -378,9 +393,10 @@ local function CreateLocalizedZoneNameLookups()
 		end
 	end
 
-	for instanceID = 1, 1100, 1 do
+	for instanceID = 1, 3000, 1 do
 		localizedZoneName = GetRealZoneText(instanceID);
 		if localizedZoneName and localizedZoneName ~= ""  then
+	
 			englishZoneName = MapIdLookupTable[instanceID]
 
 			if englishZoneName then
@@ -2306,11 +2322,13 @@ do
 		instances = {
 			[BZ["Stratholme"]] = true,
 			[BZ["Naxxramas"]] = true,
+			[BZ["Scarlet Enclave"]] = true,
 		},
 		paths = {
 			[BZ["Western Plaguelands"]] = true,
 			[BZ["Stratholme"]] = true,
 			[BZ["Naxxramas"]] = true,
+			[BZ["Scarlet Enclave"]] = true,
 		},
 		flightnodes = {
 			[67] = true,    -- Light's Hope Chapel, Eastern Plaguelands (A)
@@ -2425,6 +2443,10 @@ do
 		paths = {
 			[BZ["Duskwood"]] = true,
 			[BZ["Swamp of Sorrows"]] = true,
+			[BZ["Karazhan Crypts"]] = true,
+		},
+		instances = {
+			[BZ["Karazhan Crypts"]] = true,
 		},
 		fishing_low = 330,
 		fishing_high = 425,
@@ -3063,6 +3085,17 @@ do
 		entrancePortal = { BZ["Burning Steppes"], 29.7, 37.5 },
 	}
 
+	zones[BZ["Karazhan Crypts"]] = {
+		low = 60,
+		high = 60,
+		continent = Eastern_Kingdoms,
+		paths = BZ["Deadwind Pass"],
+		groupSize = 5,
+		type = "Instance",
+		entrancePortal = { BZ["Deadwind Pass"], 39.8, 73.6 },
+	}
+
+
 	-- Raids --
 
 	zones[BZ["Zul'Gurub"]] = {
@@ -3136,6 +3169,18 @@ do
 		fishing_high = 1,  -- acid
 		entrancePortal = { BZ["Eastern Plaguelands"], 87.30, 51.00 },
 	}
+
+	zones[BZ["Scarlet Enclave"]] = {
+		low = 60,
+		high = 60,
+		continent = Eastern_Kingdoms,
+		paths = BZ["Eastern Plaguelands"],
+		groupMinSize = 20,
+		groupMaxSize = 40,
+		type = "Instance",
+		entrancePortal = { BZ["Eastern Plaguelands"], 87, 85 },
+	}	
+
 
 	-- Battlegrounds --
 

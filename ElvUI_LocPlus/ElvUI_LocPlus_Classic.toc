@@ -1,17 +1,12 @@
-﻿## Interface: 11506
+﻿## Interface: 11507
 ## Author: Benik
-## Version: 2.90
+## Version: 2.91
 ## Title: |cff1784d1ElvUI|r Location Plus |cfd9b9b9bClassic|r
 ## Notes: a plugin for ElvUI 13+, that adds location, coords, 2 Datatexts and a tooltip full of info.
 ## RequiredDeps: ElvUI
 ## OptionalDeps: LibTouristClassicEra
 ## DefaultState: Enabled
-## X-Tukui-ProjectID: 14
-## X-Tukui-ProjectFolders: ElvUI_LocPlus
-## X-Curse-Packaged-Version: 1.82
-## X-Curse-Project-Name: ElvUI Location Plus
-## X-Curse-Project-ID: elvui-location-plus
-## X-Curse-Repository-ID: wow/elvui-location-plus/mainline
+## X-Wago-ID: ZKbeyR61
 
 libs\load_libs_classic.xml
 locales\load_locales.xml
