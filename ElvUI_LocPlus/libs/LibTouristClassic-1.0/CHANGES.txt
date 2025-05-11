@@ -1,14 +1,16 @@
-tag a6a67d9bde7b58f147ce6e82379b748e2a4a7ff2 WoW-4.4.0-release4
+tag 08e16a785d546dd7104fee07cb6d855b9ed71818 WoW-4.4.2-release1
 Author:	Odica Jaedenar <odica.jaedenar@gmail.com>
-Date:	Sat Aug 3 22:14:07 2024 +0200
+Date:	Sat Feb 22 22:17:11 2025 +0100
 
-Tagged as WoW-4.4.0-release4
+Tagged as WoW-4.4.2-release1
 
-commit 79bbafca061b967ce02ef605c0685ce8b45d800c
+commit 38829db41a08f6e75d5fa4d3e1f3a2edbdb2b4e8
 Author: Odica Jaedenar <odica.jaedenar@gmail.com>
-Date:   Sat Aug 3 22:12:31 2024 +0200
+Date:   Sat Feb 22 22:16:27 2025 +0100
 
-    - all herb and mining data has been reinventorized (source: wowhead) and regenerated, resulting in a LOT of corrections
-    - added missing translations
-    - fixed incorrect herb item IDs
+    - added End Time
+    - added Well of Eternity
+    - added Hour of Twilight
+    - corrected Baradin Hold player level
+    - updated version in TOC to 40402
 

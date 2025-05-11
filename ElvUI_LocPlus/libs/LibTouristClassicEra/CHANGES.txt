@@ -1,12 +1,16 @@
-tag 56ff41d93a434bbe4fcaada8b1617587c5700f72 WoW-1.15.3-release1a
+tag 04397c11a0aebbcdd3e645a777d324d5bd774625 WoW-1.15.7-release1
 Author:	Odica Jaedenar <odica.jaedenar@gmail.com>
-Date:	Wed Jul 24 22:07:36 2024 +0200
+Date:	Mon Apr 14 00:13:49 2025 +0200
 
-Tagged as WoW-1.15.3-release1a
+Tagged as WoW-1.15.7-release1
 
-commit c8d022f470823e027f55ba09dc5095dd15db7a7a
+commit 31c2871b5a2b4ee3364d3914688e59097ada52ef
 Author: Odica Jaedenar <odica.jaedenar@gmail.com>
-Date:   Wed Jul 24 22:06:39 2024 +0200
+Date:   Mon Apr 14 00:13:06 2025 +0200
 
-    Rebuild to include a fixed HBD library
+    - added 5 missing MapIDs
+    - fixed an issue causing some recently added instances not to be initialized
+    - added Scarlet Enclave (raid)
+    - added Karazhan Crypts (dungeon)
+    - updated version in TOC to 11507
 

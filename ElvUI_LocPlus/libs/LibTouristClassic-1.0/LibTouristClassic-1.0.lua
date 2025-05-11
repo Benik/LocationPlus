@@ -1,6 +1,6 @@
 --[[
 Name: LibTouristClassic-1.0
-Revision: $Rev: 264 $
+Revision: $Rev: 265 $
 Author(s): Odica; based on LibTourist-3.0
 Documentation: https://www.wowace.com/projects/libtourist-1-0/pages/api-reference
 Git: https://repos.wowace.com/wow/libtourist-classic libtourist-classic
@@ -4493,6 +4493,9 @@ do
 			[BZ["The Black Morass"]] = true,
 			[BZ["Hyjal Summit"]] = true,
 			[BZ["Dragon Soul"]] = true,
+			[BZ["End Time"]] = true,
+			[BZ["Well of Eternity"]] = true,
+			[BZ["Hour of Twilight"]] = true,
 		},
 		paths = {
 			[BZ["Thousand Needles"]] = true,
@@ -6297,7 +6300,7 @@ do
 		groupSize = 5,
 		type = "Instance",
 		entrancePortal = { BZ["Deepholm"], 47.70, 51.96 },
-	}	
+	}
 
 	zones[BZ["Throne of the Tides"]] = {
 		low = 80,
@@ -6307,7 +6310,7 @@ do
 		groupSize = 5,
 		type = "Instance",
 		entrancePortal = { BZ["Abyssal Depths"], 69.3, 25.2 },
-	}	
+	}
 
 	zones[BZ["Grim Batol"]] = {
 		low = 83,
@@ -6317,10 +6320,50 @@ do
 		groupSize = 5,
 		type = "Instance",
 		entrancePortal = { BZ["Twilight Highlands"], 19, 53.5 },
-	}	
+	}
 
 
+	-- patch 4.4.2
+	zones[BZ["End Time"]] = {
+		low = 85,
+		high = 85,
+		continent = Eastern_Kingdoms,
+		paths = {
+			[BZ["Caverns of Time"]] = true,
+		},
+		groupSize = 5,
+		type = "Instance",
+		complex = BZ["Caverns of Time"],
+		entrancePortal = { BZ["Tanaris"], 66.2, 49.3 },
+	}
 
+	-- patch 4.4.2
+	zones[BZ["Well of Eternity"]] = {
+		low = 85,
+		high = 85,
+		continent = Eastern_Kingdoms,
+		paths = {
+			[BZ["Caverns of Time"]] = true,
+		},
+		groupSize = 5,
+		type = "Instance",
+		complex = BZ["Caverns of Time"],
+		entrancePortal = { BZ["Tanaris"], 66.2, 49.3 },
+	}
+
+	-- patch 4.4.2
+	zones[BZ["Hour of Twilight"]] = {
+		low = 85,
+		high = 85,
+		continent = Eastern_Kingdoms,
+		paths = {
+			[BZ["Caverns of Time"]] = true,
+		},
+		groupSize = 5,
+		type = "Instance",
+		complex = BZ["Caverns of Time"],
+		entrancePortal = { BZ["Tanaris"], 66.2, 49.3 },
+	}
 
 
 	-- ============== RAIDS =======================================================================
@@ -6637,6 +6680,7 @@ do
 		entrancePortal = { BZ["Burning Steppes"], 26.1, 24.6 },
 	}
 	
+	-- patch 4.4.2
 	zones[BZ["Dragon Soul"]] = {
 		low = 85,
 		high = 85,
@@ -6652,8 +6696,8 @@ do
 	
 	-- Opens when your faction controls Tol Barad
 	zones[BZ["Baradin Hold"]] = {
-		low = 35,
-		high = 35,
+		low = 85,
+		high = 85,
 		continent = Eastern_Kingdoms,
 		expansion = Cataclysm,
 		paths = BZ["Tol Barad"],
@@ -6902,6 +6946,9 @@ do
 			[BZ["The Black Morass"]] = true,
 			[BZ["Hyjal Summit"]] = true,
 			[BZ["Dragon Soul"]] = true,
+			[BZ["End Time"]] = true,
+			[BZ["Well of Eternity"]] = true,
+			[BZ["Hour of Twilight"]] = true,
 		},
 		paths = {
 			[BZ["Tanaris"]] = true,
@@ -6909,6 +6956,9 @@ do
 			[BZ["The Black Morass"]] = true,
 			[BZ["Hyjal Summit"]] = true,
 			[BZ["Dragon Soul"]] = true,
+			[BZ["End Time"]] = true,
+			[BZ["Well of Eternity"]] = true,
+			[BZ["Hour of Twilight"]] = true,
 		},
 		type = "Complex",
 	}
