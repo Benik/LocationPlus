@@ -1,6 +1,6 @@
 ## Interface: 50500
 ## LoadOnDemand: 1
-## Title: LibTourist Classic (Cataclysm) library
+## Title: LibTourist Classic (Mists of Pandaria) library
 ## Notes: A library to provide information about zones and instances.
 ## Author: Odica
 ## X-Category: Library

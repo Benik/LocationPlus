@@ -1,17 +1,80 @@
-tag a57eb24baa4406be1583e9272237738bb18a002d WoW-5.5.0-alpha1
+tag 94676bc3eaddc17bec075cac85b3bb81d9756a08 WoW-5.5.0-beta1
 Author:	Odica Jaedenar <odica.jaedenar@gmail.com>
-Date:	Fri Jul 4 20:23:59 2025 +0200
+Date:	Thu Jul 10 00:20:32 2025 +0200
 
-Tagged as WoW-5.5.0-alpha1
+Tagged as WoW-5.5.0-beta1
 
-commit 93890402cd6a7202b8a8f6cd29d6a1585b81152f
+commit 83c3aeac4518d2febf264dd281c03b2c65173321
 Author: Odica Jaedenar <odica.jaedenar@gmail.com>
-Date:   Fri Jul 4 20:22:26 2025 +0200
+Date:   Thu Jul 10 00:19:18 2025 +0200
 
-    ** This is an alpha version that fixes a blocking LUA error. No MoP data has been added yet. **
+    - added Pandaria continent
     
-    - added 267 missing MapIDs
-    - removed 67 obsolete MapIDs (Azeroth zones have been renumbered, causing the error)
-    - added 78 missing InstanceMapIDs
-    - updated version in TOC to 50500
+    Added MoP zones:
+    - Shrine of Seven Stars
+    - Shrine of Two Moons
+    - The Wandering Isle
+    - The Jade Forest
+    - Krasarang Wilds
+    - Valley of the Four Winds
+    - Kun-Lai Summit
+    - The Veiled Stair
+    - Townlong Steppes
+    - Dread Wastes
+    - Vale of Eternal Blossoms
+    - Isle of Giants
+    - Isle of Thunder
+    - Timeless Isle
+    
+    Added MoP dungeons and raids:
+    - Stormstout Brewery
+    - Temple of the Jade Serpent
+    - Mogu'shan Palace
+    - Siege of Niuzao Temple
+    - Shado-Pan Monastery
+    - Throne of Thunder
+    - Terrace of Endless Spring
+    - Mogu'shan Vaults
+    - Heart of Fear
+    
+    Added MoP transport connections:
+    - Orgrimmar - The Jade Forest portal
+    - Stormwind City - The Jade Forest portal
+    - Shrine of Two Moons - Orgrimmar portal
+    - Shrine of Seven Stars - Stormwind City portal
+    - Townlong Steppes - Isle of Thunder v.v. portal
+    - Kun-Lai Summit - Isle of Giants flight path
+    - The Jade Forest - Timeless Isle v.v. flight path
+    
+    Added starter zones:
+    - New Tinkertown
+    - Northshire
+    - Deathknell
+    - Valley of Trials
+    - Camp Narache
+    - Shadowglen
+    - Sunstrider Isle
+    - Ammen Vale
+    
+    Other changes:
+    - added Echo Isles
+    - added battle pet levels
+    - added extra bracket (85-90) to BG levels
+    - added MoP herbs, mining nodes and ores, including localization
+    - completely regenerated herb and mining data because the Map ID's of the Azeroth zones have changed
+    - had to change the data structure for all mining nodes because Blizzard felt the need to introduce ONE mining node that can produce more than one type of ore (thanks, guys)
+    - updated addon title in TOC
+    
+    API:
+    - added function Tourist:GetBattlePetLevel(zone)
+    - added function Tourist:GetBattlePetLevelString(zone)
+    - added function Tourist:IteratePandaria()
+    - added function Tourist:IsInPandaria(zone)
+    
+    BREAKING API CHANGE: return data has changed for:
+    - Tourist:GetMiningNode(nodeObjectID)
+    - Tourist:IterateMiningNodes()
+    - Tourist:IterateMiningNodesByZone(mapID)
+    
+    The mining node data returned by these functions no longer contains the fields 'oreName' and 'oreItemID'. Instead, it contains a collection 'ores', key = ore item ID, value = ore name. This is to support Trillium veins that can yield White Trillium Ore and/or Black Trillium Ore.
 
