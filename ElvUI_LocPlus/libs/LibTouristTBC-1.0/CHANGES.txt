@@ -1,0 +1,6 @@
+commit f56888edc1ce83dd0cf1c05d16fe1f26c234efbd
+Author: Odica Jaedenar <odica.jaedenar@gmail.com>
+Date:   Mon Jan 19 23:09:46 2026 +0100
+
+    Initial commit, based on LibTouristClassic-1.0 WoW-2.5.3-release1
+
