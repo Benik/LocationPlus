@@ -1,3 +1,7 @@
+v3.00 (Jan 26, 2026)
+update retail toc. Credit: thurin
+add libtourist beta for tbc. Credit: thurin
+
 v2.92 (Aug 9, 2025)
 LibTouristClassic is now release status for mists
 
