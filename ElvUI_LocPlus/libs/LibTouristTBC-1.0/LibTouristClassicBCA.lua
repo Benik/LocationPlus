@@ -1,6 +1,6 @@
 --[[
 Name: LibTouristClassicBCA
-Revision: $Rev: 1 $
+Revision: $Rev: 2 $
 Author(s): Odica, Mishikal1; based on LibTourist-3.0
 Documentation: https://www.wowace.com/projects/libtourist-1-0/pages/api-reference
 Git: https://repos.wowace.com/wow/libtourist-classic libtourist-classic
@@ -9,7 +9,7 @@ License: MIT
 ]]
 
 local MAJOR_VERSION = "LibTouristClassicBCA"
-local MINOR_VERSION = 90000 + tonumber(("$Revision: 1 $"):match("(%d+)"))
+local MINOR_VERSION = 90000 + tonumber(("$Revision: 2 $"):match("(%d+)"))
 
 if not LibStub then error(MAJOR_VERSION .. " requires LibStub") end
 local C_Map = C_Map
