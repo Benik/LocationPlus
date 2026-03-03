@@ -1,13 +1,13 @@
-﻿## Interface: 11508
+## Interface: 50503
 ## Author: Benik
 ## Version: 3.01
-## Title: |cff1784d1ElvUI|r Location Plus |cfd9b9b9bClassic|r
+## Title: |cff1784d1ElvUI|r Location Plus |cfd9b9b9bMists|r
 ## Notes: a plugin for ElvUI 15+, that adds location, coords, 2 Datatexts and a tooltip full of info.
 ## RequiredDeps: ElvUI
-## OptionalDeps: LibTouristClassicEra
+## OptionalDeps: LibTouristClassic-1.0
 ## DefaultState: Enabled
 ## X-Wago-ID: ZKbeyR61
 
-libs\load_libs_classic.xml
+libs\load_libs_wrath.xml
 locales\load_locales.xml
 init.xml

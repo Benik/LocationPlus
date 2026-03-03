@@ -1,3 +1,15 @@
+v3.01 (Mar 3, 2026)
+Update LibTourist for Midnight
+Update LibTourist for TBC (Credit: Thurin)
+Update tocs (Credit: Thurin)
+
+v3.00 (Jan 26, 2026)
+update retail toc. Credit: thurin
+add libtourist beta for tbc. Credit: thurin
+
+v2.92 (Aug 9, 2025)
+LibTouristClassic is now release status for mists
+
 v2.91 (May 11, 2025)
 Update LibTourist for all game versions
 toc updates

@@ -1,8 +1,8 @@
-## Interface: 50500
+## Interface: 20505
 ## LoadOnDemand: 1
-## Title: LibTourist Classic (Mists of Pandaria) library
+## Title: LibTourist Classic (BC Anniversary) library
 ## Notes: A library to provide information about zones and instances.
-## Author: Odica
+## Author: Odica, Mishikal1
 ## X-Category: Library
 
 lib.xml

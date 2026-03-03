@@ -1,0 +1,12 @@
+tag b322b49e941615dcd739d36a828819b8219b49c7 WoW-2.5.5-release1
+Author:	Odica Jaedenar <odica.jaedenar@gmail.com>
+Date:	Fri Jan 30 17:07:06 2026 +0100
+
+Tagged as WoW-2.5.5-release1
+
+commit cac73b951af3fb5541d72da72de16033fb314565
+Author: Odica Jaedenar <odica.jaedenar@gmail.com>
+Date:   Fri Jan 30 17:06:19 2026 +0100
+
+    commit for release version, no changes
+

@@ -1,7 +1,7 @@
 local E, L, V, P, G = unpack(ElvUI);
 local LP = E:GetModule('LocationPlus')
 
-local Tourist = E.Retail and LibStub('LibTourist-3.0') or E.Cata and LibStub('LibTouristClassic-1.0') or E.Classic and LibStub('LibTouristClassicEra')
+local Tourist = E.Retail and LibStub('LibTourist-3.0') or E.Mists and LibStub('LibTouristClassic-1.0') or E.Classic and LibStub('LibTouristClassicEra') or E.TBC and LibStub('LibTouristClassicBCA')
 
 local format, tonumber, pairs, tinsert = string.format, tonumber, pairs, table.insert
 
@@ -512,7 +512,7 @@ function LP:UpdateTooltip()
 		end
 	end
 
-	if E.Wrath or E.Classic then
+	if E.Wrath or E.Classic or E.TBC then
 		if E.db.locplus.prof then
 			GameTooltip:AddLine(" ")
 			GameTooltip:AddLine(TRADE_SKILLS.." :", selectioncolor)
