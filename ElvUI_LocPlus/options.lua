@@ -637,7 +637,7 @@ local function Options()
 						name = L["Fonts"],
 						guiInline = true,
 						get = function(info) return E.db.locplus[ info[#info] ] end,
-						set = function(info, value) E.db.locplus[ info[#info] ] = value; LP:ChangeFont(); end,
+						set = function(info, value) E.db.locplus[ info[#info] ] = value; LP:ChangeFont() LP:ChangeDTFont() end,
 						args = {
 							useDTfont = {
 								order = 1,
