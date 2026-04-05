@@ -336,6 +336,7 @@ function LP:ChangeDTFont()
 
 		if panelName and panel then
 			DT:UpdatePanelInfo(panelName, panel)
+			DT:ForceUpdate_DataText(panelName)
 		end
 	end
 end
@@ -631,11 +632,11 @@ function LP:Initialize()
 	LP:UpdateCoords()
 	LP:HideCoords()
 	LP:UpdateTextColor()
+	LP:ChangeDTFont()
 	LP:TimerUpdate()
 	LP:ToggleBlizZoneText()
 	LP:UpdateVisibility()
 
-	E:Delay(5, LP.ChangeDTFont) -- take a look at this
 	LP:ScheduleRepeatingTimer('UpdateLocation', 0.5)
 
 	LP:RegisterEvent("ZONE_CHANGED_NEW_AREA", LP.UpdateTextColor)
