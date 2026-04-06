@@ -37,6 +37,7 @@ local UNKNOWN = UNKNOWN
 LP.Title = format('|cffffa500%s|r|cffffffff%s|r ', 'Location', 'Plus')
 LP.version = GetAddOnMetadata("ElvUI_LocPlus", "Version")
 LP.Config = {}
+LP.Panels = {}
 
 if E.db.locplus == nil then E.db.locplus = {} end
 
@@ -142,11 +143,6 @@ local function LocPanel_OnClick(_, btn)
 	end
 end
 
--- Hide in combat, after fade function ends
-local function LocPanelOnFade()
-	_G.LocationPlusPanel:Hide()
-end
-
 local function HideDT()
 	_G.LocPlusRightDT:SetShown(E.db.locplus.dtshow)
 	_G.LocPlusLeftDT:SetShown(E.db.locplus.dtshow)
@@ -156,30 +152,30 @@ end
 function LP:CreateLocationPanel()
 	local db = E.db.locplus
 
-	local loc_panel = CreateFrame('Frame', 'LocationPlusPanel', E.UIParent, 'BackdropTemplate')
-	loc_panel:SetTemplate('Default')
-	loc_panel:Width(db.lpwidth or 200)
-	loc_panel:Height(db.dtheight or 21)
-	loc_panel:Point('TOP', E.UIParent, 'TOP', 0, -E.mult -22)
-	loc_panel:SetFrameStrata(db.frameStrata or 'LOW')
-	loc_panel:SetFrameLevel(db.frameLevel or 2)
-	loc_panel:EnableMouse(true)
-	loc_panel:SetScript('OnEnter', LocPanel_OnEnter)
-	loc_panel:SetScript('OnLeave', LocPanel_OnLeave)
-	loc_panel:SetScript('OnMouseUp', LocPanel_OnClick)
+	local locPanel = CreateFrame('Frame', 'LocationPlusPanel', E.UIParent, 'BackdropTemplate')
+	locPanel:SetTemplate('Default')
+	locPanel:Width(db.lpwidth or 200)
+	locPanel:Height(db.dtheight or 21)
+	locPanel:Point('TOP', E.UIParent, 'TOP', 0, -E.mult -22)
+	locPanel:SetFrameStrata(db.frameStrata or 'LOW')
+	locPanel:SetFrameLevel(db.frameLevel or 2)
+	locPanel:EnableMouse(true)
+	locPanel:SetScript('OnEnter', LocPanel_OnEnter)
+	locPanel:SetScript('OnLeave', LocPanel_OnLeave)
+	locPanel:SetScript('OnMouseUp', LocPanel_OnClick)
 
 	-- Location Text
-	loc_panel.Text = loc_panel:CreateFontString(nil, "OVERLAY")
-	loc_panel.Text:Point("CENTER", 0, 0)
-	loc_panel.Text:SetAllPoints()
-	loc_panel.Text:SetJustifyH("CENTER")
-	loc_panel.Text:SetJustifyV("MIDDLE")
+	locPanel.Text = locPanel:CreateFontString(nil, "OVERLAY")
+	locPanel.Text:Point("CENTER", 0, 0)
+	locPanel.Text:SetAllPoints()
+	locPanel.Text:SetJustifyH("CENTER")
+	locPanel.Text:SetJustifyV("MIDDLE")
 
 	-- Hide in combat/Pet battle
-	loc_panel:SetScript("OnEvent",function(self, event)
+	locPanel:SetScript("OnEvent", function(self, event)
 		if event == "PET_BATTLE_OPENING_START" then
 			UIFrameFadeOut(self, 0.2, self:GetAlpha(), 0)
-			self.fadeInfo.finishedFunc = LocPanelOnFade
+			self.fadeInfo.finishedFunc = function() self:Hide() end
 		elseif event == "PET_BATTLE_CLOSE" then
 			if db.mouseover then
 				UIFrameFadeIn(self, 0.2, self:GetAlpha(), db.malpha)
@@ -190,7 +186,7 @@ function LP:CreateLocationPanel()
 		elseif db.combat then
 			if event == "PLAYER_REGEN_DISABLED" then
 				UIFrameFadeOut(self, 0.2, self:GetAlpha(), 0)
-				self.fadeInfo.finishedFunc = LocPanelOnFade
+				self.fadeInfo.finishedFunc = function() self:Hide() end
 			elseif event == "PLAYER_REGEN_ENABLED" then
 				if db.mouseover then
 					UIFrameFadeIn(self, 0.2, self:GetAlpha(), db.malpha)
@@ -202,19 +198,22 @@ function LP:CreateLocationPanel()
 		end
 	end)
 
-	loc_panel:RegisterEvent("PLAYER_REGEN_DISABLED")
-	loc_panel:RegisterEvent("PLAYER_REGEN_ENABLED")
-	loc_panel:RegisterEvent("PET_BATTLE_CLOSE")
-	loc_panel:RegisterEvent("PET_BATTLE_OPENING_START")
+	locPanel:RegisterEvent("PLAYER_REGEN_DISABLED")
+	locPanel:RegisterEvent("PLAYER_REGEN_ENABLED")
+	locPanel:RegisterEvent("PET_BATTLE_CLOSE")
+	locPanel:RegisterEvent("PET_BATTLE_OPENING_START")
 
 	-- Mover
-	E:CreateMover(loc_panel, "LocationMover", L["LocationPlus "], nil, nil, nil, nil, nil, 'locplus')
+	E:CreateMover(locPanel, "LocationMover", L["LocationPlus "], nil, nil, nil, nil, nil, 'locplus')
+
+	self.locPanel = locPanel
+	LP["Panels"][locPanel] = true
 end
 
 -- Coord panels
 function LP:CreateCoordPanels()
 	local db = E.db.locplus
-	local locPanel = _G.LocationPlusPanel
+	local locPanel = self.locPanel
 
 	-- X Coord panel
 	local coordsX = CreateFrame('Frame', "XCoordsPanel", locPanel, 'BackdropTemplate')
@@ -227,6 +226,9 @@ function LP:CreateCoordPanels()
 	coordsX.Text:SetJustifyH("CENTER")
 	coordsX.Text:SetJustifyV("MIDDLE")
 
+	self.coordsX = coordsX
+	LP["Panels"][coordsX] = true
+
 	-- Y Coord panel
 	local coordsY = CreateFrame('Frame', "YCoordsPanel", locPanel, 'BackdropTemplate')
 	coordsY:SetTemplate('Default')
@@ -238,39 +240,48 @@ function LP:CreateCoordPanels()
 	coordsY.Text:SetJustifyH("CENTER")
 	coordsY.Text:SetJustifyV("MIDDLE")
 
+	self.coordsY = coordsY
+	LP["Panels"][coordsY] = true
+
 	LP:CoordsColor()
 end
 
 -- Datatext panels
 function LP:CreateDatatextPanels()
 	local db = E.db.locplus
-	local locPanel = _G.LocationPlusPanel
+	local locPanel = self.locPanel
 
 	-- Left coords Datatext panel
-	local left_dtp = CreateFrame('Frame', 'LocPlusLeftDT', E.UIParent, 'BackdropTemplate')
-	left_dtp:SetTemplate('Default', true)
-	left_dtp:Width(db.dtwidth)
-	left_dtp:Height(db.dtheight)
-	left_dtp:SetFrameStrata('LOW')
-	left_dtp:SetParent(locPanel)
+	local leftDT = CreateFrame('Frame', 'LocPlusLeftDT', E.UIParent, 'BackdropTemplate')
+	leftDT:SetTemplate('Default', true)
+	leftDT:Width(db.dtwidth)
+	leftDT:Height(db.dtheight)
+	leftDT:SetFrameStrata('LOW')
+	leftDT:SetParent(locPanel)
 
-	DT:RegisterPanel(left_dtp, 1, 'ANCHOR_BOTTOM', 0, -4)
+	DT:RegisterPanel(leftDT, 1, 'ANCHOR_BOTTOM', 0, -4)
+	self.leftDT = leftDT
+	LP["Panels"][leftDT] = true
 
 	-- Right coords Datatext panel
-	local right_dtp = CreateFrame('Frame', 'LocPlusRightDT', E.UIParent, 'BackdropTemplate')
-	right_dtp:SetTemplate('Default', true)
-	right_dtp:Width(db.dtwidth)
-	right_dtp:Height(db.dtheight)
-	right_dtp:SetFrameStrata('LOW')
-	right_dtp:SetParent(locPanel)
+	local rightDT = CreateFrame('Frame', 'LocPlusRightDT', E.UIParent, 'BackdropTemplate')
+	rightDT:SetTemplate('Default', true)
+	rightDT:Width(db.dtwidth)
+	rightDT:Height(db.dtheight)
+	rightDT:SetFrameStrata('LOW')
+	rightDT:SetParent(locPanel)
 
-	DT:RegisterPanel(right_dtp, 1, 'ANCHOR_BOTTOM', 0, -4)
+	DT:RegisterPanel(rightDT, 1, 'ANCHOR_BOTTOM', 0, -4)
+	self.rightDT = rightDT
+	LP["Panels"][rightDT] = true
+
+	LP:ChangeDTFont()
 end
 
 -- mouse over option
 function LP:MouseOver()
 	local db = E.db.locplus
-	local locPanel = _G.LocationPlusPanel
+	local locPanel = self.locPanel
 
 	if db.mouseover then
 		locPanel:SetAlpha(db.malpha)
@@ -283,14 +294,14 @@ end
 function LP:DTWidth()
 	local db = E.db.locplus
 
-	LocPlusLeftDT:Width(db.dtwidth)
-	LocPlusRightDT:Width(db.dtwidth)
+	self.leftDT:Width(db.dtwidth)
+	self.rightDT:Width(db.dtwidth)
 end
 
 -- all panels height
 function LP:DTHeight()
 	local db = E.db.locplus
-	local locPanel = _G.LocationPlusPanel
+	local locPanel = self.locPanel
 
 	if db.ht then
 		locPanel:Height((db.dtheight)+6)
@@ -298,23 +309,25 @@ function LP:DTHeight()
 		locPanel:Height(db.dtheight)
 	end
 
-	_G.LocPlusLeftDT:Height(db.dtheight)
-	_G.LocPlusRightDT:Height(db.dtheight)
+	self.leftDT:Height(db.dtheight)
+	self.rightDT:Height(db.dtheight)
 
-	_G.XCoordsPanel:Height(db.dtheight)
-	_G.YCoordsPanel:Height(db.dtheight)
+	self.coordsX:Height(db.dtheight)
+	self.coordsY:Height(db.dtheight)
 end
 
 -- Fonts
 function LP:ChangeFont()
 	local db = E.db.locplus
-	local panels = {_G.LocationPlusPanel, _G.XCoordsPanel, _G.YCoordsPanel}
+	local panels = LP.Panels
 
-	for _, frame in pairs(panels) do
-		if db.useDTfont then
-			frame.Text:FontTemplate(LSM:Fetch('font', E.db.datatexts.font), E.db.datatexts.fontSize, E.db.datatexts.fontOutline)
-		else
-			frame.Text:FontTemplate(LSM:Fetch("font", db.lpfont), db.lpfontsize, db.lpfontflags)
+	for frame, _ in pairs(panels) do
+		if frame.Text then
+			if db.useDTfont then
+				frame.Text:FontTemplate(LSM:Fetch('font', E.db.datatexts.font), E.db.datatexts.fontSize, E.db.datatexts.fontOutline)
+			else
+				frame.Text:FontTemplate(LSM:Fetch("font", db.lpfont), db.lpfontsize, db.lpfontflags)
+			end
 		end
 	end
 end
@@ -344,9 +357,9 @@ end
 -- Enable/Disable shadows
 function LP:ShadowPanels()
 	local db = E.db.locplus
-	local addonPanels = {_G.LocationPlusPanel, _G.XCoordsPanel, _G.YCoordsPanel, _G.LocPlusLeftDT, _G.LocPlusRightDT}
+	local addonPanels = LP.Panels
 
-	for _, frame in pairs(addonPanels) do
+	for frame, _ in pairs(addonPanels) do
 		frame:CreateShadow()
 		frame.shadow:SetShown(db.shadow)
 	end
@@ -363,11 +376,11 @@ end
 -- Show/Hide coord frames
 function LP:HideCoords()
 	local db = E.db.locplus
-	local locPanel =_G.LocationPlusPanel
-	local xCoords = _G.XCoordsPanel
-	local yCoords = _G.YCoordsPanel
-	local leftDT = _G.LocPlusLeftDT
-	local rightDT = _G.LocPlusRightDT
+	local locPanel = self.locPanel
+	local xCoords = self.coordsX
+	local yCoords = self.coordsY
+	local leftDT = self.leftDT
+	local rightDT = self.rightDT
 
 	xCoords:Point('RIGHT', locPanel, 'LEFT', db.spacingAuto and -SPACING or -db.spacingManual, 0)
 	yCoords:Point('LEFT', locPanel, 'RIGHT', db.spacingAuto and SPACING or db.spacingManual, 0)
@@ -397,9 +410,9 @@ end
 -- Toggle transparency
 function LP:TransparentPanels()
 	local db = E.db.locplus
-	local addonPanels = {_G.LocationPlusPanel, _G.XCoordsPanel, _G.YCoordsPanel, _G.LocPlusLeftDT, _G.LocPlusRightDT}
+	local addonPanels = LP.Panels
 
-	for _, frame in pairs(addonPanels) do
+	for frame, _ in pairs(addonPanels) do
 		frame:SetTemplate('NoBackdrop')
 		if not db.noback then
 			db.shadow = false
@@ -413,7 +426,7 @@ end
 
 function LP:StrataAndLevel()
 	local db = E.db.locplus
-	local locPanel = _G.LocationPlusPanel
+	local locPanel = self.locPanel
 
 	locPanel:SetFrameStrata(db.frameStrata)
 	locPanel:SetFrameLevel(db.frameLevel)
@@ -434,7 +447,7 @@ function LP:UpdateLocation()
 	local subZoneText = GetMinimapZoneText() or ""
 	local zoneText = GetRealZoneText() or UNKNOWN
 	local displayLine
-	local locPanel = _G.LocationPlusPanel
+	local locPanel = self.locPanel
 
 	-- zone and subzone
 	if db.both then
@@ -491,8 +504,10 @@ end
 function LP:UpdateTextColor()
 	-- Coloring
 	local db = E.db.locplus
+	local locPanel = self.locPanel
+
+	if not locPanel then return end
 	local r, g, b
-	local locPanel = _G.LocationPlusPanel
 
 	if locPanel.Text ~= "" then
 		if db.customColor == 1 then
@@ -509,8 +524,8 @@ end
 function LP:UpdateCoords()
 	local x, y = CreateCoords()
 	local xt, yt
-	local xCoords = _G.XCoordsPanel
-	local yCoords = _G.YCoordsPanel
+	local xCoords = self.coordsX
+	local yCoords = self.coordsY
 
 	if (x == 0 or x == nil) and (y == 0 or y == nil) then
 		xCoords.Text:SetText("-")
@@ -541,13 +556,13 @@ function LP:UpdateVisibility()
 		visibility = visibility:gsub('[\n\r]','')
 	end
 
-	RegisterStateDriver(_G.LocationPlusPanel, "visibility", visibility)
+	RegisterStateDriver(self.locPanel, "visibility", visibility)
 end
 
 -- Coord panels width
 function LP:CoordsDigit()
-	local xCoords = _G.XCoordsPanel
-	local yCoords = _G.YCoordsPanel
+	local xCoords = self.coordsX
+	local yCoords = self.coordsY
 
 	if E.db.locplus.dig then
 		xCoords:Width(COORDS_WIDTH*1.5)
@@ -569,12 +584,12 @@ function LP:CoordsColor()
 	else
 		r, g, b = unpackColor(db.userCoordsColor)
 	end
-	_G.XCoordsPanel.Text:SetTextColor(r, g, b)
-	_G.YCoordsPanel.Text:SetTextColor(r, g, b)
+	self.coordsX.Text:SetTextColor(r, g, b)
+	self.coordsY.Text:SetTextColor(r, g, b)
 end
 
 -- Update changes
-function LP:UpdateFrames()
+function LP:UpdateDatatextFrames()
 	LP:TransparentPanels()
 	LP:ShadowPanels()
 	LP:DTHeight()
@@ -583,6 +598,7 @@ function LP:UpdateFrames()
 	LP:MouseOver()
 	LP:HideCoords()
 	LP:UpdateTextColor()
+	LP:ChangeFont()
 
 	HideDT()
 end
@@ -627,24 +643,20 @@ function LP:Initialize()
 	LP:CreateDatatextPanels()
 	LP:CreateCoordPanels()
 
-	LP:UpdateFrames()
-	LP:ChangeFont()
+	LP:UpdateDatatextFrames()
 	LP:UpdateCoords()
-	LP:HideCoords()
-	LP:UpdateTextColor()
-	LP:ChangeDTFont()
 	LP:TimerUpdate()
 	LP:ToggleBlizZoneText()
 	LP:UpdateVisibility()
 
 	LP:ScheduleRepeatingTimer('UpdateLocation', 0.5)
 
-	LP:RegisterEvent("ZONE_CHANGED_NEW_AREA", LP.UpdateTextColor)
-	LP:RegisterEvent("ZONE_CHANGED_INDOORS", LP.UpdateTextColor)
-	LP:RegisterEvent("ZONE_CHANGED", LP.UpdateTextColor)
+	LP:RegisterEvent("ZONE_CHANGED_NEW_AREA", "UpdateTextColor")
+	LP:RegisterEvent("ZONE_CHANGED_INDOORS", "UpdateTextColor")
+	LP:RegisterEvent("ZONE_CHANGED", "UpdateTextColor")
 
-	hooksecurefunc(DT, 'UpdatePanelInfo', LP.UpdateFrames)
-	hooksecurefunc(DT, 'UpdatePanelAttributes', LP.UpdateFrames)
+	hooksecurefunc(DT, 'UpdatePanelInfo', LP.UpdateDatatextFrames)
+	hooksecurefunc(DT, 'UpdatePanelAttributes', LP.UpdateDatatextFrames)
 	hooksecurefunc(DT, 'UpdatePanelAttributes', LP.ChangeDTFont)
 	hooksecurefunc(DT, 'LoadDataTexts', LP.LoadDataTexts)
 
