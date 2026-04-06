@@ -49,6 +49,30 @@ local function unpackColor(color)
 	return color.r, color.g, color.b
 end
 
+-- Coords Creation
+local function CreateCoords()
+	local mapID = C_Map_GetBestMapForUnit("player")
+	local mapPos = mapID and C_Map_GetPlayerMapPosition(mapID, "player")
+	local x, y = 0, 0
+
+	if mapPos then
+		x, y = mapPos:GetXY()
+	end
+
+	local dig
+
+	if E.db.locplus.dig then
+		dig = 2
+	else
+		dig = 0
+	end
+
+	x = (mapPos and x) and E:Round(100 * x, dig) or 0
+	y = (mapPos and y) and E:Round(100 * y, dig) or 0
+
+	return x, y
+end
+
 -- mouse over the location panel
 local function LocPanel_OnEnter(self)
 	local db = E.db.locplus
@@ -121,30 +145,6 @@ end
 -- Hide in combat, after fade function ends
 local function LocPanelOnFade()
 	_G.LocationPlusPanel:Hide()
-end
-
--- Coords Creation
-local function CreateCoords()
-	local mapID = C_Map_GetBestMapForUnit("player")
-	local mapPos = mapID and C_Map_GetPlayerMapPosition(mapID, "player")
-	local x, y = 0, 0
-
-	if mapPos then
-		x, y = mapPos:GetXY()
-	end
-
-	local dig
-
-	if E.db.locplus.dig then
-		dig = 2
-	else
-		dig = 0
-	end
-
-	x = (mapPos and x) and E:Round(100 * x, dig) or 0
-	y = (mapPos and y) and E:Round(100 * y, dig) or 0
-
-	return x, y
 end
 
 local function HideDT()
