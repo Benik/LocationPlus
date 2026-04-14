@@ -1,23 +1,26 @@
-local E, L, V, P, G = unpack(ElvUI);
+local E, L, V, P, G = unpack(ElvUI)
 local LP = E:GetModule('LocationPlus')
 
 local Tourist = E.Retail and LibStub('LibTourist-3.0') or E.Mists and LibStub('LibTouristClassic-1.0') or E.Classic and LibStub('LibTouristClassicEra') or E.TBC and LibStub('LibTouristClassicBCA')
 
-local format, tonumber, pairs, tinsert = string.format, tonumber, pairs, table.insert
+local format, tonumber, pairs = string.format, tonumber, pairs
 
 local GetBindLocation = GetBindLocation
 local C_Map_GetBestMapForUnit = C_Map.GetBestMapForUnit
 local C_CurrencyInfo_GetCurrencyInfo = C_CurrencyInfo.GetCurrencyInfo
 local C_CurrencyInfo_GetCurrencyListSize = C_CurrencyInfo.GetCurrencyListSize
-local GetZonePVPInfo = (C_PvP and C_PvP.GetZonePVPInfo) or GetZonePVPInfo
-local GetProfessionInfo, GetProfessions = GetProfessionInfo, GetProfessions
+local GetZonePVPInfo = C_PvP.GetZonePVPInfo or GetZonePVPInfo
+local GetProfessionInfo = GetProfessionInfo
+local GetProfessions = GetProfessions
+local GetNumSkillLines = GetNumSkillLines
+local GetSkillLineInfo = GetSkillLineInfo
 local UnitLevel = UnitLevel
-local GameTooltip = _G['GameTooltip']
+local GameTooltip = GameTooltip
+local selectioncolor = selectioncolor
 
 local PLAYER, UNKNOWN, TRADE_SKILLS, TOKENS, DUNGEONS = PLAYER, UNKNOWN, TRADE_SKILLS, TOKENS, DUNGEONS
 local PROFESSIONS_FISHING, LEVEL_RANGE, STATUS, HOME, CONTINENT, PVP, RAID = PROFESSIONS_FISHING, LEVEL_RANGE, STATUS, HOME, CONTINENT, PVP, RAID
-
--- GLOBALS: selectioncolor, continent, continentID
+local SECONDARY_SKILLS = SECONDARY_SKILLS
 
 -- Icons on Location Panel
 local FISH_ICON = "|TInterface\\AddOns\\ElvUI_LocPlus\\media\\fish.tga:14:14|t"
@@ -148,63 +151,64 @@ end]]
 
 -- Dungeon coords
 local function GetDungeonCoords(zone)
-	local z, x, y = "", 0, 0;
-	local dcoords
-	
+	local z, x, y = "", 0, 0
+	local dungeonCoords
+
 	if Tourist:IsInstance(zone) then
-		z, x, y = Tourist:GetEntrancePortalLocation(zone);
+		z, x, y = Tourist:GetEntrancePortalLocation(zone)
 	end
-	
+
 	if z == nil then
-		dcoords = ""
+		dungeonCoords = ""
 	elseif E.db.locplus.ttcoords then
 		x = tonumber(E:Round(x*100, 0))
 		y = tonumber(E:Round(y*100, 0))		
-		dcoords = format(" |cffffffff(%d, %d)|r", x, y)
+		dungeonCoords = format(" |cffffffff(%d, %d)|r", x, y)
 	else 
-		dcoords = ""
+		dungeonCoords = ""
 	end
 
-	return dcoords
+	return dungeonCoords
 end
 
 -- PvP/Raid filter
  local function PvPorRaidFilter(zone)
-	local isPvP, isRaid;
+	local isPvP, isRaid
 
-	isPvP = nil;
-	isRaid = nil;
+	isPvP = nil
+	isRaid = nil
 
 	if(not E.Classic and Tourist:IsArena(zone) or Tourist:IsBattleground(zone)) then
 		if E.db.locplus.tthidepvp then
-			return;
+			return
 		end
-		isPvP = true;
+		isPvP = true
 	end
 
 	if(not isPvP and Tourist:GetInstanceGroupSize(zone) >= 10) then
 		if E.db.locplus.tthideraid then
 			return
 		end
-		isRaid = true;
+		isRaid = true
 	end
 
 	return (isPvP and "|cffff0000 "..PVP.."|r" or "")..(isRaid and "|cffff4400 "..RAID.."|r" or "")
 end
 
 -- Recommended zones
-local function GetRecomZones(zone)
+local function GetRecommendedZones(zone)
 	local low, high = Tourist:GetLevel(zone)
 	local r, g, b = Tourist:GetLevelColor(zone)
 	local zContinent = Tourist:GetContinent(zone)
+	local continent
 
 	if PvPorRaidFilter(zone) == nil then return end
 
 	GameTooltip:AddDoubleLine(
 	"|cffffffff"..zone
 	..PvPorRaidFilter(zone) or "",
-	format("|cff%02xff00%s|r", continent == zContinent and 0 or 255, zContinent)
-	..(" |cff%02x%02x%02x%s|r"):format(r *255, g *255, b *255,(low == high and low or ("%d-%d"):format(low, high))));
+	format("|cff%02xff00%s|r", 255, zContinent)
+	..(" |cff%02x%02x%02x%s|r"):format(r *255, g *255, b *255,(low == high and low or ("%d-%d"):format(low, high))))
 end
 
 -- Dungeons in the zone
@@ -230,9 +234,9 @@ end
 
 -- Recommended Dungeons
 local function GetRecomDungeons(dungeon)
-	local low, high = Tourist:GetLevel(dungeon);	
-	local r, g, b = Tourist:GetLevelColor(dungeon);
-	local instZone = Tourist:GetInstanceZone(dungeon);
+	local low, high = Tourist:GetLevel(dungeon)
+	local r, g, b = Tourist:GetLevelColor(dungeon)
+	local instZone = Tourist:GetInstanceZone(dungeon)
 	local name = dungeon
 
 	if PvPorRaidFilter(dungeon) == nil then return end
@@ -266,7 +270,7 @@ function LP:GetStatus(color)
 	local statusText
 	local r, g, b = 1, 1, 0
 	local pvpType = GetZonePVPInfo()
-	local inInstance, _ = IsInInstance()
+	local inInstance = IsInInstance()
 
 	if (pvpType == "sanctuary") then
 		status = SANCTUARY_TERRITORY
@@ -307,7 +311,7 @@ function LP:GetFishingLvl(ontt)
 	if E.Retail then return end
 
 	local mapID = C_Map_GetBestMapForUnit("player")
-	local zoneText = Tourist:GetMapNameByIDAlt(mapID) or UNKNOWN;
+	local zoneText = Tourist:GetMapNameByIDAlt(mapID) or UNKNOWN
 	local minFish, maxFish = Tourist:GetFishingLevel(zoneText)
 
 	if minFish then
@@ -328,9 +332,11 @@ end
 -- Zone level range
 function LP:GetLevelRange(zoneText, ontt)
 	local mapID = C_Map_GetBestMapForUnit("player")
-	local zoneText = Tourist:GetMapNameByIDAlt(mapID) or UNKNOWN;	
+	zoneText = Tourist:GetMapNameByIDAlt(mapID) or UNKNOWN
 	local low, high = Tourist:GetLevel(zoneText)
 	local dlevel
+
+
 	if low > 0 and high > 0 then
 		local r, g, b = Tourist:GetLevelColor(zoneText)
 		if low ~= high then
@@ -358,35 +364,36 @@ function LP:GetBattlePetLvl(zoneText, ontt)
 	if not E.Retail then return end
 
 	local mapID = C_Map_GetBestMapForUnit("player")
-	local zoneText = Tourist:GetMapNameByIDAlt(mapID) or UNKNOWN;
-	local uniqueZone = Tourist:GetUniqueZoneNameForLookup(zoneText, continentID)
+	zoneText = Tourist:GetMapNameByIDAlt(mapID) or UNKNOWN
+	local uniqueZone = Tourist:GetUniqueZoneNameForLookup(zoneText)
 	local low,high = Tourist:GetBattlePetLevel(uniqueZone)
-	local plevel
+	local petlevel
+
 	if low ~= nil or high ~= nil then
 		if low ~= high then
-			plevel = format("%d-%d", low, high)
+			petlevel = format("%d-%d", low, high)
 		else
-			plevel = format("%d", high)
+			petlevel = format("%d", high)
 		end
 
 		if ontt then
-			return plevel
+			return petlevel
 		else
 			if E.db.locplus.showicon then
-				plevel = format(" (%s) ", plevel)..PET_ICON
+				petlevel = format(" (%s) ", petlevel)..PET_ICON
 			else
-				plevel = format(" (%s) ", plevel)
+				petlevel = format(" (%s) ", petlevel)
 			end
 		end
 	end
 
-	return plevel or ""
+	return petlevel or ""
 end
 
 function LP:UpdateTooltip()
 	local mapID = C_Map_GetBestMapForUnit("player")
-	local zoneText = Tourist:GetMapNameByIDAlt(mapID) or UNKNOWN;
-	local curPos = (zoneText.." ") or "";
+	local zoneText = Tourist:GetMapNameByIDAlt(mapID) or UNKNOWN
+	local curPos = (zoneText.." ") or ""
 
 	GameTooltip:ClearLines()
 
@@ -436,20 +443,20 @@ function LP:UpdateTooltip()
 	if E.db.locplus.ttreczones then
 		GameTooltip:AddLine(" ")
 		GameTooltip:AddLine(L["Recommended Zones :"], selectioncolor)
-	
+
 		for zone in Tourist:IterateRecommendedZones() do
-			GetRecomZones(zone);
-		end		
+			GetRecommendedZones(zone)
+		end
 	end
 
 	-- Instances in the zone
 	if E.db.locplus.ttinst and Tourist:DoesZoneHaveInstances(zoneText) and not E.Classic then 
 		GameTooltip:AddLine(" ")
 		GameTooltip:AddLine(curPos..DUNGEONS.." :", selectioncolor)
-			
+
 		for dungeon in Tourist:IterateZoneInstances(zoneText) do
-			GetZoneDungeons(dungeon);
-		end	
+			GetZoneDungeons(dungeon)
+		end
 	end
 
 	-- Recommended Instances
@@ -457,9 +464,9 @@ function LP:UpdateTooltip()
 	if E.db.locplus.ttrecinst and Tourist:HasRecommendedInstances() and level >= 15 then
 		GameTooltip:AddLine(" ")
 		GameTooltip:AddLine(L["Recommended Dungeons :"], selectioncolor)
-			
+
 		for dungeon in Tourist:IterateRecommendedInstances() do
-			GetRecomDungeons(dungeon);
+			GetRecomDungeons(dungeon)
 		end
 	end
 
@@ -492,10 +499,10 @@ function LP:UpdateTooltip()
 
 		-- Professions
 		local prof1, prof2, archy, fishing, cooking, firstAid = GetProfessions()
-		if E.db.locplus.prof and (prof1 or prof2 or archy or fishing or cooking or firstAid) then	
+		if E.db.locplus.prof and (prof1 or prof2 or archy or fishing or cooking or firstAid) then
 			GameTooltip:AddLine(" ")
 			GameTooltip:AddLine(TRADE_SKILLS.." :", selectioncolor)
-			
+
 			local proftable = { GetProfessions() }
 			for _, id in pairs(proftable) do
 				local name, icon, rank, maxRank, _, _, _, rankModifier = GetProfessionInfo(id)
@@ -521,11 +528,11 @@ function LP:UpdateTooltip()
 			local hasSecondary = false
 			for skillIndex = 1, GetNumSkillLines() do
 				local skillName, isHeader, _, skillRank, _, skillModifier, skillMaxRank, isAbandonable = GetSkillLineInfo(skillIndex)
-		
+
 				if hasSecondary and isHeader then
 					hasSecondary = false
 				end
-		
+
 				if (skillName and isAbandonable) or hasSecondary then
 					if skillName and (skillRank < skillMaxRank or (not E.db.locplus.profcap)) then
 						if (skillModifier and skillModifier > 0) then
