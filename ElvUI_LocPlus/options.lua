@@ -418,6 +418,7 @@ local function Options()
 				order = 7,
 				type = "group",
 				name = L["Layout"],
+				childGroups = "tab",
 				args = {
 					lp_lo = {
 						order = 1,
@@ -455,7 +456,7 @@ local function Options()
 						order = 2,
 						type = "group",
 						name = L["Location Panel"],
-						guiInline = true,
+						--guiInline = true,
 						get = function(info) return E.db.locplus[ info[#info] ] end,
 						set = function(info, value) E.db.locplus[ info[#info] ] = value; end,
 						args = {
@@ -553,7 +554,7 @@ local function Options()
 						order = 3,
 						type = "group",
 						name = L["Coordinates"],
-						guiInline = true,
+						--guiInline = true,
 						args = {
 							customCoordsColor = {
 								order = 1,
@@ -596,7 +597,7 @@ local function Options()
 						order = 4,
 						type = "group",
 						name = L["Size"],
-						guiInline = true,
+						--guiInline = true,
 						args = {
 							dtwidth = {
 								order = 1,
@@ -622,7 +623,7 @@ local function Options()
 						order = 5,
 						type = "group",
 						name = L["Spacing"],
-						guiInline = true,
+						--guiInline = true,
 						get = function(info) return E.db.locplus[ info[#info] ] end,
 						set = function(info, value) E.db.locplus[ info[#info] ] = value; LP:UpdateSpacing() end,
 						args = {
@@ -644,7 +645,7 @@ local function Options()
 						order = 6,
 						type = "group",
 						name = L["Fonts"],
-						guiInline = true,
+						--guiInline = true,
 						get = function(info) return E.db.locplus[ info[#info] ] end,
 						set = function(info, value) E.db.locplus[ info[#info] ] = value; LP:ChangeFont() LP:ChangeDTFont() end,
 						args = {
@@ -686,7 +687,7 @@ local function Options()
 					},
 				},
 			},
-		},					
+		},
 	}
 end
 tinsert(LP.Config, Options)
