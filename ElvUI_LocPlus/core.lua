@@ -18,6 +18,8 @@ local C_Map_GetPlayerMapPosition = C_Map.GetPlayerMapPosition
 local GetMinimapZoneText = GetMinimapZoneText
 local GetRealZoneText = GetRealZoneText
 local GetSubZoneText = GetSubZoneText
+local GetInstanceInfo = GetInstanceInfo
+local GetZonePVPInfo = C_PvP.GetZonePVPInfo or GetZonePVPInfo
 local IsInInstance = IsInInstance
 local InCombatLockdown = InCombatLockdown
 local UnitAffectingCombat = UnitAffectingCombat
@@ -369,11 +371,21 @@ end
 -- Show/Hide coord frames
 function LP:HideCoords()
 	local db = E.db.locplus
+	if not db then return end
+
 	local locPanel = self.locPanel
 	local xCoords = self.coordsX
 	local yCoords = self.coordsY
 	local leftDT = self.leftDT
 	local rightDT = self.rightDT
+
+	local _, instanceType = GetInstanceInfo()
+	local inInstance = instanceType ~= 'none'
+
+	local pvpType = GetZonePVPInfo()
+	local inHousing = inInstance and pvpType == 'sanctuary'
+
+	local shouldHide = inInstance and not inHousing and (db.hidecoords or db.hidecoordsInInstance)
 
 	xCoords:Point('RIGHT', locPanel, 'LEFT', db.spacingAuto and -SPACING or -db.spacingManual, 0)
 	yCoords:Point('LEFT', locPanel, 'RIGHT', db.spacingAuto and SPACING or db.spacingManual, 0)
@@ -381,7 +393,7 @@ function LP:HideCoords()
 	leftDT:ClearAllPoints()
 	rightDT:ClearAllPoints()
 
-	if (db.hidecoords) or (db.hidecoordsInInstance and IsInInstance()) then
+	if shouldHide then
 		xCoords:Hide()
 		yCoords:Hide()
 		leftDT:Point('RIGHT', locPanel, 'LEFT', db.spacingAuto and -SPACING or -db.spacingManual, 0)
@@ -627,6 +639,11 @@ function LP:ToggleBlizZoneText()
 	end
 end
 
+function LP:UpdateCoordsColorAndVisibility()
+	LP:UpdateTextColor()
+	LP:HideCoords()
+end
+
 function LP:TimerUpdate()
 	self:ScheduleRepeatingTimer('UpdateCoords', E.db.locplus.timer)
 end
@@ -655,7 +672,7 @@ function LP:Initialize()
 
 	LP:ScheduleRepeatingTimer('UpdateLocation', 0.5)
 
-	LP:RegisterEvent("ZONE_CHANGED_NEW_AREA", "UpdateTextColor")
+	LP:RegisterEvent("ZONE_CHANGED_NEW_AREA", "UpdateCoordsColorAndVisibility")
 	LP:RegisterEvent("ZONE_CHANGED_INDOORS", "UpdateTextColor")
 	LP:RegisterEvent("ZONE_CHANGED", "UpdateTextColor")
 
