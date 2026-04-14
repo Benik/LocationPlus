@@ -50,6 +50,16 @@ local function unpackColor(color)
 	return color.r, color.g, color.b
 end
 
+local function InjectDatatextOptions()
+	local options = E.Options.args.datatexts.args.panels.args
+
+	options.LocPlusLeftDT.name = L['LocationPlus Left Panel']
+	options.LocPlusLeftDT.order = 1101
+
+	options.LocPlusRightDT.name = L['LocationPlus Right Panel']
+	options.LocPlusRightDT.order = 1102
+end
+
 -- Coords Creation
 local function CreateCoords()
 	local mapID = C_Map_GetBestMapForUnit("player")
@@ -281,6 +291,8 @@ end
 -- mouse over option
 function LP:MouseOver()
 	local db = E.db.locplus
+	if not db then return end
+
 	local locPanel = self.locPanel
 
 	if db.mouseover then
@@ -290,27 +302,25 @@ function LP:MouseOver()
 	end
 end
 
--- datatext panels width
-function LP:DTWidth()
-	local db = E.db.locplus
-
-	self.leftDT:Width(db.dtwidth)
-	self.rightDT:Width(db.dtwidth)
-end
-
 -- all panels height
-function LP:DTHeight()
+function LP:ResizePanels()
 	local db = E.db.locplus
+	if not db then return end
+
 	local locPanel = self.locPanel
+	local leftDT = self.leftDT
+	local rightDT = self.rightDT
 
 	if db.ht then
-		locPanel:Height((db.dtheight)+6)
+		locPanel:Height((db.dtheight) + 6)
 	else
 		locPanel:Height(db.dtheight)
 	end
 
-	self.leftDT:Height(db.dtheight)
-	self.rightDT:Height(db.dtheight)
+	leftDT:Height(db.dtheight)
+	rightDT:Height(db.dtheight)
+	leftDT:Width(db.dtwidth)
+	rightDT:Width(db.dtwidth)
 
 	self.coordsX:Height(db.dtheight)
 	self.coordsY:Height(db.dtheight)
@@ -319,8 +329,9 @@ end
 -- Fonts
 function LP:ChangeFont()
 	local db = E.db.locplus
-	local panels = LP.Panels
+	if not db then return end
 
+	local panels = LP.Panels
 	for frame, _ in pairs(panels) do
 		if frame.Text then
 			if db.useDTfont then
@@ -334,9 +345,10 @@ end
 
 function LP:ChangeDTFont()
 	local db = E.db.locplus
-	local dts = {_G.LocPlusLeftDT, _G.LocPlusRightDT}
+	if not db then return end
 
-	for panelName, panel in pairs(dts) do
+	local datatexts = {_G.LocPlusLeftDT, _G.LocPlusRightDT}
+	for panelName, panel in pairs(datatexts) do
 		for i = 1, panel.numPoints do
 			if panel.dataPanels[i] then
 				if db.useDTfont then
@@ -352,25 +364,6 @@ function LP:ChangeDTFont()
 			DT:ForceUpdate_DataText(panelName)
 		end
 	end
-end
-
--- Enable/Disable shadows
-function LP:ShadowPanels()
-	local db = E.db.locplus
-	local addonPanels = LP.Panels
-
-	for frame, _ in pairs(addonPanels) do
-		frame:CreateShadow()
-		frame.shadow:SetShown(db.shadow)
-	end
-
-	if db.shadow then
-		SPACING = db.spacingAuto and 2 or db.spacingManual
-	else
-		SPACING = db.spacingAuto and 1 or db.spacingManual
-	end
-
-	self:HideCoords()
 end
 
 -- Show/Hide coord frames
@@ -408,10 +401,11 @@ function LP:UpdateSpacing()
 end
 
 -- Toggle transparency
-function LP:TransparentPanels()
+function LP:UpdateTemplate()--LP:UpdateTemplate()
 	local db = E.db.locplus
-	local addonPanels = LP.Panels
+	if not db then return end
 
+	local addonPanels = LP.Panels
 	for frame, _ in pairs(addonPanels) do
 		frame:SetTemplate('NoBackdrop')
 		if not db.noback then
@@ -422,6 +416,26 @@ function LP:TransparentPanels()
 			frame:SetTemplate('Default')
 		end
 	end
+end
+
+-- Enable/Disable shadows
+function LP:ShadowPanels()
+	local db = E.db.locplus
+	if not db then return end
+
+	local addonPanels = LP.Panels
+	for frame, _ in pairs(addonPanels) do
+		frame:CreateShadow()
+		frame.shadow:SetShown(db.shadow)
+	end
+
+	if db.shadow then
+		SPACING = db.spacingAuto and 2 or db.spacingManual
+	else
+		SPACING = db.spacingAuto and 1 or db.spacingManual
+	end
+
+	self:HideCoords()
 end
 
 function LP:StrataAndLevel()
@@ -548,17 +562,6 @@ function LP:UpdateCoords()
 	end
 end
 
-function LP:UpdateVisibility()
-	local db = E.db.locplus
-
-	local visibility = db.visibility
-	if visibility and visibility:match('[\n\r]') then
-		visibility = visibility:gsub('[\n\r]','')
-	end
-
-	RegisterStateDriver(self.locPanel, "visibility", visibility)
-end
-
 -- Coord panels width
 function LP:CoordsDigit()
 	local xCoords = self.coordsX
@@ -588,11 +591,22 @@ function LP:CoordsColor()
 	self.coordsY.Text:SetTextColor(r, g, b)
 end
 
+function LP:UpdateVisibility()
+	local db = E.db.locplus
+
+	local visibility = db.visibility
+	if visibility and visibility:match('[\n\r]') then
+		visibility = visibility:gsub('[\n\r]','')
+	end
+
+	RegisterStateDriver(self.locPanel, "visibility", visibility)
+end
+
 -- Update changes
-function LP:UpdateDatatextFrames()
-	LP:TransparentPanels()
+function LP:UpdateFrames()
+	LP:UpdateTemplate()
 	LP:ShadowPanels()
-	LP:DTHeight()
+	LP:ResizePanels()
 	LP:StrataAndLevel()
 	LP:CoordsDigit()
 	LP:MouseOver()
@@ -623,16 +637,6 @@ function LP:AddOptions()
 	end
 end
 
-local function InjectDatatextOptions()
-	local options = E.Options.args.datatexts.args.panels.args
-
-	options.LocPlusLeftDT.name = L['LocationPlus Left Panel']
-	options.LocPlusLeftDT.order = 1101
-
-	options.LocPlusRightDT.name = L['LocationPlus Right Panel']
-	options.LocPlusRightDT.order = 1102
-end
-
 function LP:LoadDataTexts(...)
 	DT:UpdatePanelInfo('LocPlusRightDT')
 	DT:UpdatePanelInfo('LocPlusLeftDT')
@@ -643,7 +647,7 @@ function LP:Initialize()
 	LP:CreateDatatextPanels()
 	LP:CreateCoordPanels()
 
-	LP:UpdateDatatextFrames()
+	LP:UpdateFrames()
 	LP:UpdateCoords()
 	LP:TimerUpdate()
 	LP:ToggleBlizZoneText()
@@ -655,8 +659,8 @@ function LP:Initialize()
 	LP:RegisterEvent("ZONE_CHANGED_INDOORS", "UpdateTextColor")
 	LP:RegisterEvent("ZONE_CHANGED", "UpdateTextColor")
 
-	hooksecurefunc(DT, 'UpdatePanelInfo', LP.UpdateDatatextFrames)
-	hooksecurefunc(DT, 'UpdatePanelAttributes', LP.UpdateDatatextFrames)
+	hooksecurefunc(DT, 'UpdatePanelInfo', LP.UpdateFrames)
+	hooksecurefunc(DT, 'UpdatePanelAttributes', LP.UpdateFrames)
 	hooksecurefunc(DT, 'UpdatePanelAttributes', LP.ChangeDTFont)
 	hooksecurefunc(DT, 'LoadDataTexts', LP.LoadDataTexts)
 
