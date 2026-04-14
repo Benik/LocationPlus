@@ -167,7 +167,7 @@ local function GetDungeonCoords(zone)
 		x = tonumber(E:Round(x*100, 0))
 		y = tonumber(E:Round(y*100, 0))		
 		dungeonCoords = format(" |cffffffff(%d, %d)|r", x, y)
-	else 
+	else
 		dungeonCoords = ""
 	end
 
@@ -202,15 +202,15 @@ end
 local function GetRecommendedZones(zone)
 	local low, high = Tourist:GetLevel(zone)
 	local r, g, b = Tourist:GetLevelColor(zone)
-	local zContinent = Tourist:GetContinent(zone)
-	local continent
+	local continent = Tourist:GetContinent(zone)
+	local pvpRaidFilter = PvPorRaidFilter(zone)
 
-	if PvPorRaidFilter(zone) == nil then return end
+	if pvpRaidFilter == nil then return end
 
 	GameTooltip:AddDoubleLine(
 	"|cffffffff"..zone
-	..PvPorRaidFilter(zone) or "",
-	format("|cff%02xff00%s|r", 255, zContinent)
+	..pvpRaidFilter or "",
+	format("|cff%02xff00%s|r", 255, continent)
 	..(" |cff%02x%02x%02x%s|r"):format(r *255, g *255, b *255,(low == high and low or ("%d-%d"):format(low, high))))
 end
 
@@ -240,21 +240,21 @@ end
 local function GetRecomDungeons(dungeon)
 	local low, high = Tourist:GetLevel(dungeon)
 	local r, g, b = Tourist:GetLevelColor(dungeon)
-	local instZone = Tourist:GetInstanceZone(dungeon)
+	local instanceZone = Tourist:GetInstanceZone(dungeon)
 	local dungeonCoords = GetDungeonCoords(dungeon)
 	local pvpRaidFilter = PvPorRaidFilter(dungeon)
 
 	if pvpRaidFilter == nil then return end
 
-	if instZone == nil then
-		instZone = ""
+	if instanceZone == nil then
+		instanceZone = ""
 	else
-		instZone = "|cFFFFA500 ("..instZone..")"
+		instanceZone = "|cFFFFA500 ("..instanceZone..")"
 	end
 
 	GameTooltip:AddDoubleLine(
 	"|cffffffff"..dungeon
-	..instZone
+	..instanceZone
 	..dungeonCoords
 	..pvpRaidFilter or "",
 	("|cff%02x%02x%02x%s|r"):format(r *255, g *255, b *255,(low == high and low or ("%d-%d"):format(low, high))))
@@ -312,7 +312,7 @@ function LP:GetStatus(color)
 end
 
 -- Get Fishing Level
-function LP:GetFishingLvl(onTooltip)
+function LP:GetFishingLevel(onTooltip)
 	if E.Retail then return end
 
 	local mapID = C_Map_GetBestMapForUnit("player")
@@ -365,7 +365,7 @@ function LP:GetLevelRange(zoneText, onTooltip)
 end
 
 -- PetBattle Range
-function LP:GetBattlePetLvl(zoneText, ontt)
+function LP:GetBattlePetLevel(zoneText, ontt)
 	if not E.Retail then return end
 
 	local mapID = C_Map_GetBestMapForUnit("player")
@@ -427,7 +427,7 @@ function LP:UpdateTooltip()
 	-- Fishing
 	if not E.Retail then
 		if E.db.locplus.fish then
-			local minFish, maxFish = LP:GetFishingLvl(true)
+			local minFish, maxFish = LP:GetFishingLevel(true)
 			if minFish and maxFish then
 				GameTooltip:AddDoubleLine(PROFESSIONS_FISHING.." : ", format("%s-%s", minFish, maxFish), 1, 1, 1)
 			end
@@ -437,7 +437,7 @@ function LP:UpdateTooltip()
 	-- Battle Pet Levels
 	if E.Retail then
 		if E.db.locplus.petlevel then
-			local petLevel = LP:GetBattlePetLvl(zoneText, true)
+			local petLevel = LP:GetBattlePetLevel(zoneText, true)
 			if petLevel ~= "" then
 				GameTooltip:AddDoubleLine(L["Battle Pet level"].. " :", petLevel, 1, 1, 1, selectioncolor)
 			end
@@ -455,7 +455,7 @@ function LP:UpdateTooltip()
 	end
 
 	-- Instances in the zone
-	if E.db.locplus.ttinst and Tourist:DoesZoneHaveInstances(zoneText) and not E.Classic then 
+	if E.db.locplus.ttinst and Tourist:DoesZoneHaveInstances(zoneText) and not E.Classic then
 		GameTooltip:AddLine(" ")
 		GameTooltip:AddLine(curPos..DUNGEONS.." :", selectioncolor)
 
