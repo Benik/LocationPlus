@@ -23,7 +23,7 @@ local selectioncolor = selectioncolor
 local PLAYER, UNKNOWN, TRADE_SKILLS, TOKENS, DUNGEONS = PLAYER, UNKNOWN, TRADE_SKILLS, TOKENS, DUNGEONS
 local PROFESSIONS_FISHING, LEVEL_RANGE, STATUS, HOME, CONTINENT, PVP, RAID = PROFESSIONS_FISHING, LEVEL_RANGE, STATUS, HOME, CONTINENT, PVP, RAID
 local SANCTUARY_TERRITORY, ARENA, FRIENDLY, HOSTILE, CONTESTED_TERRITORY, COMBAT, AGGRO_WARNING_IN_INSTANCE = SANCTUARY_TERRITORY, ARENA, FRIENDLY, HOSTILE, CONTESTED_TERRITORY, COMBAT, AGGRO_WARNING_IN_INSTANCE
-local SECONDARY_SKILLS = SECONDARY_SKILLS
+local SECONDARY_SKILLS, DELVE_LABEL = SECONDARY_SKILLS, DELVE_LABEL
 
 -- Icons on Location Panel
 local FISH_ICON = "|TInterface\\AddOns\\ElvUI_LocPlus\\media\\fish.tga:14:14|t"
@@ -176,26 +176,34 @@ end
 
 -- PvP/Raid filter
  local function PvPorRaidFilter(zone)
-	local isPvP, isRaid
+	local isPvP, isRaid, isDelve
 
 	isPvP = nil
 	isRaid = nil
+	isDelve = nil
 
-	if(not E.Classic and Tourist:IsArena(zone) or Tourist:IsBattleground(zone)) then
+	if (not E.Classic and Tourist:IsArena(zone) or Tourist:IsBattleground(zone)) then
 		if E.db.locplus.tthidepvp then
 			return
 		end
 		isPvP = true
 	end
 
-	if(not isPvP and Tourist:GetInstanceGroupSize(zone) >= 10) then
+	if (not isPvP and Tourist:GetInstanceGroupSize(zone) >= 10) then
 		if E.db.locplus.tthideraid then
 			return
 		end
 		isRaid = true
 	end
 
-	return (isPvP and "|cffff0000 "..PVP.."|r" or "")..(isRaid and "|cffff4400 "..RAID.."|r" or "")
+	if E.Retail and Tourist:IsDelve(zone) then
+		if E.db.locplus.tthideDelves then
+			return
+		end
+		isDelve = true
+	end
+
+	return (isPvP and "|cffcc0000 "..PVP.."|r" or "")..(isRaid and "|cff8fce00 "..RAID.."|r" or "")..(isDelve and "|cff3d85c6 "..DELVE_LABEL.."|r" or "")
 end
 
 -- Recommended zones

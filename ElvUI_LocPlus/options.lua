@@ -37,8 +37,9 @@ P['locplus'] = {
 	['prof'] = true,
 	['profcap'] = false,
 -- Filters
-	['tthideraid'] = false,
-	['tthidepvp'] = false,
+	['tthideraid'] = true,
+	['tthidepvp'] = true,
+	['tthideDelves'] = false,
 -- Layout
 	['dtshow'] = true,
 	['shadow'] = false,
@@ -318,7 +319,7 @@ local function Options()
 								type = "description",
 								width = "full",
 								name = "",
-							},	
+							},
 							ttreczones = {
 								order = 6,
 								name = L["Recommended Zones"],
@@ -353,7 +354,7 @@ local function Options()
 								type = "description",
 								width = "full",
 								name = "",
-							},	
+							},
 							curr = {
 								order = 11,
 								name = CURRENCY,
@@ -400,6 +401,14 @@ local function Options()
 								desc = L["Show/Hide PvP zones, Arenas and BGs on recommended dungeons and zones."],
 								type = 'toggle',
 								disabled = function() return not E.db.locplus.tt end,
+							},
+							tthideDelves = {
+								order = 3,
+								name = L["Hide Delves"],
+								desc = L["Show/Hide Delves on recommended dungeons and zones."],
+								type = 'toggle',
+								disabled = function() return not E.db.locplus.tt end,
+								hidden = function() return not E.Retail end,
 							},
 						},
 					},
