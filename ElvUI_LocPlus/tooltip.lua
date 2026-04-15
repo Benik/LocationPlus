@@ -152,6 +152,30 @@ end]]
 -- Tooltip functions --
 -----------------------
 
+-- PvP/Raid/Delves filter
+local pvpLabel = format("|cffcc0000 %s|r", PVP)
+local raidLabel = format("|cff8fce00 %s|r", RAID)
+local delveLabel = format("|cff9999ff %s|r", DELVE_LABEL)
+
+local function PvPorRaidFilter(zone)
+    if not E.Classic and (Tourist:IsArena(zone) or Tourist:IsBattleground(zone)) then
+        if E.db.locplus.tthidepvp then return nil end
+        return pvpLabel
+    end
+
+    if Tourist:GetInstanceGroupSize(zone) >= 10 then
+        if E.db.locplus.tthideraid then return nil end
+        return raidLabel
+    end
+
+    if E.Retail and Tourist:IsDelve(zone) then
+        if E.db.locplus.tthideDelves then return nil end
+        return delveLabel
+    end
+
+    return ""
+end
+
 -- Dungeon coords
 local function GetDungeonCoords(zone)
 	local z, x, y = "", 0, 0
@@ -172,38 +196,6 @@ local function GetDungeonCoords(zone)
 	end
 
 	return dungeonCoords
-end
-
--- PvP/Raid filter
- local function PvPorRaidFilter(zone)
-	local isPvP, isRaid, isDelve
-
-	isPvP = nil
-	isRaid = nil
-	isDelve = nil
-
-	if (not E.Classic and Tourist:IsArena(zone) or Tourist:IsBattleground(zone)) then
-		if E.db.locplus.tthidepvp then
-			return
-		end
-		isPvP = true
-	end
-
-	if (not isPvP and Tourist:GetInstanceGroupSize(zone) >= 10) then
-		if E.db.locplus.tthideraid then
-			return
-		end
-		isRaid = true
-	end
-
-	if E.Retail and Tourist:IsDelve(zone) then
-		if E.db.locplus.tthideDelves then
-			return
-		end
-		isDelve = true
-	end
-
-	return (isPvP and "|cffcc0000 "..PVP.."|r" or "")..(isRaid and "|cff8fce00 "..RAID.."|r" or "")..(isDelve and "|cff3d85c6 "..DELVE_LABEL.."|r" or "")
 end
 
 -- Recommended zones
