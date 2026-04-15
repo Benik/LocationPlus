@@ -152,28 +152,40 @@ end]]
 -- Tooltip functions --
 -----------------------
 
+-- Colors
+local C = {
+	white	= "|cffffffff ",
+	green	= "|cff1eff00 ",
+	blue	= "|cff0070dd ",
+	orange	= "|cffff8000 ",
+	red		= "|cffff0000 ",
+	yellow	= "|cffffff00 ",
+	gold	= "|cffffd700 ",
+	purple	= "|cff9999ff ",
+}
+
 -- PvP/Raid/Delves filter
-local pvpLabel = format("|cffcc0000 %s|r", PVP)
-local raidLabel = format("|cff8fce00 %s|r", RAID)
-local delveLabel = format("|cff9999ff %s|r", DELVE_LABEL)
+local pvpLabel = C.red .. PVP .. "|r"
+local raidLabel = C.green .. RAID .. "|r"
+local delveLabel = C.purple .. DELVE_LABEL .. "|r"
 
 local function PvPorRaidFilter(zone)
-    if not E.Classic and (Tourist:IsArena(zone) or Tourist:IsBattleground(zone)) then
-        if E.db.locplus.tthidepvp then return nil end
-        return pvpLabel
-    end
+	if not E.Classic and (Tourist:IsArena(zone) or Tourist:IsBattleground(zone)) then
+		if E.db.locplus.tthidepvp then return nil end
+		return pvpLabel
+	end
 
-    if Tourist:GetInstanceGroupSize(zone) >= 10 then
-        if E.db.locplus.tthideraid then return nil end
-        return raidLabel
-    end
+	if Tourist:GetInstanceGroupSize(zone) >= 10 then
+		if E.db.locplus.tthideraid then return nil end
+		return raidLabel
+	end
 
-    if E.Retail and Tourist:IsDelve(zone) then
-        if E.db.locplus.tthideDelves then return nil end
-        return delveLabel
-    end
+	if E.Retail and Tourist:IsDelve(zone) then
+		if E.db.locplus.tthideDelves then return nil end
+		return delveLabel
+	end
 
-    return ""
+	return ""
 end
 
 -- Dungeon coords
@@ -190,7 +202,7 @@ local function GetDungeonCoords(zone)
 	elseif E.db.locplus.ttcoords then
 		x = tonumber(E:Round(x*100, 0))
 		y = tonumber(E:Round(y*100, 0))		
-		dungeonCoords = format(" |cffffffff(%d, %d)|r", x, y)
+		dungeonCoords = format("%s(%d, %d)|r", C.white, x, y)
 	else
 		dungeonCoords = ""
 	end
@@ -200,18 +212,20 @@ end
 
 -- Recommended zones
 local function GetRecommendedZones(zone)
+	local pvpRaidFilter = PvPorRaidFilter(zone)
+	if pvpRaidFilter == nil then return end
+
 	local low, high = Tourist:GetLevel(zone)
 	local r, g, b = Tourist:GetLevelColor(zone)
 	local continent = Tourist:GetContinent(zone)
-	local pvpRaidFilter = PvPorRaidFilter(zone)
 
-	if pvpRaidFilter == nil then return end
+	local levelColor = E:RGBToHex(r, g, b)
+	local levelRange = (low == high) and low or (low .. "-" .. high)
 
-	GameTooltip:AddDoubleLine(
-	"|cffffffff"..zone
-	..pvpRaidFilter or "",
-	format("|cff%02xff00%s|r", 255, continent)
-	..(" |cff%02x%02x%02x%s|r"):format(r *255, g *255, b *255,(low == high and low or ("%d-%d"):format(low, high))))
+	local leftSide = C.white .. zone .. pvpRaidFilter
+	local rightSide = C.orange .. continent .. "|r " .. levelColor .. levelRange .. "|r"
+
+	GameTooltip:AddDoubleLine(leftSide, rightSide)
 end
 
 -- Dungeons in the zone
