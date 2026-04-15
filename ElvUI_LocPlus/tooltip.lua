@@ -434,14 +434,21 @@ function LP:UpdateTooltip()
 	GameTooltip:AddDoubleLine(L["Zone : "], zoneText, 1, 1, 1, selectioncolor)
 
 	-- Continent
-	GameTooltip:AddDoubleLine(CONTINENT.." : ", Tourist:GetContinent(zoneText), 1, 1, 1, selectioncolor)
+	local continent = Tourist:GetContinent(zoneText)
+	if continent then
+		GameTooltip:AddDoubleLine(CONTINENT.." : ", continent, 1, 1, 1, selectioncolor)
+	end
 
 	-- Home
-	GameTooltip:AddDoubleLine(HOME.." :", GetBindLocation(), 1, 1, 1, 0.41, 0.8, 0.94)
+	local bindLocation = GetBindLocation()
+	if bindLocation and bindLocation ~= "" then
+		GameTooltip:AddDoubleLine(HOME.." :", bindLocation, 1, 1, 1, 0.41, 0.8, 0.94)
+	end
 
 	-- Status
 	if E.db.locplus.ttst then
-		GameTooltip:AddDoubleLine(STATUS.." :", LP:GetStatus(false), 1, 1, 1)
+		local status = LP:GetStatus(false)
+		GameTooltip:AddDoubleLine(STATUS.." :", status, 1, 1, 1)
 	end
 
     -- Zone level range
