@@ -1,7 +1,6 @@
 local E, L, V, P, G = unpack(ElvUI)
 local LP = E:NewModule('LocationPlus', 'AceTimer-3.0', 'AceEvent-3.0')
 local DT = E:GetModule('DataTexts')
-local LSM = LibStub("LibSharedMedia-3.0")
 local EP = LibStub("LibElvUIPlugin-1.0")
 local addon, ns = ...
 
@@ -337,9 +336,9 @@ function LP:ChangeFont()
 	for frame, _ in pairs(panels) do
 		if frame.Text then
 			if db.useDTfont then
-				frame.Text:FontTemplate(LSM:Fetch('font', E.db.datatexts.font), E.db.datatexts.fontSize, E.db.datatexts.fontOutline)
+				frame.Text:FontTemplate(E.db.datatexts.font, E.db.datatexts.fontSize, E.db.datatexts.fontOutline)
 			else
-				frame.Text:FontTemplate(LSM:Fetch("font", db.lpfont), db.lpfontsize, db.lpfontflags)
+				frame.Text:FontTemplate(db.lpfont, db.lpfontsize, db.lpfontflags)
 			end
 		end
 	end
@@ -354,9 +353,9 @@ function LP:ChangeDTFont()
 		for i = 1, panel.numPoints do
 			if panel.dataPanels[i] then
 				if db.useDTfont then
-					panel.dataPanels[i].text:FontTemplate(LSM:Fetch('font', E.db.datatexts.font), E.db.datatexts.fontSize, E.db.datatexts.fontOutline)
+					panel.dataPanels[i].text:FontTemplate(E.db.datatexts.font, E.db.datatexts.fontSize, E.db.datatexts.fontOutline)
 				else
-					panel.dataPanels[i].text:FontTemplate(LSM:Fetch("font", db.lpfont), db.lpfontsize, db.lpfontflags)
+					panel.dataPanels[i].text:FontTemplate(db.lpfont, db.lpfontsize, db.lpfontflags)
 				end
 			end
 		end
