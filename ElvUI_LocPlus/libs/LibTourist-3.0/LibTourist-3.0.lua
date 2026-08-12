@@ -1,6 +1,6 @@
 --[[
 Name: LibTourist-3.0
-Revision: $Rev: 340 $
+Revision: $Rev: 346 $
 Author(s): Odica (owner), originally created by ckknight and Arrowmaster
 Documentation: https://www.wowace.com/projects/libtourist-3-0/pages/api-reference
 SVN: svn://svn.wowace.com/wow/libtourist-3-0/mainline/trunk
@@ -9,7 +9,7 @@ License: MIT
 ]]
 
 local MAJOR_VERSION = "LibTourist-3.0"
-local MINOR_VERSION = 90000 + tonumber(("$Revision: 340 $"):match("(%d+)"))
+local MINOR_VERSION = 90000 + tonumber(("$Revision: 346 $"):match("(%d+)"))
 
 if not LibStub then error(MAJOR_VERSION .. " requires LibStub") end
 local C_Map = C_Map
@@ -2044,7 +2044,7 @@ local MapIdLookupTable = {
 	[2394] = "Labyrinth",
 	[2395] = "Eversong Woods",
 	[2396] = "Excavation Site 9",
-	[2397] = "Void Lands BG",
+	[2397] = "Slayer's Rise",  -- "Void Lands BG",
     [2398] = "K'aresh",
 	[2401] = "Alliance Housing District",
 	[2402] = "Horde Housing District",
@@ -2065,6 +2065,7 @@ local MapIdLookupTable = {
 	[2424] = "Isle of Quel'Danas",
 	[2425] = "Demolition Dome",
 	[2426] = "Demolition Dome",
+	[2427] = "Sporefall",
 	[2428] = "Undermine",
 	[2431] = "Minimap_RingingDeeps_Coreway",
 	[2432] = "Isle of Quel'Danas",
@@ -2073,7 +2074,7 @@ local MapIdLookupTable = {
 	[2435] = "The Illicit Rain",
 	[2437] = "Zul'Aman",
 	[2438] = "Scarlet Halls",
-	[2443] = "12.0 Campaign Finale Scenario",
+	[2443] = "Silvermoon City",  -- "12.0 Campaign Finale Scenario",
 	[2444] = "Slayer's Rise",
     [2447] = "Dastardly Dome",
     [2449] = "Eco-Dome Al'dani",
@@ -2110,10 +2111,10 @@ local MapIdLookupTable = {
 	[2499] = "Windrunner Spire",
 	[2500] = "The Blinding Vale",
 	[2501] = "Maisara Caverns",
-	[2502] = "The Shadow Enclave", 	-- "Delve_Voidholme_A",
+	[2502] = "Shadow Enclave", 	-- "Delve_Voidholme_A",
 	[2503] = "Twilight Crypts",  	-- "Delve_TwilightCrypts_A",
 	[2504] = "Twilight Crypts",		-- "Delve_TwilightCrypts_B",
-	[2505] = "The Gulf of Memory",	-- "Delve_GulfOfMemory_A",
+	[2505] = "Gulf of Memory",	-- "Delve_GulfOfMemory_A",
 	[2506] = "Shadowguard Point",
 	[2507] = "Torment's Rise",		-- "Delve_TormentsRise_A",
 	[2510] = "The Grudge Pit",
@@ -2126,11 +2127,11 @@ local MapIdLookupTable = {
 	[2518] = "Magister's Terrace",
 	[2519] = "Magister's Terrace",
 	[2520] = "Magister's Terrace",
-	[2522] = "Rootlands_Micro_Mega_A",
-	[2523] = "Rootlands_Micro_Mega_B",
+	[2522] = "Abundant Grotto",  -- "Rootlands_Micro_Mega_A",
+	[2523] = "Abundant Grotto",  -- "Rootlands_Micro_Mega_B",
 	[2525] = "The Darkway",			-- "Delve_TwilightTunnels_A",
-	[2526] = "Voidlands_Micro_Abundance_A",
-	[2527] = "Voidlands_Micro_Abundance_B",
+	[2526] = "Lair of Predaxas",  -- "Voidlands_Micro_Abundance_A",
+	[2527] = "Lair of Predaxas",  -- "Voidlands_Micro_Abundance_B",
 	[2528] = "Sunkiller Sanctum",  	-- "Delve_Sunkiller_A",
 	[2529] = "The Voidspire",
 	[2530] = "The Voidspire",
@@ -2145,9 +2146,9 @@ local MapIdLookupTable = {
 	[2541] = "Arcantina",
 	[2545] = "Parhelion Plaza",
 	[2547] = "Collegiate Calamity",
-	[2556] = "Nexus_Point_Xenas_A",
-	[2557] = "12_LegionCommandCenter_A",
-	[2558] = "12_LegionCommandCenter_B",
+	[2556] = "Nexus Point Xenas",  -- "Nexus_Point_Xenas_A",
+	[2557] = "Derelict Legion Vessel",  -- "12_LegionCommandCenter_A",
+	[2558] = "Derelict Legion Vessel",  -- "12_LegionCommandCenter_B",
 	[2561] = "Quel'Thalas",
 	[2564] = "Den of Nalorakk",
 	[2565] = "Isle of Quel'Danas",
@@ -2158,10 +2159,31 @@ local MapIdLookupTable = {
 	[2571] = "Sunkiller Sanctum",	-- "Delve_Sunkiller_B",
 	[2572] = "Voidscar Arena",
 	[2573] = "Voidscar Arena",
-	[2574] = "VoidscarArenaDungeon_C",
-	[2575] = "The Gulf of Memory",	-- "Delve_GulfOfMemory_B",
-	[2576] = "Rootlands_Den",
+	[2574] = "Voidscar Arena",  -- VoidscarArenaDungeon_C
+	[2575] = "Gulf of Memory",	-- "Delve_GulfOfMemory_B",
+	[2576] = "The Den",  -- "Rootlands_Den",
 	[2577] = "Collegiate Calamity",	-- "Delve_Calamity_A",
+	[2578] = "Collegiate Calamity",
+	[2579] = "Wartha'nan Crypts",
+	[2580] = "Loaknit Den",
+	[2581] = "Voidburrow",
+	[2582] = "Voidburrow",
+	[2583] = "Wit'Kalar Crypt",
+	[2584] = "Revantusk Sedge",
+	[2585] = "Zul'Aman",
+	[2594] = "Eversong Woods",
+	[2598] = "Ritual Site",
+	[2599] = "Val",
+	[2600] = "Naigtal",
+	[2617] = "Void Acropolis",
+	[2618] = "Void Acropolis",
+	[2619] = "Void Acropolis",
+	[2620] = "Forgotten Depths",
+	[2621] = "Forgotten Depths",
+	[2622] = "Val",
+	[2623] = "Naigtal",
+	[2646] = "Vilaldoun",
+	[2649] = "The Lycaneum",
 }
 
 
@@ -2544,11 +2566,11 @@ local mapInfoLocalizedNameErrata = {
 		["PrimalistRaid_F"] = "Vault of the Incarnates",
 		["PrimalistRaid_G"] = "Vault of the Incarnates",
 		["PrimalistRaid_H"] = "Vault of the Incarnates",
-		["Delve_Voidholme_A"] = "The Shadow Enclave",
+		["Delve_Voidholme_A"] = "Shadow Enclave",
 		["Delve_TwilightCrypts_A"] = "Twilight Crypts",
 		["Delve_TwilightCrypts_B"] = "Twilight Crypts",
-		["Delve_GulfOfMemory_A"] = "The Gulf of Memory",
-		["Delve_GulfOfMemory_B"] = "The Gulf of Memory",
+		["Delve_GulfOfMemory_A"] = "Gulf of Memory",
+		["Delve_GulfOfMemory_B"] = "Gulf of Memory",
 		["Delve_TormentsRise_A"] = "Torment's Rise",
 		["Delve_TwilightTunnels_A"] = "The Darkway",
 		["Delve_Sunkiller_A"] = "Sunkiller Sanctum",
@@ -5545,8 +5567,12 @@ do
 	transports["VOIDSTORM_SILVERMOON_PORTAL"] = string.format(X_Y_PORTAL, BZ["Voidstorm"], BZ["Silvermoon City"])
 	transports["SILVERMOON_QUELDANAS_FLIGHTPATH"] = string.format(X_Y_FLIGHTPATH, BZ["Silvermoon City"], BZ["Isle of Quel'Danas"])
 	transports["QUELDANAS_SILVERMOON_FLIGHTPATH"] = string.format(X_Y_FLIGHTPATH, BZ["Isle of Quel'Danas"], BZ["Silvermoon City"])
+	-- 12.0.7
+	transports["VOIDSTORM_VAL_PORTAL"] = string.format(X_Y_PORTAL, BZ["Voidstorm"], BZ["Val"])
+	transports["VAL_VOIDSTORM_PORTAL"] = string.format(X_Y_PORTAL, BZ["Val"], BZ["Voidstorm"])
+	transports["VOIDSTORM_NAIGTAL_PORTAL"] = string.format(X_Y_PORTAL, BZ["Voidstorm"], BZ["Naigtal"])
+	transports["NAIGTAL_VOIDSTORM_PORTAL"] = string.format(X_Y_PORTAL, BZ["Naigtal"], BZ["Voidstorm"])
 
-	
 	
 	
 	local zones = {}
@@ -7621,6 +7647,40 @@ do
 		},
 		type = "Flightpath",
 	}
+	
+	
+
+
+	zones[transports["VOIDSTORM_VAL_PORTAL"]] = {
+		paths = {
+			[BZ["Val"]] = true,
+		},
+		type = "Portal",
+	}	
+	
+
+	zones[transports["VAL_VOIDSTORM_PORTAL"]] = {
+		paths = {
+			[BZ["Voidstorm"]] = true,
+		},
+		type = "Portal",
+	}
+	
+	zones[transports["VOIDSTORM_NAIGTAL_PORTAL"]] = {
+		paths = {
+			[BZ["Naigtal"]] = true,
+		},
+		type = "Portal",
+	}	
+	
+
+	zones[transports["NAIGTAL_VOIDSTORM_PORTAL"]] = {
+		paths = {
+			[BZ["Voidstorm"]] = true,
+		},
+		type = "Portal",
+	}
+	
 	
 	
 	
@@ -12080,7 +12140,7 @@ do
 			[BZ["Collegiate Calamity"]] = true,
 			[BZ["The Darkway"]] = true,
 			[BZ["Parhelion Plaza"]] = true,
-			[BZ["The Shadow Enclave"]] = true,
+			[BZ["Shadow Enclave"]] = true,
 		},
 		paths = {
 			[BZ["Eastern Plaguelands"]] = true,
@@ -12090,7 +12150,7 @@ do
 			[BZ["Collegiate Calamity"]] = true,
 			[BZ["The Darkway"]] = true,
 			[BZ["Parhelion Plaza"]] = true,
-			[BZ["The Shadow Enclave"]] = true,
+			[BZ["Shadow Enclave"]] = true,
 		},
 		flightnodes = {
 			[3133] = true,   -- Fairbreeze Village, Eversong Woods (Neutral)
@@ -12159,14 +12219,14 @@ do
 			[BZ["The Dreamrift"]] = true,
 			[BZ["The Blinding Vale"]] = true,
 			[BZ["The Grudge Pit"]] = true,
-			[BZ["The Gulf of Memory"]] = true,
+			[BZ["Gulf of Memory"]] = true,
 		},
 		paths = {
 			[transports["HARANDAR_SILVERMOON_PORTAL"]] = true,
 			[BZ["The Dreamrift"]] = true,
 			[BZ["The Blinding Vale"]] = true,
 			[BZ["The Grudge Pit"]] = true,
-			[BZ["The Gulf of Memory"]] = true,
+			[BZ["Gulf of Memory"]] = true,
 		},
 		flightnodes = {
 			[3192] = true,   -- Har'athir, Harandar (Neutral)
@@ -12192,6 +12252,8 @@ do
 		},
 		paths = {
 			[transports["VOIDSTORM_SILVERMOON_PORTAL"]] = true,
+			[transports["VOIDSTORM_VAL_PORTAL"]] = true,
+			[transports["VOIDSTORM_NAIGTAL_PORTAL"]] = true,
 			[BZ["The Voidspire"]] = true,
 			[BZ["Voidscar Arena"]] = true,
 			[BZ["Shadowguard Point"]] = true,
@@ -12203,6 +12265,30 @@ do
 			[3120] = true,   -- Locus Point, Voidstorm (Neutral)
 			[3121] = true,   -- Howling Ridge, Voidstorm (Neutral)
 			[3123] = true,   -- Master's Perch, Voidstorm (Neutral)
+		},
+		continent = Quel_Thalas,
+		expansion = Midnight,
+	}	
+
+
+	-- Patch 12.0.7
+	-- 16900
+	zones[BZ["Val"]] = {
+		low = 80,
+		high = 90,
+		paths = {
+			[transports["VAL_VOIDSTORM_PORTAL"]] = true,
+		},
+		continent = Quel_Thalas,
+		expansion = Midnight,
+	}		
+	
+	-- 16943
+	zones[BZ["Naigtal"]] = {
+		low = 80,
+		high = 90,
+		paths = {
+			[transports["NAIGTAL_VOIDSTORM_PORTAL"]] = true,
 		},
 		continent = Quel_Thalas,
 		expansion = Midnight,
@@ -15329,7 +15415,7 @@ do
 	}	
 	
 	-- 16595
-	zones[BZ["The Gulf of Memory"]] = {
+	zones[BZ["Gulf of Memory"]] = {
 		low = 80,
 		high = 90,
 		continent = Quel_Thalas,
@@ -15368,7 +15454,7 @@ do
 	}
 	
 	-- 16594
-	zones[BZ["The Shadow Enclave"]] = {
+	zones[BZ["Shadow Enclave"]] = {
 		low = 80,
 		high = 90,
 		continent = Quel_Thalas,
@@ -15690,6 +15776,12 @@ do
 					if zWidth ~= 0 or not zones[uniqueZoneName].yards then
 						-- Make sure the size is always set (even if it's 0) but don't overwrite any hardcoded values if the size is 0
 						zones[uniqueZoneName].yards = zWidth
+					end
+					-- Get map levels (not guaranteed)
+					local cMapLow, cMapHigh = C_Map.GetMapLevels(zoneMapID)
+					if cMapLow and cMapLow > 0 then 
+						zones[uniqueZoneName].low = cMapLow
+						zones[uniqueZoneName].high = cMapHigh
 					end
 				else
 					trace("|r|cffff4422! -- Tourist:|r TODO: Add zone "..tostring(zoneName).." (to "..tostring(continentName)..")" )

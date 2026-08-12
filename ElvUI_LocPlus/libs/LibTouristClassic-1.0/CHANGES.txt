@@ -1,12 +1,13 @@
-tag 5918a7c1314f4f3a556d9f23eb5c639a9efede14 WoW-5.5.0-release1
+tag 69357024885d386c512a4ba5cd7a8d13e532fa29 WoW-5.5.4-release1
 Author:	Odica Jaedenar <odica.jaedenar@gmail.com>
-Date:	Tue Jul 15 13:27:09 2025 +0200
+Date:	Sat Jun 6 17:44:29 2026 +0200
 
-Tagged as WoW-5.5.0-release1
+Tagged as WoW-5.5.4-release1
 
-commit 6e802252a66b2c25c1e3eac64e47f86caaa38b6a
+commit edced0a1424b7fb7534c309c67bfc8fcf20bd781
 Author: Odica Jaedenar <odica.jaedenar@gmail.com>
-Date:   Tue Jul 15 13:26:16 2025 +0200
+Date:   Sat Jun 6 17:43:44 2026 +0200
 
-    Commit for release version
+    Added Siege of Orgrimmar
+    Updated version in TOC to 50504
 
