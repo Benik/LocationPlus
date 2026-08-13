@@ -660,7 +660,7 @@ function LP:Initialize()
 	LP:CreateLocationPanel()
 	LP:CreateDatatextPanels()
 	LP:CreateCoordPanels()
-	C_Timer.After(3, function() LP:ChangeDTFont() end)
+	E:Delay(3, function() LP:ChangeDTFont() end)
 
 	LP:UpdateFrames()
 	LP:UpdateCoords()
