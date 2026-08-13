@@ -285,8 +285,6 @@ function LP:CreateDatatextPanels()
 	DT:RegisterPanel(rightDT, 1, 'ANCHOR_BOTTOM', 0, -4)
 	self.rightDT = rightDT
 	LP["Panels"][rightDT] = true
-
-	LP:ChangeDTFont()
 end
 
 -- mouse over option
@@ -662,6 +660,7 @@ function LP:Initialize()
 	LP:CreateLocationPanel()
 	LP:CreateDatatextPanels()
 	LP:CreateCoordPanels()
+	C_Timer.After(3, function() LP:ChangeDTFont() end)
 
 	LP:UpdateFrames()
 	LP:UpdateCoords()
