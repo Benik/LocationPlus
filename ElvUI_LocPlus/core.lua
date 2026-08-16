@@ -19,7 +19,6 @@ local GetRealZoneText = GetRealZoneText
 local GetSubZoneText = GetSubZoneText
 local GetInstanceInfo = GetInstanceInfo
 local GetZonePVPInfo = C_PvP.GetZonePVPInfo or GetZonePVPInfo
-local IsInInstance = IsInInstance
 local InCombatLockdown = InCombatLockdown
 local UnitAffectingCombat = UnitAffectingCombat
 local UIFrameFadeIn = UIFrameFadeIn
@@ -347,7 +346,7 @@ function LP:ChangeDTFont()
 	if not db then return end
 
 	local datatexts = {_G.LocPlusLeftDT, _G.LocPlusRightDT}
-	for panelName, panel in pairs(datatexts) do
+	for _, panel in pairs(datatexts) do
 		for i = 1, panel.numPoints do
 			if panel.dataPanels[i] then
 				if db.useDTfont then
@@ -356,11 +355,6 @@ function LP:ChangeDTFont()
 					panel.dataPanels[i].text:FontTemplate(db.lpfont, db.lpfontsize, db.lpfontflags)
 				end
 			end
-		end
-
-		if panelName and panel then
-			DT:UpdatePanelInfo(panelName, panel)
-			DT:ForceUpdate_DataText(panelName)
 		end
 	end
 end
@@ -622,6 +616,7 @@ function LP:UpdateFrames()
 	LP:HideCoords()
 	LP:UpdateTextColor()
 	LP:ChangeFont()
+	LP:ChangeDTFont()
 
 	HideDT()
 end
@@ -660,7 +655,6 @@ function LP:Initialize()
 	LP:CreateLocationPanel()
 	LP:CreateDatatextPanels()
 	LP:CreateCoordPanels()
-	E:Delay(3, function() LP:ChangeDTFont() end)
 
 	LP:UpdateFrames()
 	LP:UpdateCoords()
@@ -676,7 +670,6 @@ function LP:Initialize()
 
 	hooksecurefunc(DT, 'UpdatePanelInfo', LP.UpdateFrames)
 	hooksecurefunc(DT, 'UpdatePanelAttributes', LP.UpdateFrames)
-	hooksecurefunc(DT, 'UpdatePanelAttributes', LP.ChangeDTFont)
 	hooksecurefunc(DT, 'LoadDataTexts', LP.LoadDataTexts)
 
 	EP:RegisterPlugin(addon, LP.AddOptions)
