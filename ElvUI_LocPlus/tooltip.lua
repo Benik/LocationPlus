@@ -167,7 +167,7 @@ local C = {
 -- PvP/Raid/Delves filter
 local pvpLabel = C.red .. PVP .. "|r"
 local raidLabel = C.green .. RAID .. "|r"
-local delveLabel = C.purple .. DELVE_LABEL .. "|r"
+local delveLabel = E.Retail and C.purple .. DELVE_LABEL .. "|r"
 
 local function PvPorRaidFilter(zone)
 	if not E.Classic and (Tourist:IsArena(zone) or Tourist:IsBattleground(zone)) then
