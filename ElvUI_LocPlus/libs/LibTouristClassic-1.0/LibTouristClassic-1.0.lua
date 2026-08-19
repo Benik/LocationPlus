@@ -1,6 +1,6 @@
 --[[
 Name: LibTouristClassic-1.0
-Revision: $Rev: 269 $
+Revision: $Rev: 270 $
 Author(s): Odica; based on LibTourist-3.0
 Documentation: https://www.wowace.com/projects/libtourist-1-0/pages/api-reference
 Git: https://repos.wowace.com/wow/libtourist-classic libtourist-classic
@@ -9,7 +9,7 @@ License: MIT
 ]]
 
 local MAJOR_VERSION = "LibTouristClassic-1.0"
-local MINOR_VERSION = 90000 + tonumber(("$Revision: 269 $"):match("(%d+)"))
+local MINOR_VERSION = 90000 + tonumber(("$Revision: 270 $"):match("(%d+)"))
 
 if not LibStub then error(MAJOR_VERSION .. " requires LibStub") end
 local C_Map = C_Map
@@ -6320,12 +6320,12 @@ do
 		continent = Pandaria,
 		instances = {
 			[BZ["Mogu'shan Palace"]] = true,
---			[BZ["Siege of Orgrimmar"]] = true,
+			[BZ["Siege of Orgrimmar"]] = true,
 		},
 		paths = {
 			[BZ["Mogu'shan Palace"]] = true,
 			[BZ["Kun-Lai Summit"]] = true,
---			[BZ["Siege of Orgrimmar"]] = true,
+			[BZ["Siege of Orgrimmar"]] = true,
 			[BZ["Shrine of Two Moons"]] = true,
 			[BZ["Shrine of Seven Stars"]] = true,
 		},
@@ -7595,7 +7595,16 @@ do
 		entrancePortal = { BZ["Dread Wastes"], 39.0, 35.0 }, 
 	}	
 	
-	
+	zones[BZ["Siege of Orgrimmar"]] = {
+		low = 90,
+		high = 90,
+		continent = Pandaria,
+		paths = BZ["Vale of Eternal Blossoms"],
+		groupSize = 10,
+		altGroupSize = 25,
+		type = "Instance",
+		entrancePortal = { BZ["Vale of Eternal Blossoms"], 74.0, 42.2 },
+	}	
 	
 	
 	

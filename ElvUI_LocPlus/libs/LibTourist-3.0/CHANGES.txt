@@ -1,8 +1,15 @@
 ------------------------------------------------------------------------
-r342 | Odica_Jaedenar | 2026-02-12 16:31:58 +0000 (Thu, 12 Feb 2026) | 1 line
+r346 | Odica_Jaedenar | 2026-07-22 20:48:27 +0000 (Wed, 22 Jul 2026) | 7 lines
 Changed paths:
+   M /trunk/LibTourist-3.0.lua
    M /trunk/LibTourist-3.0.toc
 
-Updated version in TOC to 120001
+- added Naigtal and Val zones
+- added Voidstorm - Naigtal v.v. portal
+- added Voidstorm - Val v.v. portal
+- added 22 missing map IDs
+- corrected 14 map names in the map ID lookup table
+- Libtourist now uses low and high zone level from C_Map, if available. As a result, most map levels returned by Tourist:GetLevel have changed (often to 10-90)
+- updated version in TOC to 120007
 ------------------------------------------------------------------------
 

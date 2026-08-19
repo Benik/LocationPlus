@@ -1,3 +1,18 @@
+v3.02 (Aug 19, 2026)
+Fixed Datatexts fonts not applying after a reload
+Fixed a Classic error
+LibTourist update
+checks on tooltip
+Let's try this colors approach, so it's easier to read. Probably each tooltip function needs caching
+Fixed Fonts
+Better PvPorRaid filter
+Start working the Options
+Added "Delve" label in the Recommended Dungeons list and filter to hide Delves in the tooltip
+Tooltip cleanup
+Fixed Coords visibility while on Housing area
+options fix
+Core overhaul
+
 v3.01 (Mar 3, 2026)
 Update LibTourist for Midnight
 Update LibTourist for TBC (Credit: Thurin)

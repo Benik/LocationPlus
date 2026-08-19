@@ -37,8 +37,9 @@ P['locplus'] = {
 	['prof'] = true,
 	['profcap'] = false,
 -- Filters
-	['tthideraid'] = false,
-	['tthidepvp'] = false,
+	['tthideraid'] = true,
+	['tthidepvp'] = true,
+	['tthideDelves'] = false,
 -- Layout
 	['dtshow'] = true,
 	['shadow'] = false,
@@ -318,7 +319,7 @@ local function Options()
 								type = "description",
 								width = "full",
 								name = "",
-							},	
+							},
 							ttreczones = {
 								order = 6,
 								name = L["Recommended Zones"],
@@ -353,7 +354,7 @@ local function Options()
 								type = "description",
 								width = "full",
 								name = "",
-							},	
+							},
 							curr = {
 								order = 11,
 								name = CURRENCY,
@@ -401,6 +402,14 @@ local function Options()
 								type = 'toggle',
 								disabled = function() return not E.db.locplus.tt end,
 							},
+							tthideDelves = {
+								order = 3,
+								name = L["Hide Delves"],
+								desc = L["Show/Hide Delves on recommended dungeons and zones."],
+								type = 'toggle',
+								disabled = function() return not E.db.locplus.tt end,
+								hidden = function() return not E.Retail end,
+							},
 						},
 					},
 				},
@@ -409,6 +418,7 @@ local function Options()
 				order = 7,
 				type = "group",
 				name = L["Layout"],
+				childGroups = "tab",
 				args = {
 					lp_lo = {
 						order = 1,
@@ -431,14 +441,14 @@ local function Options()
 								desc = L["Enable/Disable transparent layout."],
 								type = 'toggle',
 								disabled = function() return not E.db.locplus.noback end,
-								set = function(info, value) E.db.locplus[ info[#info] ] = value; LP:TransparentPanels() end,
+								set = function(info, value) E.db.locplus[ info[#info] ] = value; LP:UpdateTemplate() end,
 							},
 							noback = {
 								order = 3,
 								name = L["Backdrop"],
 								desc = L["Hides all panels background so you can place them on ElvUI's top or bottom panel."],
 								type = 'toggle',
-								set = function(info, value) E.db.locplus[ info[#info] ] = value; LP:TransparentPanels(); LP:ShadowPanels(); end,
+								set = function(info, value) E.db.locplus[ info[#info] ] = value; LP:UpdateTemplate(); LP:ShadowPanels(); end,
 							},
 						},
 					},
@@ -446,7 +456,7 @@ local function Options()
 						order = 2,
 						type = "group",
 						name = L["Location Panel"],
-						guiInline = true,
+						--guiInline = true,
 						get = function(info) return E.db.locplus[ info[#info] ] end,
 						set = function(info, value) E.db.locplus[ info[#info] ] = value; end,
 						args = {
@@ -456,7 +466,7 @@ local function Options()
 								desc = L["Adds 6 pixels at the Main Location Panel height."],
 								type = 'toggle',
 								disabled = function() return not E.db.locplus.noback end,
-								set = function(info, value) E.db.locplus[ info[#info] ] = value; LP:DTHeight() end,
+								set = function(info, value) E.db.locplus[ info[#info] ] = value; LP:ResizePanels() end,
 							},
 							frameStrata = {
 								order = 2,
@@ -544,7 +554,7 @@ local function Options()
 						order = 3,
 						type = "group",
 						name = L["Coordinates"],
-						guiInline = true,
+						--guiInline = true,
 						args = {
 							customCoordsColor = {
 								order = 1,
@@ -587,7 +597,7 @@ local function Options()
 						order = 4,
 						type = "group",
 						name = L["Size"],
-						guiInline = true,
+						--guiInline = true,
 						args = {
 							dtwidth = {
 								order = 1,
@@ -596,7 +606,7 @@ local function Options()
 								desc = L["Adjust the DataTexts Width."],
 								min = 70, max = 200, step = 1,
 								get = function(info) return E.db.locplus[ info[#info] ] end,
-								set = function(info, value) E.db.locplus[ info[#info] ] = value; LP:DTWidth() end,
+								set = function(info, value) E.db.locplus[ info[#info] ] = value; LP:ResizePanels() end,
 							},
 							dtheight = {
 								order = 2,
@@ -605,7 +615,7 @@ local function Options()
 								desc = L["Adjust All Panels Height."],
 								min = 10, max = 32, step = 1,
 								get = function(info) return E.db.locplus[ info[#info] ] end,
-								set = function(info, value) E.db.locplus[ info[#info] ] = value; LP:DTHeight() end,
+								set = function(info, value) E.db.locplus[ info[#info] ] = value; LP:ResizePanels() end,
 							},
 						},
 					},
@@ -613,7 +623,7 @@ local function Options()
 						order = 5,
 						type = "group",
 						name = L["Spacing"],
-						guiInline = true,
+						--guiInline = true,
 						get = function(info) return E.db.locplus[ info[#info] ] end,
 						set = function(info, value) E.db.locplus[ info[#info] ] = value; LP:UpdateSpacing() end,
 						args = {
@@ -635,9 +645,9 @@ local function Options()
 						order = 6,
 						type = "group",
 						name = L["Fonts"],
-						guiInline = true,
+						--guiInline = true,
 						get = function(info) return E.db.locplus[ info[#info] ] end,
-						set = function(info, value) E.db.locplus[ info[#info] ] = value; LP:ChangeFont(); end,
+						set = function(info, value) E.db.locplus[ info[#info] ] = value; LP:ChangeFont() LP:ChangeDTFont() end,
 						args = {
 							useDTfont = {
 								order = 1,
@@ -677,7 +687,7 @@ local function Options()
 					},
 				},
 			},
-		},					
+		},
 	}
 end
 tinsert(LP.Config, Options)
