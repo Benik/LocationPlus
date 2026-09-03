@@ -376,7 +376,7 @@ function LP:HideCoords()
 	local pvpType = GetZonePVPInfo()
 	local inHousing = inInstance and pvpType == 'sanctuary'
 
-	local shouldHide = inInstance and not inHousing and (db.hidecoords or db.hidecoordsInInstance)
+	local shouldHide = db.hidecoords or (inInstance and not inHousing and db.hidecoordsInInstance)
 
 	xCoords:Point('RIGHT', locPanel, 'LEFT', db.spacingAuto and -SPACING or -db.spacingManual, 0)
 	yCoords:Point('LEFT', locPanel, 'RIGHT', db.spacingAuto and SPACING or db.spacingManual, 0)
